@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <script src="./leap.js"></script>
+    <script>
+      var controller = new Leap.Controller()
+      controller.onReady(function() {
+        console.log("ready")
+        controller.onFrame(function() {
+          console.log("hello")
+          console.log(controller.frame().id)
+          console.log(controller.frame().fingers.length)
+          console.log(controller.frame().finger(0))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    BODYBODYBODY
+  </body>
+</html>

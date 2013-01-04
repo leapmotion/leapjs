@@ -1,0 +1,19 @@
+{
+  "name": "Leap",
+  "version": "0.0.1",
+  "description": "Leap Motion Client",
+  "main": "leap.js",
+  "scripts": {
+    "test": "test.js"
+  },
+  "license": "BSD",
+  "devDependencies": {
+    "browserify": "git://github.com/substack/node-browserify.git",
+    "mocha": "1.7.4",
+    "node-static": "*",
+    "uglify-js": "*",
+    "chai": "*",
+    "mocha-phantomjs": "*",
+    "underscore": "*"
+  }
+}

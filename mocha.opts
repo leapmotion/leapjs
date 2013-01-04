@@ -1,0 +1,5 @@
+--require lib
+--globals window
+--verbose
+--reporter dot
+--ui bdd
