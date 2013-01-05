@@ -1,5 +1,28 @@
 (function(window, document, undefined) {
-	window.Leap = { ready: [] }
+  // using http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+  // shim layer with setTimeout fallback
+  window.requestAnimFrame = (function() {
+    return  window.requestAnimationFrame || 
+    window.webkitRequestAnimationFrame   || 
+    window.mozRequestAnimationFrame      || 
+    window.oRequestAnimationFrame        || 
+    window.msRequestAnimationFrame       || 
+    function(callback) { window.setTimeout(callback, 1000 / 60); }
+  })();
+
+  window.Leap = {
+    ready: [],
+    loop: function(callback) {
+      var controller = new Leap.Controller()
+      controller.onReady(function() {
+        var drawCallback = function() {
+          callback(controller.lastFrame)
+          window.requestAnimFrame(drawCallback)
+        };
+        window.requestAnimFrame(drawCallback)
+      })
+    }
+  }
 
 	/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
 	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
@@ -446,7 +469,6 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       }
     })
     this.ready = true
-    console.log("dispatch ready")
     this.dispatchReadyEvent()
   }
 
@@ -463,7 +485,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   }
 
   Controller.prototype.processFrame = function(frame) {
-    this.history[this.historyIdx] = new Leap.Frame(frame)
+    this.lastFrame = this.history[this.historyIdx] = new Leap.Frame(frame)
     this.historyIdx = (this.historyIdx + 1) % this.historyLength
     this.dispatchFrameEvent()
   }

@@ -1,7 +1,7 @@
 # TODO!
 
 [x] complete finger
-[ ] match api
+[/] match api
 [ ] focus handler
 [ ] animation frame handler
 [ ] node-ify lib
