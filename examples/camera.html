@@ -36,12 +36,10 @@
         if (frame.valid) {
           if (!firstValidFrame) firstValidFrame = frame;
           var t = firstValidFrame.translation(frame);
-          var r = firstValidFrame.rotationAxis(frame);
-          //camera.rotation.set( r.x, r.y, r.z );
 
-          camera.position.x = t.x * 10 + startX;
-          camera.position.y = t.y * 10  + startY;
-          camera.position.z = t.z * 10  + startZ;
+          camera.position.x = t[0] * 10 + startX;
+          camera.position.y = t[1] * 10  + startY;
+          camera.position.z = t[2] * 10  + startZ;
         }
         renderer.render(scene, camera);
       });
