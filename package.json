@@ -6,7 +6,7 @@
   "scripts": {
     "test": "test.js"
   },
-  "license": "BSD-3-Clause",
+  "license": "BSD-2-Clause",
   "devDependencies": {
     "browserify": "git://github.com/substack/node-browserify.git",
     "mocha": "1.7.4",
