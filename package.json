@@ -1,12 +1,12 @@
 {
-  "name": "Leap",
+  "name": "leapjs",
   "version": "0.0.1",
   "description": "Leap Motion Client",
   "main": "leap.js",
   "scripts": {
     "test": "test.js"
   },
-  "license": "BSD",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "browserify": "git://github.com/substack/node-browserify.git",
     "mocha": "1.7.4",

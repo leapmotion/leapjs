@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>Camera - Leap</title>
+    <style>
+      canvas { width: 100%; height: 100%; background-color: black; }
+    </style>
+    <script src="./three.js"></script>
+    <script src="../leap.js"></script>
+  </head>
+  <body>
+    <script>
+      var scene = new THREE.Scene();
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement); 
+
+      var firstValidFrame = null;
+
+      var geometry = new THREE.CubeGeometry( 200, 200, 200 );
+
+      for ( var i = 0; i < geometry.faces.length; i ++ ) {
+        geometry.faces[ i ].color.setHex( Math.random() * 0xffffff );
+      }
+
+      var material = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+
+      cube = new THREE.Mesh( geometry, material );
+      scene.add(cube);
+
+      var camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+      var startX = 0;
+      var startY = 150;
+      var startZ = 500;
+
+      Leap.loop(function(frame) {
+        if (frame.valid) {
+          if (!firstValidFrame) firstValidFrame = frame;
+          var t = firstValidFrame.translation(frame);
+          var r = firstValidFrame.rotationAxis(frame);
+          //camera.rotation.set( r.x, r.y, r.z );
+
+          camera.position.x = t.x * 10 + startX;
+          camera.position.y = t.y * 10  + startY;
+          camera.position.z = t.z * 10  + startZ;
+        }
+        renderer.render(scene, camera);
+      });
+    </script>
+    <div id="out"></div>
+  </body>
+</html>

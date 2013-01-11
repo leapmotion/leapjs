@@ -30,4 +30,5 @@ controller.onFrame(function() {
   console.log(controller.frame().fingers.length)
   console.log(controller.frame().finger(0))
 })
+controller.connect()
 ```

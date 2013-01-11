@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <title>Visualizer - Leap</title>
+    <style>
+      canvas { width: 100%; height: 100%; background-color: black; }
+    </style>
+    <script src="./three.js"></script>
+    <script src="../leap.js"></script>
+  </head>
+  <body>
+    <script>
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.10, 1000);
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement); 
+      camera.position.z = 500;
+      camera.position.y = -100;
+      camera.lookAt(new THREE.Vector3(0,0,0))
+
+      var fingers = {};
+      var spheres = {};
+      Leap.loop(function(frame) {
+        var fingerIds = {};
+        var handIds = {};
+        for (var pointableId = 0, pointableCount = frame.pointables.length; pointableId != pointableCount; pointableId++) {
+          var pointable = frame.pointables[pointableId];
+          var finger = fingers[pointable.id]
+          var origin = new THREE.Vector3(pointable.tipPosition[0], pointable.tipPosition[1], -pointable.tipPosition[2])
+          var direction = new THREE.Vector3(pointable.direction[0], pointable.direction[1], -pointable.direction[2]);
+          if (!finger) {
+            finger = new THREE.ArrowHelper(origin, direction, pointable.length, Math.random() * 0xffffff);
+            fingers[pointable.id] = finger;
+            scene.add(finger);
+          } else {
+            finger.position = origin
+            finger.setDirection(direction)
+          }
+          finger.length = pointable.length
+          fingerIds[pointable.id] = true
+        }
+
+        //for (var handId = 0, handCount = frame.hands.length; handId != handCount; hand++) {
+        //  var hand = frame.hands[handId];
+        //  //var sphere = spheres[hand.id]
+        //  //if (!finger) {
+        //  //  var geom = new THERE.SphereGeometry( , segmentsWidth, segmentsHeight, phiStart, phiLength, thetaStart, thetaLength )
+        //  //
+        //  //  sphere = 
+        //  
+        //    fingers[pointable.id] = finger;
+        //    scene.add(finger);
+        //  } else {
+        //    finger.position = origin
+        //    finger.setDirection(direction)
+        //  }
+        //  finger.length = pointable.length
+        //  fingerIds[pointable.id] = true
+        //}
+
+
+        for (fingerId in fingers) {
+          if (!fingerIds[fingerId]) {
+            scene.remove(fingers[fingerId])
+            delete fingers[fingerId]
+          }
+        }
+
+        renderer.render(scene, camera);
+      });
+    </script>
+    <div id="out"></div>
+  </body>
+</html>

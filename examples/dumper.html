@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>Dumper - Leap</title>
+    <script src="../leap.js"></script>
+    <script>
+      var pausedFrame = null;
+      var latestFrame = null;
+      window.onkeypress = function(e) {
+        if (e.charCode == 32) {
+          if (pausedFrame == null) {
+            pausedFrame = latestFrame
+          } else {
+            pausedFrame = null;
+          }
+        }
+      }
+      Leap.loop(function(frame) {
+        latestFrame = frame
+        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<pre>"+(pausedFrame || latestFrame).dump()+"</pre>"
+      })
+    </script>
+  </head>
+  <body>
+    <div id="out"></div>
+    <div id="log"></div>
+  </body>
+</html>
