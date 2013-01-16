@@ -1,0 +1,61 @@
+<html>
+  <head>
+    <style>
+    #space {
+      position: relative;
+      width: 500px;
+      height: 300px;
+      border: 1px black solid;
+    }
+
+    #pointer {
+      position: absolute;
+      top: 50px;
+      left: 50px;
+    }
+
+    </style>
+    <title>Dumper - Leap</title>
+    <script src="../leap.js"></script>
+    <script src="../lib/sylvester.src.js"></script>
+  </head>
+  <body>
+    <div id="out"></div>
+
+    <div id="pointer">X</div>
+    <div id="space">
+    </div>
+  </body>
+  <script>
+    var el = document.getElementById('space')
+    console.dir(el)
+
+    var log = function(str) {
+      document.getElementById('space').innerHTML = "<pre>" + str + "</pre>"
+    }
+
+    var pointer = document.getElementById("pointer")
+
+    var s = new Leap.Screen(el, {size: 20})
+    var cursor = new Leap.UI.Cursor(s);
+
+    cursor.onCreate = function() {
+      pointer.style.display = "block";
+    }
+
+    cursor.onKill = function() {
+      pointer.style.display = "none";
+      console.log(pointer.style.display)
+    }
+
+    cursor.onMove = function(e) {
+      pointer.style.top = e.y;
+      pointer.style.left = e.x;
+    }
+
+    Leap.loop(function(frame) {
+      cursor.update(frame)
+    })
+
+  </script>
+</html>
