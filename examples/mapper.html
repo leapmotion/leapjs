@@ -51,6 +51,7 @@
     cursor.onMove = function(e) {
       pointer.style.top = e.y;
       pointer.style.left = e.x;
+      log(e.z)
     }
 
     Leap.loop(function(frame) {
