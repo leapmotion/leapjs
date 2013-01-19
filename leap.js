@@ -608,7 +608,6 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 var Hand = exports.Hand = function(data) {
-  this.data = data;
   this.id = data.id
   this.palmPosition = data.palmPosition
   this.palmDirection = data.palmDirection
@@ -627,7 +626,12 @@ var Hand = exports.Hand = function(data) {
 }
 
 Hand.prototype.finger = function(id) {
-  return (id < 0 || id >= this.fingers.length) ? Leap.Pointable.Invalid : this.fingers[id]
+  for ( var i = 0; i < this.fingers.length; i++ ) {
+    if (this.fingers[i].id === id) {
+      return this.fingers[i];
+    }
+  }
+  Leap.Pointable.Invalid
 }
 
 Hand.prototype.toString = function() {
