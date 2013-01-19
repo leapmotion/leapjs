@@ -572,7 +572,12 @@ Frame.prototype.finger = function(id) {
 }
 
 Frame.prototype.hand = function(id) {
-  return (id < 0 || id >= this.hands.length) ? window.Leap.Hand.Invalid : this.hands[id]
+  for ( var i = 0; i < this.hands.length; i++ ) {
+    if (this.hands[i].id === id) {
+      return this.hands[i];
+    }
+  }
+  return window.Leap.Hand.Invalid;
 }
 
 Frame.prototype.toString = function() {
@@ -603,6 +608,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 var Hand = exports.Hand = function(data) {
+  this.data = data;
   this.id = data.id
   this.palmPosition = data.palmPosition
   this.palmDirection = data.palmDirection
