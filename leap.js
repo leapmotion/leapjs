@@ -631,7 +631,7 @@ Hand.prototype.finger = function(id) {
       return this.fingers[i];
     }
   }
-  Leap.Pointable.Invalid
+  return Leap.Pointable.Invalid
 }
 
 Hand.prototype.toString = function() {
