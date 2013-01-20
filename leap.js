@@ -716,15 +716,15 @@ var Motion = exports.Motion = {
 }
 
 var Pointable = exports.Pointable = function(data) {
-  this.valid = true;
-  this.id = data.id;
-  this.handId = data.handId;
-  this.length = data.length;
-  this.tool = data.tool;
-  this.width = data.width;
-  this.direction = data.direction;
-  this.tipPosition = data.tipPosition;
-  this.tipVelocity = data.tipVelocity;
+  this.valid = true
+  this.id = data.id
+  this.handId = data.handId
+  this.length = data.length
+  this.tool = data.tool
+  this.width = data.width
+  this.direction = data.direction
+  this.tipPosition = data.tipPosition
+  this.tipVelocity = data.tipVelocity
 }
 
 Pointable.prototype.toString = function() {
