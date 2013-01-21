@@ -1,0 +1,150 @@
+<html>
+  <head>
+    <title>Camera - Leap</title>
+    <style>
+      canvas { width: 100%; height: 100%; background-color: black; }
+    </style>
+    <script src="scripts/three.js"></script>
+    <script src="scripts/leap.js"></script>
+    <style>
+    body{margin: 0px; padding: 0px;}
+    </style>
+  </head>
+  <body>
+    <script>
+        function map(value, inputMin, inputMax, outputMin, outputMax){
+        outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);  
+        if(outVal >  outputMax){
+          outVal = outputMax;
+        }
+        if(outVal <  outputMin){
+          outVal = outputMin;
+        } 
+        return outVal;
+      }
+
+
+      //create scene
+      var scene = new THREE.Scene();
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement); 
+
+
+      //  Create a Directional light as pretend sunshine.
+      directional = new THREE.DirectionalLight( 0xCCCCCC, 1.2 )
+      directional.castShadow = true
+      directional.position.set( 100, 200, 300 )
+      directional.target.position.copy( new THREE.Vector3(0,0,0) )
+      directional.shadowCameraTop     =  1000
+      directional.shadowCameraRight   =  1000
+      directional.shadowCameraBottom  = -1000
+      directional.shadowCameraLeft    = -1000
+      directional.shadowCameraNear    =  600
+      directional.shadowCameraFar     = -600
+      directional.shadowBias          =   -0.0001
+      directional.shadowDarkness      =    0.4
+      directional.shadowMapWidth      = directional.shadowMapHeight = 2048
+      scene.add( directional )
+
+      window.ambient = new THREE.AmbientLight( 0x666666 )
+      scene.add( ambient )
+
+
+      // create the stars
+      var pMaterial = new THREE.ParticleBasicMaterial({
+          color: 0xFFFFFF,
+          size: 10,
+          map: THREE.ImageUtils.loadTexture(
+            "media/particle.png"
+          ),
+          transparent: true,
+          blending: THREE.CustomBlending,
+          blendSrc: THREE.SrcAlphaFactor,
+          blendDst: THREE.OneMinusSrcColorFactor,
+          blendEquation: THREE.AddEquation
+      });
+      var particleCount = 1800;
+      var particles = new THREE.Geometry(), pMaterial
+      for(var p = 0; p < particleCount; p++) {
+        var pX = Math.random() * 1000 - 500,
+            pY = Math.random() * 1000 - 500,
+            pZ = Math.random() * 1000 - 500,
+            particle = new THREE.Vector3(pX, pY, pZ)
+        particles.vertices.push(particle);
+      }
+      scene.add(particles)
+      window.particleSystem = new THREE.ParticleSystem(particles, pMaterial);
+      particleSystem.sortParticles = true;
+      scene.add(particleSystem);
+
+      //clouds object
+      window.clouds = new THREE.Mesh(
+        new THREE.SphereGeometry( 50 + 1, 32, 32 ),
+        new THREE.MeshLambertMaterial({ 
+          map: THREE.ImageUtils.loadTexture( 'media/clouds.jpg' ),
+          transparent: true,
+          blending: THREE.CustomBlending,
+          blendSrc: THREE.SrcAlphaFactor,
+          blendDst: THREE.OneMinusSrcColorFactor,
+          blendEquation: THREE.AddEquation
+        })
+      )
+      clouds.position.set( 0, 0, 0 )
+      clouds.receiveShadow = true
+      clouds.castShadow = true
+      scene.add( clouds )
+
+
+      //create material
+      var earthBumpImage = THREE.ImageUtils.loadTexture( "media/earthBumpMap.jpg" );
+      var geometry = new THREE.SphereGeometry(50, 40, 40)
+      var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( 'media/earthSatTexture.jpg' ), ambient: 0x050505, color: 0xFFFFFF, specular: 0x555555, bumpMap: earthBumpImage, bumpScale: 19, metal: true } )
+      window.object = new THREE.Mesh( geometry, material );
+      scene.add(object);
+
+
+      //add camera
+      WIDTH      = window.innerWidth,
+      HEIGHT     = window.innerHeight,
+      VIEW_ANGLE = 45,
+      ASPECT     = WIDTH / HEIGHT,
+      NEAR       = 0.1,
+      FAR        = 10000
+      window.camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
+      camera.lookAt( scene.position )
+      camera.position.set( 0, 0, 290 )
+
+      var firstValidFrame = null;
+      var cameraRadius = 290;
+      var rotateY = 90, rotateX = 90;
+
+      Leap.loop(function(frame) {
+        if (frame.valid) {
+          clouds.rotation.y+=.002
+          object.rotation.y+=.0007
+
+          if (!firstValidFrame) firstValidFrame = frame;
+          var t = firstValidFrame.translation(frame);
+          console.log(t[1])
+          rotateX = map(t[0], 300, -300, 0, 360);
+          rotateY = -map(t[1], 200, -200, 0, 180);
+
+          // if(rotateY <= 1){
+          //   rotateY = 1
+          // }
+          // if(rotateY >= 179){
+          //   rotateY = 179
+          // }
+
+          camera.position.x = object.position.x + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.cos(rotateX * Math.PI/180)
+          camera.position.z = object.position.y + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.sin(rotateX * Math.PI/180)
+          camera.position.y = object.position.z + cameraRadius * Math.cos(rotateY * Math.PI/180)
+        }
+        camera.lookAt(scene.position);
+        renderer.render(scene, camera);
+      });
+    </script>
+    <div id="out"></div>
+  </body>
+</html>
