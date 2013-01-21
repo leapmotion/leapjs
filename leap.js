@@ -491,7 +491,7 @@ Controller.prototype.connect = function() {
 Controller.prototype.frame = function(num) {
   if (!num) num = 0;
   if (num >= this.historyLength) return new Leap.Controller.Frame.Invalid
-  var idx = (this.historyIdx - num - 1) % this.historyLength;
+  var idx = (this.historyIdx - num - 1 + this.historyLength) % this.historyLength;
   return this.history[idx];
 }
 
