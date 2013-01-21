@@ -121,21 +121,16 @@
 
       Leap.loop(function(frame) {
         if (frame.valid) {
+          //rotate cloud and earth independently
           clouds.rotation.y+=.002
           object.rotation.y+=.0007
 
           if (!firstValidFrame) firstValidFrame = frame;
           var t = firstValidFrame.translation(frame);
-          console.log(t[1])
+
+          //adjust spherical coordinates based on fingure position
           rotateX = map(t[0], 300, -300, 0, 360);
           rotateY = -map(t[1], 200, -200, 0, 180);
-
-          // if(rotateY <= 1){
-          //   rotateY = 1
-          // }
-          // if(rotateY >= 179){
-          //   rotateY = 179
-          // }
 
           camera.position.x = object.position.x + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.cos(rotateX * Math.PI/180)
           camera.position.z = object.position.y + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.sin(rotateX * Math.PI/180)
