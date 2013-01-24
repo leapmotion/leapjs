@@ -39,14 +39,6 @@
     var cursor = new Leap.UI.BoxedCursor({startsOn: Leap.UI.fingerDetector(2)})
     //var cursor = new Leap.UI.BoxedCursor()
 
-    cursor.onGrabStart = function() {
-      log("starting a grab!")
-    }
-
-    cursor.onGrabEnd = function() {
-      log("finishing a grab!")
-    }
-
     cursor.onStart = function() {
       pointer.style.display = "block";
     }

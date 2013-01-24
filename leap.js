@@ -2778,43 +2778,6 @@ Box.prototype.mapToDiv = function(vec, div) {
   ]
 }
 
-// Grab watcher
-
-var GrabRecognizer = UI.GrabRecognizer = function(opts, callback) {
-  if (callback === undefined) {
-    callback = opts
-    opts = undefined
-  }
-  this.counts = []
-  this.callback = callback
-  this.bufferSize = 10
-  this.state = undefined
-}
-
-GrabRecognizer.prototype.update = function(frame) {
-  this.counts.push(frame.pointables.length)
-  while (this.counts.length > this.bufferSize) {
-    this.counts.shift()
-  }
-  if (this.counts.length == this.bufferSize) {
-    var pastCount = 0, futureCount = 0
-    for (var i = 0; i != this.bufferSize / 2; i++) {
-      pastCount += this.counts[i]
-    }
-    for (var i = this.bufferSize / 2; i != this.bufferSize; i++) {
-      futureCount += this.counts[i]
-    }
-    console.log("pastCount:"+pastCount+" futureCount:"+futureCount)
-
-    var diff = (futureCount - pastCount) / (this.bufferSize / 2)
-    var newState = diff < 0
-    if ((diff >= 2 || diff <= -2) && this.state !== newState) {
-      this.state = newState
-      this.callback(newState)
-    }
-  }
-}
-
 // UI Cursor
 
 var Cursor = UI.Cursor = function(opts) {
@@ -2836,7 +2799,6 @@ Cursor.prototype.reportGrab = function(state) {
 
 Cursor.prototype.update = function(frame) {
   if (this.ttl) {
-    this.grabber.update(frame)
     // calculate the relative co-ords and report to div
     // nothing to track ...
     if (this.continuesOn(frame)) {
@@ -2852,7 +2814,6 @@ Cursor.prototype.update = function(frame) {
       }
     }
   } else {
-    this.grabber = new GrabRecognizer(this.reportGrab)
     if (this.startsOn(frame)) {
       this.ttl = (new Date()).getTime() + 1000;
       this.referenceFrame = frame;
