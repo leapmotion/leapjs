@@ -36,27 +36,37 @@
 
     var pointer = document.getElementById("pointer")
 
-    var box = new Leap.Box({size: 20})
-    var cursor = new Leap.UI.Cursor();
+    var cursor = new Leap.UI.BoxedCursor({startsOn: Leap.UI.fingerDetector(2)})
+    //var cursor = new Leap.UI.BoxedCursor()
 
-    cursor.onCreate = function() {
+    cursor.onGrabStart = function() {
+      log("starting a grab!")
+    }
+
+    cursor.onGrabEnd = function() {
+      log("finishing a grab!")
+    }
+
+    cursor.onStart = function() {
       pointer.style.display = "block";
     }
 
-    cursor.onKill = function() {
+    cursor.onEnd = function() {
       pointer.style.display = "none";
-      console.log(pointer.style.display)
     }
 
-    cursor.onMove = function(e) {
-      var point = box.translate(e)
+    cursor.onMove = function(vec) {
+      var point = cursor.box.mapToDiv(vec, el)
       pointer.style.top = point[1];
       pointer.style.left = point[0];
-      log(point[2])
+    }
+
+    cursor.onEdge = function(e) {
+      log(JSON.stringify(e))
     }
 
     Leap.loop(function(frame) {
-      cursor.update(frame)
+      cursor.update(frame)        
     })
 
   </script>
