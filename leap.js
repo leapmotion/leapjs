@@ -491,7 +491,7 @@ Controller.prototype.connect = function() {
 Controller.prototype.frame = function(num) {
   if (!num) num = 0;
   if (num >= this.historyLength) return new Leap.Controller.Frame.Invalid
-  var idx = (this.historyIdx - num - 1) % this.historyLength;
+  var idx = (this.historyIdx - num - 1 + this.historyLength) % this.historyLength;
   return this.history[idx];
 }
 
@@ -550,7 +550,7 @@ var Frame = exports.Frame = function(data) {
     var pointable = new window.Leap.Pointable(data.pointables[pointableIdx]);
     this.pointables.push(pointable);
     (pointable.tool ? this.tools : this.fingers).push(pointable);
-    if (pointable.handId) {
+    if (pointable.handId && handMap.hasOwnProperty(pointable.handId)) {
       var hand = this.hands[handMap[pointable.handId]]
       hand.pointables.push(pointable);
       (pointable.tool ? hand.tools : hand.fingers).push(pointable);
@@ -560,19 +560,39 @@ var Frame = exports.Frame = function(data) {
 }
 
 Frame.prototype.tool = function(id) {
-  return (id < 0 || id >= this.tools.length) ? window.Leap.Pointable.Invalid : this.tools[id]
+  for ( var i = 0; i < this.tools.length; i++ ) {
+    if (this.tools[i].id === id) {
+      return this.tools[i];
+    }
+  }
+  return window.Leap.Pointable.Invalid;
 }
 
 Frame.prototype.pointable = function(id) {
-  return (id < 0 || id >= this.pointables.length) ? window.Leap.Pointable.Invalid : this.pointables[id]
+  for ( var i = 0; i < this.pointables.length; i++ ) {
+    if (this.pointables[i].id === id) {
+      return this.pointables[i];
+    }
+  }
+  return window.Leap.Pointable.Invalid;
 }
 
 Frame.prototype.finger = function(id) {
-  return (id < 0 || id >= this.fingers.length) ? window.Leap.Pointable.Invalid : this.fingers[id]
+  for ( var i = 0; i < this.fingers.length; i++ ) {
+    if (this.fingers[i].id === id) {
+      return this.fingers[i];
+    }
+  }
+  return window.Leap.Pointable.Invalid;
 }
 
 Frame.prototype.hand = function(id) {
-  return (id < 0 || id >= this.hands.length) ? window.Leap.Hand.Invalid : this.hands[id]
+  for ( var i = 0; i < this.hands.length; i++ ) {
+    if (this.hands[i].id === id) {
+      return this.hands[i];
+    }
+  }
+  return window.Leap.Hand.Invalid;
 }
 
 Frame.prototype.toString = function() {
@@ -621,7 +641,12 @@ var Hand = exports.Hand = function(data) {
 }
 
 Hand.prototype.finger = function(id) {
-  return (id < 0 || id >= this.fingers.length) ? Leap.Pointable.Invalid : this.fingers[id]
+  for ( var i = 0; i < this.fingers.length; i++ ) {
+    if (this.fingers[i].id === id) {
+      return this.fingers[i];
+    }
+  }
+  return Leap.Pointable.Invalid
 }
 
 Hand.prototype.toString = function() {
@@ -693,6 +718,7 @@ var Motion = exports.Motion = {
 var Pointable = exports.Pointable = function(data) {
   this.valid = true
   this.id = data.id
+  this.handId = data.handId
   this.length = data.length
   this.tool = data.tool
   this.width = data.width
