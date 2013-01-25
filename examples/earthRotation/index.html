@@ -12,6 +12,9 @@
   </head>
   <body>
     <script>
+        /*example code by Robbie Tilton [www.RobbieTilton.com]*/
+
+        //map function to be used to map values from leap into proper degrees (0-360)
         function map(value, inputMin, inputMax, outputMin, outputMax){
         outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);  
         if(outVal >  outputMax){
@@ -31,7 +34,7 @@
       document.body.appendChild(renderer.domElement); 
 
 
-      //  Create a Directional light as pretend sunshine.
+      // create a Directional light as pretend sunshine.
       directional = new THREE.DirectionalLight( 0xCCCCCC, 1.2 )
       directional.castShadow = true
       directional.position.set( 100, 200, 300 )
@@ -52,6 +55,7 @@
 
 
       // create the stars
+      //particle image can be found here: http://www.aerotwist.com/tutorials/creating-particles-with-three-js/images/particle.png
       var pMaterial = new THREE.ParticleBasicMaterial({
           color: 0xFFFFFF,
           size: 10,
@@ -79,6 +83,7 @@
       scene.add(particleSystem);
 
       //clouds object
+      //cloud image can be found here: http://wiki.fis-ski.com/images/Cloud_combined.jpg
       window.clouds = new THREE.Mesh(
         new THREE.SphereGeometry( 50 + 1, 32, 32 ),
         new THREE.MeshLambertMaterial({ 
@@ -97,9 +102,11 @@
 
 
       //create material
+      //the bump map image can be found here: http://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/1024px-Srtm_ramp2.world.21600x10800.jpg
       var earthBumpImage = THREE.ImageUtils.loadTexture( "media/earthBumpMap.jpg" );
       var geometry = new THREE.SphereGeometry(50, 40, 40)
-      var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( 'media/earthSatTexture.jpg' ), ambient: 0x050505, color: 0xFFFFFF, specular: 0x555555, bumpMap: earthBumpImage, bumpScale: 19, metal: true } )
+      //earth sat image can be found here: http://examples.maptiler.org/map-reprojection-html5-canvas/world1024.jpg
+      var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( 'media/earthSatTexture.jpg' ), ambient: 0x050505, color: 0xFFFFFF, specular: 0x555555, bumpMap: earthBumpImage, bumpScale: 19, metal: true } );
       window.object = new THREE.Mesh( geometry, material );
       scene.add(object);
 
