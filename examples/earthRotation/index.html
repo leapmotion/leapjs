@@ -2,17 +2,15 @@
   <head>
     <title>Camera - Leap</title>
     <style>
+      body{margin: 0px; padding: 0px;}
       canvas { width: 100%; height: 100%; background-color: black; }
     </style>
     <script src="scripts/three.js"></script>
     <script src="scripts/leap.js"></script>
-    <style>
-    body{margin: 0px; padding: 0px;}
-    </style>
   </head>
   <body>
     <script>
-        /*example code by Robbie Tilton [www.RobbieTilton.com]*/
+        /*example coded by Robbie Tilton [www.RobbieTilton.com]*/
 
         //map function to be used to map values from leap into proper degrees (0-360)
         function map(value, inputMin, inputMax, outputMin, outputMax){
@@ -122,10 +120,13 @@
       camera.lookAt( scene.position )
       camera.position.set( 0, 0, 290 )
 
+      //initite variables
       var firstValidFrame = null;
       var cameraRadius = 290;
       var rotateY = 90, rotateX = 90;
 
+
+      //request animation frame and connect to leap socket
       Leap.loop(function(frame) {
         if (frame.valid) {
           //rotate cloud and earth independently
@@ -135,7 +136,7 @@
           if (!firstValidFrame) firstValidFrame = frame;
           var t = firstValidFrame.translation(frame);
 
-          //adjust spherical coordinates based on fingure position
+          //adjust spherical coordinates based on finger position
           rotateX = map(t[0], 300, -300, 0, 360);
           rotateY = -map(t[1], 200, -200, 0, 180);
 
