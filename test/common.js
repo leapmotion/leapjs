@@ -5,6 +5,9 @@ var fingerId = 0
 var fakeFrame = function(opts) {
   if (opts === undefined) opts = {};
 
+  handId = 0
+  fingerId = 0
+
   return {
     id: opts.id || ++frameId,
     valid: true,
@@ -17,8 +20,9 @@ var fakeFrame = function(opts) {
 }
 
 var fakeHand = function(opts) {
+  handId++
   return {
-    id: ++handId,
+    id: handId - 1,
     valid: true,
     palm: [],
     r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
@@ -27,8 +31,9 @@ var fakeHand = function(opts) {
 }
 
 var fakeFinger = function() {
+  fingerId++
   return {
-    id: ++fingerId,
+    id: fingerId - 1,
     length: 5,
     tool: false,
     width: 5,

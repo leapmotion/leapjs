@@ -534,7 +534,9 @@ var Frame = exports.Frame = function(data) {
   this.id = data.id
   this.timestamp = data.timestamp
   this.hands = []
+  this.handsMap = {}
   this.pointables = []
+  this.pointablesMap = {}
   this.tools = []
   this.fingers = []
   this._translation = data.t;
@@ -544,11 +546,13 @@ var Frame = exports.Frame = function(data) {
   for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
     var hand = new window.Leap.Hand(data.hands[handIdx]);
     this.hands.push(hand)
+    this.handsMap[hand.id] = hand
     handMap[hand.id] = handIdx
   }
   for (var pointableIdx = 0, pointableCount = data.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
     var pointable = new window.Leap.Pointable(data.pointables[pointableIdx]);
     this.pointables.push(pointable);
+    this.pointablesMap[pointable.id] = pointable;
     (pointable.tool ? this.tools : this.fingers).push(pointable);
     if (pointable.handId && handMap.hasOwnProperty(pointable.handId)) {
       var hand = this.hands[handMap[pointable.handId]]
@@ -560,39 +564,21 @@ var Frame = exports.Frame = function(data) {
 }
 
 Frame.prototype.tool = function(id) {
-  for ( var i = 0; i < this.tools.length; i++ ) {
-    if (this.tools[i].id === id) {
-      return this.tools[i];
-    }
-  }
-  return window.Leap.Pointable.Invalid;
+  var pointable = this.pointable(id)
+  return pointable.tool ? pointable : Pointable.Invalid
 }
 
 Frame.prototype.pointable = function(id) {
-  for ( var i = 0; i < this.pointables.length; i++ ) {
-    if (this.pointables[i].id === id) {
-      return this.pointables[i];
-    }
-  }
-  return window.Leap.Pointable.Invalid;
+  return this.pointablesMap[id] || Pointable.Invalid
 }
 
 Frame.prototype.finger = function(id) {
-  for ( var i = 0; i < this.fingers.length; i++ ) {
-    if (this.fingers[i].id === id) {
-      return this.fingers[i];
-    }
-  }
-  return window.Leap.Pointable.Invalid;
+  var pointable = this.pointable(id)
+  return !pointable.tool ? pointable : Pointable.Invalid
 }
 
 Frame.prototype.hand = function(id) {
-  for ( var i = 0; i < this.hands.length; i++ ) {
-    if (this.hands[i].id === id) {
-      return this.hands[i];
-    }
-  }
-  return window.Leap.Hand.Invalid;
+  return this.handsMap[id] || Hand.Invalid;
 }
 
 Frame.prototype.toString = function() {
@@ -617,11 +603,16 @@ Frame.Invalid = {
   valid: false,
   fingers: [],
   pointables: [],
+  pointable: function() { return window.Leap.Pointable.Invalid },
   finger: function() { return window.Leap.Pointable.Invalid },
   hand: function() { return window.Leap.Hand.Invalid },
   toString: function() { return "invalid frame" },
   dump: function() { return this.toString() }
 }
+
+Leap.extend(Frame.Invalid, Motion)
+
+
 var Hand = exports.Hand = function(data) {
   this.id = data.id
   this.palmPosition = data.palmPosition
@@ -654,6 +645,7 @@ Hand.prototype.toString = function() {
 }
 
 Hand.Invalid = { valid: false }
+Leap.extend(Hand.Invalid, Motion)
 
 exports.loop = function(callback) {
   var controller = new Leap.Controller()

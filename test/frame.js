@@ -4,8 +4,8 @@ describe('Frame', function(){
       var data = fakeFrame({fingers: 2})
       var frame = new window.Leap.Frame(data);
       assert.equal(2, frame.fingers.length);
-      assert(frame.finger(0).id);
-      assert(frame.finger(1).id);
+      assert(frame.finger(0).valid);
+      assert(frame.finger(1).valid);
     })
 
     it('should return an invalid finger when an invalid finger is requested', function(){
@@ -21,8 +21,8 @@ describe('Frame', function(){
       var data = fakeFrame({fingers: 2})
       var frame = new window.Leap.Frame(data);
       assert.equal(2, frame.fingers.length);
-      assert(frame.fingers[0].id);
-      assert(frame.fingers[1].id);
+      assert(frame.fingers[0].valid);
+      assert(frame.fingers[1].valid);
     })
   })
 
@@ -31,7 +31,7 @@ describe('Frame', function(){
       var data = fakeFrame({hands: 1})
       var frame = new window.Leap.Frame(data);
       assert.equal(1, frame.hands.length);
-      assert(frame.hand(0).id);
+      assert(frame.hand(0).valid);
     })
 
     it('should return an invalid hand when an invalid hand is requested', function(){
@@ -47,7 +47,7 @@ describe('Frame', function(){
       var data = fakeFrame({hands:1})
       var frame = new window.Leap.Frame(data);
       assert.equal(1, frame.hands.length);
-      assert(frame.hands[0].id);
+      assert(frame.hands[0].valid);
     })
   })
 })
