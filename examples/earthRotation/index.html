@@ -1,5 +1,17 @@
 <html>
   <head>
+    <!-- example coded by Robbie Tilton [www.RobbieTilton.com] 
+    Please note - this example uses several images.  The links to download them can be found below:
+      + particle image can be found here: http://www.aerotwist.com/tutorials/creating-particles-with-three-js/images/particle.png
+      + cloud image can be found here: http://wiki.fis-ski.com/images/Cloud_combined.jpg
+      + the bump map image can be found here: http://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/1024px-Srtm_ramp2.world.21600x10800.jpg
+
+    If you're new to three.js and you're using Chrome to run the web app locally you'll receive cross-domain issues with
+    loading in the files.  To run it locally a simple python command you can use in your terminal is 'python -m SimpleHTTPServer 8080'
+    This will resolve cross-domain issues with Chrome and the example will be viewable on localhost:8000
+
+    If you plan to put this up on a webpage you may also want to reduce the image sizes after you download them.  Photoshop > Save for Web Devices
+    -->
     <title>Earth Rotation - Leap</title>
     <style>
       body{margin: 0px; padding: 0px;}
@@ -10,8 +22,6 @@
   </head>
   <body>
     <script>
-        /*example coded by Robbie Tilton [www.RobbieTilton.com]*/
-
         //map function to be used to map values from leap into proper degrees (0-360)
         function map(value, inputMin, inputMax, outputMin, outputMax){
         outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);  
@@ -53,7 +63,6 @@
 
 
       // create the stars
-      //particle image can be found here: http://www.aerotwist.com/tutorials/creating-particles-with-three-js/images/particle.png
       var pMaterial = new THREE.ParticleBasicMaterial({
           color: 0xFFFFFF,
           size: 10,
@@ -81,7 +90,6 @@
       scene.add(particleSystem);
 
       //clouds object
-      //cloud image can be found here: http://wiki.fis-ski.com/images/Cloud_combined.jpg
       window.clouds = new THREE.Mesh(
         new THREE.SphereGeometry( 50 + 1, 32, 32 ),
         new THREE.MeshLambertMaterial({ 
@@ -100,7 +108,6 @@
 
 
       //create material
-      //the bump map image can be found here: http://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/1024px-Srtm_ramp2.world.21600x10800.jpg
       var earthBumpImage = THREE.ImageUtils.loadTexture( "media/earthBumpMap.jpg" );
       var geometry = new THREE.SphereGeometry(50, 40, 40)
       //earth sat image can be found here: http://examples.maptiler.org/map-reprojection-html5-canvas/world1024.jpg
