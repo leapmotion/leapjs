@@ -154,6 +154,15 @@
         camera.lookAt(scene.position);
         renderer.render(scene, camera);
       });
+
+      //resize method
+      window.addEventListener( 'resize', onWindowResize, false );
+      function onWindowResize(){
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+
+          renderer.setSize( window.innerWidth, window.innerHeight );
+      }
     </script>
     <div id="out"></div>
   </body>
