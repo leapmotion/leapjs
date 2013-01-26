@@ -420,8 +420,9 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 })();
 
 	var Connection = exports.Connection = function(opts) {
-  if (opts && opts.frame) this.frameHandler = opts.frame;
-  if (opts && opts.ready) this.readyHandler = opts.ready;
+  this.host = opts && opts.host || "127.0.0.1"
+  if (opts && opts.frame) this.frameHandler = opts.frame
+  if (opts && opts.ready) this.readyHandler = opts.ready
 };
 
 Connection.prototype.handleOpen = function() {
@@ -437,7 +438,7 @@ Connection.prototype.handleClose = function() {
 };
 
 Connection.prototype.createSocket = function() {
-  this.socket = new WebSocket("ws://127.0.0.1:6437");
+  this.socket = new WebSocket("ws://" + this.host + ":6437");
 }
 
 Connection.prototype.connect = function() {
@@ -519,7 +520,6 @@ Connection.prototype.connect = function() {
  *    controller.connect()
  */
 var Controller = exports.Controller = function(opts) {
-  this.opts = opts;
   this.readyListeners = [];
   this.frameListeners = [];
   this.history = [];
@@ -530,6 +530,7 @@ var Controller = exports.Controller = function(opts) {
   this.lastFrame = Leap.Frame.Invalid
   this.lastValidFrame = Leap.Frame.Invalid
   this.connection = new Leap.Connection({
+    host: opts && opts.host,
     ready: function(version) {
       controller.version = version;
       controller.dispatchReadyEvent();
