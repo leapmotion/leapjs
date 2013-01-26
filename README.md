@@ -39,7 +39,7 @@ Inside the examples directory are a few great examples. To get them running, do 
 
 * Run `npm install`
 * Run `./node_modules/.bin/static .`
-* Point your browser at http://local.leapmotion:8080/examples and enjoy
+* Point your browser at http://localhost:8080/examples and enjoy
 
 ## Tests
 
