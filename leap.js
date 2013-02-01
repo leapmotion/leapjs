@@ -1311,7 +1311,7 @@ var Motion = exports.Motion = {
    * and that specified in the fromFrame parameter.
    */
   scaleFactor: function(fromFrame) {
-    if (!this.valid || !fromFrame.valid) 1.0;
+    if (!this.valid || !fromFrame.valid) return 1.0;
     return Math.exp(this._scaleFactor - fromFrame._scaleFactor);
   }
 }
