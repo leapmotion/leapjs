@@ -14,8 +14,6 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement); 
 
-      var firstValidFrame = null;
-
       var geometry = new THREE.CubeGeometry( 200, 200, 200 );
 
       for ( var i = 0; i < geometry.faces.length; i ++ ) {
@@ -28,18 +26,34 @@
       scene.add(cube);
 
       var camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-      var startX = 0;
-      var startY = 150;
-      var startZ = 500;
+      camera.position.x = 0;
+      camera.position.y = 150;
+      camera.position.z = 500;
+      var startX = camera.position.x;
+      var startY = camera.position.y;
+      var startZ = camera.position.z;
+      var state  = null;
+      var startFrame = null;
 
       Leap.loop(function(frame) {
         if (frame.valid) {
-          if (!firstValidFrame) firstValidFrame = frame;
-          var t = firstValidFrame.translation(frame);
-
-          camera.position.x = t[0] * 10 + startX;
-          camera.position.y = t[1] * 10  + startY;
-          camera.position.z = t[2] * 10  + startZ;
+          if (state == null) {
+            if (frame.hands.length > 0 && frame.pointables.length <= 1) {
+              startFrame = frame;
+              startX = camera.position.x;
+              startY = camera.position.y;
+              startZ = camera.position.z;
+              state = 'moving';
+            }
+          } else if (state == 'moving') {
+            var t = startFrame.translation(frame);
+            camera.position.x = t[0] * 10 + startX;
+            camera.position.y = t[1] * 10 + startY;
+            camera.position.z = t[2] * 10 + startZ;
+            if (frame.hands.length == 1 || frame.pointables.legnth > 1) {
+              state = null;
+            }
+          }
         }
         renderer.render(scene, camera);
       });
