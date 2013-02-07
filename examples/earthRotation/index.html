@@ -154,7 +154,7 @@
           rotateY = -curY
 
           zoom = Math.max(0, t[2]);
-          zoomFactor = 1 + (zoom / 300);
+          zoomFactor = 1/(1 + (zoom / 150));
 
           //adjust 3D spherical coordinates of the camera
           camera.position.x = earth.position.x + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.cos(rotateX * Math.PI/180)
@@ -179,3 +179,4 @@
     </script>
   </body>
 </html>
+
