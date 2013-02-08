@@ -16,7 +16,7 @@
       }
       Leap.loop(function(frame) {
         latestFrame = frame
-        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<pre>"+(pausedFrame || latestFrame).dump()+"</pre>"
+        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<div>"+(pausedFrame || latestFrame).dump()+"</div>"
       })
     </script>
   </head>

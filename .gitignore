@@ -2,3 +2,4 @@
 .*.swp
 *.bak
 node_modules
+*.idea
