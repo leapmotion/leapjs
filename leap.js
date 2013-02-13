@@ -419,7 +419,25 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   
 })();
 
-	var Connection = exports.Connection = function(opts) {
+	var CircularBuffer = exports.CircularBuffer = function(size) {
+  this.pos = 0
+  this._buf = []
+  this.size = size
+}
+
+CircularBuffer.prototype.get = function(i) {
+  if (i == undefined) i = 0;
+  if (i > this.size) return null;
+  if (i > this._buf.length) return null;
+  return this._buf[this.pos - i % this.length]
+}
+
+CircularBuffer.prototype.push = function(o) {
+  this._buf[this.pos % this.length] = o
+  this.pos++
+}
+
+var Connection = exports.Connection = function(opts) {
   this.host = opts && opts.host || "127.0.0.1"
   if (opts && opts.frame) this.frameHandler = opts.frame
   if (opts && opts.ready) this.readyHandler = opts.ready
@@ -427,223 +445,112 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 
 Connection.prototype.handleOpen = function() {
   if (this.openTimer) {
-    clearTimeout(this.openTimer);
-    this.openTimer = undefined;
+    clearTimeout(this.openTimer)
+    this.openTimer = undefined
   }
 };
 
 Connection.prototype.handleClose = function() {
-  var _this = this;
-  this.openTimer = setTimeout(function() { console.log("reconnecting..."); _this.connect(); }, 1000)
+  var connection = this;
+  this.openTimer = setTimeout(function() { console.log("reconnecting..."); connection.connect(); }, 1000)
 };
 
-Connection.prototype.createSocket = function() {
-  this.socket = new WebSocket("ws://" + this.host + ":6437");
-}
-
 Connection.prototype.connect = function() {
-  if (!this.socket) {
-    var _this = this
-    this.createSocket()
-    this.socket.onopen = function() {
-      _this.handleOpen()
-    }
-    this.socket.onmessage = function(message) {
-      var data = JSON.parse(message.data);
-      if (data.version) {
-        _this.serverVersion = data.version
-        if (_this.readyHandler) _this.readyHandler(_this.serverVersion)
-      } else {
-        if (_this.frameHandler) _this.frameHandler(new Frame(data))
-      }
-    }
-    this.socket.onclose = function(message) {
-      _this.handleClose()
+  if (this.socket) return
+  var connection = this
+  this.socket = new WebSocket("ws://" + this.host + ":6437")
+  this.socket.onopen = connection.handleOpen
+  this.socket.onmessage = function(message) {
+    var data = JSON.parse(message.data)
+    if (data.version) {
+      connection.serverVersion = data.version
+      if (connection.readyHandler) connection.readyHandler(connection.serverVersion)
+    } else {
+      if (connection.frameHandler) connection.frameHandler(new Frame(data))
     }
   }
+  this.socket.onclose = connection.handleClose
 }
 
-/**
- * Constructs a Controller object.
- * @class Leap.Controller
- * @classdesc
- * The Controller object manages the connection to the Leap. Depending on how 
- * you use the LeapJS library, you may or may not interact with a controller 
- * object directly. 
- *
- * You can get the most recent frame of Leap data from a Controller object at 
- * any time with the frame() method. If your application has a natural fame 
- * rate, an efficient strategy is to call the frame() method during your 
- * application's update loop. (This is the strategy used by the Leap.loop()
- * mechanism.) 
- *
- * **Using an implicit Controller**
- *
- * If you use the {@link Leap.loop}() mechanism, a Controller is created for 
- * you in the background.
- * ```javascript
- *    Leap.loop( function( frame ) {
- *        // ... your code here
- *    })
- * ```
- * The loop function creates the controller, establishes the 
- * connection to the Leap application and calls your handler function on the 
- * browser's animation interval (using window.requestAnimationFrame()). 
- *
- * **Using an explicit Controller**
- * If you don't use Leap.loop, create and connect your own Controller as 
- * follows:
- *
- * 1. Create a Controller object: var controller = new Leap.Controller()
- * 2. Optionally, add callback functions:
- *
- *    * onReady handlers are called when the controller is connected.
- *    * onFrame handlers are called when a new Frame is available.
- *
- *    Note that the Leap frame rate can exceed 200 frames per second, depending
- *    on the operating mode of the Leap application. Take care when using the 
- *    onFrame handler mechanism to avoid taking too much processing time away
- *    from other parts of your application. 
- * 3. Call the Controller connect() method.
- * 4. If you are not using onFrame handlers, call Controller.frame() whenever
- *    your application is ready to process a set of Leap tracking data (for 
- *    example, in the update handler of an animation loop).
- *
- * @example
- *    var controller = new Leap.Controller();
- *    controller.onFrame(function() {
- *        console.log("hello")
- *        console.log(controller.frame().id)
- *        console.log(controller.frame().fingers.length)
- *        console.log(controller.frame().finger(0))
- *    })
- *    controller.connect()
- */
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return
+  this.socket.close()
+  this.socket = undefined
+}
+
 var Controller = exports.Controller = function(opts) {
-  this.readyListeners = [];
-  this.frameListeners = [];
-  this.history = [];
-  this.historyIdx = 0
-  this.historyLength = 200
-  this.hasFocus = true
+  this.listeners = { frame: [], animationFrame: [] }
+  this.history = new CircularBuffer(200)
   var controller = this
   this.lastFrame = Leap.Frame.Invalid
   this.lastValidFrame = Leap.Frame.Invalid
   this.connection = new Leap.Connection({
     host: opts && opts.host,
-    ready: function(version) {
-      controller.version = version;
-      controller.dispatchReadyEvent();
-    },
     frame: function(frame) {
       controller.processFrame(frame)
     }
   })
 }
 
-/**
- * Connects to the Leap application through a WebSocket connection.
- *
- * When the connection is successful, the controller invokes any queued
- * onReady handlers.
- *
- * @method Leap.Controller.prototype.connect
- */
 Controller.prototype.connect = function() {
-  this.connection.connect();
-}
-
-/**
- * Returns a frame of tracking data from the Leap. Use the optional
- * history parameter to specify which frame to retrieve. Call frame() or
- * frame(0) to access the most recent frame; call frame(1) to access the
- * previous frame, and so on. If you use a history value greater than the
- * number of stored frames, then the controller returns an invalid frame.
- *
- * @method Leap.Controller.prototype.frame
- * @param {Integer} num The age of the frame to return, counting backwards from
- * the most recent frame (0) into the past and up to the maximum age (59).
- * @returns {Frame} The specified frame; or, if no history parameter is specified,
- * the newest frame. If a frame is not available at the specified history
- * position, an invalid Frame is returned.
- */
-Controller.prototype.frame = function(num) {
-  if (!num) num = 0;
-  if (num >= this.historyLength) return new Leap.Controller.Frame.Invalid
-  var idx = (this.historyIdx - num - 1 + this.historyLength) % this.historyLength;
-  return this.history[idx];
-}
-
-/**
- * Assigns a handler function to be called when the Controller object connects 
- * to the Leap software. The handler is called immediately if the controller is
- * already connected. Otherwise, the handler function is put in a queue to
- * be called later.
- *
- * @method Leap.Controller.prototype.onReady
- * @param {function} handler A function to be called when the controller is ready.
- */
-Controller.prototype.onReady = function(handler) {
-  if (this.ready) {
-    handler()
-  } else {
-    this.readyListeners.push(handler);
+  this.connection.connect()
+  var controller = this
+  var callback = function() {
+    controller.dispatchEvent('animationFrame', controller.lastFrame)
+    window.requestAnimFrame(callback)
   }
+  window.requestAnimFrame(callback)
 }
 
-/**
- * Assigns a handler function to be called when the Controller object receives 
- * a frame from the Leap software. Every assigned handler function is pushed 
- * into a queue and called for each frame. Removing handlers from the queue is
- * not supported.
- *
- * @method Leap.Controller.prototype.onFrame
- * @param {function} handler A function to be called for each frame of Leap data.
- */
-Controller.prototype.onFrame = function(handler) {
-  this.frameListeners.push(handler);
-}
-
-/** 
- * For internal use. 
- * @private
- */
-Controller.prototype.processFrame = function(frame) {
-  frame.controller = this
-  this.lastFrame = this.history[this.historyIdx] = frame
-  // TODO add test for lastValidFrame
-  if (this.lastFrame.valid) this.lastValidFrame = this.lastFrame
-  this.historyIdx = (this.historyIdx + 1) % this.historyLength
-  this.dispatchFrameEvent()
-}
-
-/** 
- * For internal use. 
- * @private
- */
-Controller.prototype.dispatchReadyEvent = function() {
-  this.ready = true
-  for (var readyIdx = 0, readyCount = this.readyListeners.length; readyIdx != readyCount; readyIdx++) {
-    this.readyListeners[readyIdx]();
-  }
+Controller.prototype.disconnect = function() {
   this.connection.connect()
 }
 
-/** 
- * For internal use. 
- * @private
- */
-Controller.prototype.dispatchFrameEvent = function() {
-  for (var frameIdx = 0, frameCount = this.frameListeners.length; frameIdx != frameCount; frameIdx++) {
-    this.frameListeners[frameIdx](this);
-  }
+Controller.prototype.frame = function(num) {
+  return this.history.get(idx) || Leap.Controller.Frame.Invalid;
 }
 
+Controller.prototype.on = function(type, callback) {
+  this.listeners[type].push(callback)
+}
+
+Controller.prototype.loop = function(callback) {
+  this.on('animationFrame', callback)
+  this.connect()
+}
+
+Controller.prototype.addStep = function(step) {
+  if (!this.pipeline) this.pipeline = new Pipeline(this)
+  this.pipeline.addStep(step)
+}
+
+Controller.prototype.processFrame = function(frame) {
+  if (this.pipeline) {
+    var frame = this.pipeline.run(frame)
+    if (!frame) frame = Frame.Invalid
+  }
+  this.processRawFrame(frame)
+}
+
+Controller.prototype.processRawFrame = function(frame) {
+  frame.controller = this
+  this.history.push(frame)
+  this.lastFrame = frame
+  if (this.lastFrame.valid) this.lastValidFrame = this.lastFrame
+  this.historyIdx = (this.historyIdx + 1) % this.historyLength
+  this.dispatchEvent('frame', frame)
+}
+
+Controller.prototype.dispatchEvent = function(type, e) {
+  for (var index = 0, count = this.listeners[type].length; index != count; index++) {
+    this.listeners[type][index](e);
+  }
+}
 /**
  * Constructs a Frame object.
  *
  * Frame instances created with this constructor are invalid.
- * Get valid Frame objects by calling the 
+ * Get valid Frame objects by calling the
  * {@link Leap.Controller#frame}() function.
  *
  * @class Leap.Frame
@@ -691,13 +598,13 @@ var Frame = exports.Frame = function(data) {
    * have consecutive increasing values.
    * @member Leap.Frame.prototype.id
    * @type {String}
-   */  
+   */
   this.id = data.id
   /**
    * The frame capture time in microseconds elapsed since the Leap started.
    * @member Leap.Frame.prototype.timestamp
    * @type {Number}
-   */   
+   */
   this.timestamp = data.timestamp
   /**
    * The list of Hand objects detected in this frame, given in arbitrary order.
@@ -713,7 +620,7 @@ var Frame = exports.Frame = function(data) {
    * given in arbitrary order. The list can be empty if no fingers or tools are
    * detected.
    *
-   * @member Leap.Frame.prototype.pointables[] 
+   * @member Leap.Frame.prototype.pointables[]
    * @type {Leap.Pointable}
    */
   this.pointables = []
@@ -721,7 +628,7 @@ var Frame = exports.Frame = function(data) {
    * The list of Tool objects detected in this frame, given in arbitrary order.
    * The list can be empty if no tools are detected.
    *
-   * @member Leap.Frame.prototype.tools[] 
+   * @member Leap.Frame.prototype.tools[]
    * @type {Leap.Pointable}
    */
   this.tools = []
@@ -775,7 +682,7 @@ var Frame = exports.Frame = function(data) {
  * @method Leap.Frame.prototype.tool
  * @param {String} id The ID value of a Tool object from a previous frame.
  * @returns {Leap.Pointable | Leap.Pointable.Invalid} The tool with the
- * matching ID if one exists in this frame; otherwise, an invalid Pointable object 
+ * matching ID if one exists in this frame; otherwise, an invalid Pointable object
  * is returned.
  */
 Frame.prototype.tool = function(id) {
@@ -798,7 +705,7 @@ Frame.prototype.tool = function(id) {
  *
  * @method Leap.Frame.prototype.pointable
  * @param {String} id The ID value of a Pointable object from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The Pointable object with 
+ * @returns {Leap.Pointable | Leap.Pointable.Invalid} The Pointable object with
  * the matching ID if one exists in this frame;
  * otherwise, an invalid Pointable object is returned.
  */
@@ -821,8 +728,8 @@ Frame.prototype.pointable = function(id) {
  *
  * @method Leap.Frame.prototype.finger
  * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The finger with the 
- * matching ID if one exists in this frame; otherwise, an invalid Pointable 
+ * @returns {Leap.Pointable | Leap.Pointable.Invalid} The finger with the
+ * matching ID if one exists in this frame; otherwise, an invalid Pointable
  * object is returned.
  */
 Frame.prototype.finger = function(id) {
@@ -845,7 +752,7 @@ Frame.prototype.finger = function(id) {
  *
  * @method Leap.Frame.prototype.hand
  * @param {String} id The ID value of a Hand object from a previous frame.
- * @returns {Leap.Hand | Leap.Hand.Invalid} The Hand object with the matching 
+ * @returns {Leap.Hand | Leap.Hand.Invalid} The Hand object with the matching
  * ID if one exists in this frame; otherwise, an invalid Hand object is returned.
  */
 Frame.prototype.hand = function(id) {
@@ -863,7 +770,7 @@ Frame.prototype.toString = function() {
 }
 
 /**
- * Returns a JSON-formatted string containing the hands and pointables in this 
+ * Returns a JSON-formatted string containing the hands and pointables in this
  * frame.
  *
  * @method Leap.Frame.prototype.dump
@@ -889,7 +796,7 @@ Frame.prototype.dump = function() {
  *
  * You can use this invalid Frame in comparisons testing
  * whether a given Frame instance is valid or invalid. (You can also check the
- * {@link Leap.Frame#valid} property.) 
+ * {@link Leap.Frame#valid} property.)
  *
  * @constant
  * @type {Leap.Frame}
@@ -945,7 +852,7 @@ var Hand = exports.Hand = function(data) {
    * or when it is withdrawn from or reaches the edge of the Leap field of view),
    * the Leap may assign a new ID when it detects the hand in a future frame.
    *
-   * Use the ID value with the {@link Leap.Frame.hand}() function to find this 
+   * Use the ID value with the {@link Leap.Frame.hand}() function to find this
    * Hand object in future frames.
    *
    * @member Leap.Hand.prototype.id
@@ -995,7 +902,7 @@ var Hand = exports.Hand = function(data) {
    * <img src="images/Leap_Hand_Ball.png"/>
    * @member Leap.Hand.prototype.sphereCenter
    * @type {Array: [x,y,z]}
-   */   
+   */
   this.sphereCenter = data.sphereCenter
   /**
    * The radius of a sphere fit to the curvature of this hand, in millimeters.
@@ -1024,7 +931,7 @@ var Hand = exports.Hand = function(data) {
    * You can also get only the tools using the Hand.tools[] list or
    * only the fingers using the Hand.fingers[] list.
    *
-   * @member Leap.Hand.prototype.pointables[] 
+   * @member Leap.Hand.prototype.pointables[]
    * @type {Leap.Pointable}
    */
   this.pointables = []
@@ -1044,7 +951,7 @@ var Hand = exports.Hand = function(data) {
    *
    * The list can be empty if no tools held by this hand are detected.
    *
-   * @member Leap.Hand.prototype.tools[] 
+   * @member Leap.Hand.prototype.tools[]
    * @type {Leap.Pointable}
    */
   this.tools = []
@@ -1057,21 +964,21 @@ var Hand = exports.Hand = function(data) {
 /**
  * The finger with the specified ID attached to this hand.
  *
- * Use this function to retrieve a Pointable object representing a finger 
+ * Use this function to retrieve a Pointable object representing a finger
  * attached to this hand using an ID value obtained from a previous frame.
  * This function always returns a Pointable object, but if no finger
  * with the specified ID is present, an invalid Pointable object is returned.
  *
- * Note that the ID values assigned to fingers persist across frames, but only 
- * until tracking of a particular finger is lost. If tracking of a finger is 
- * lost and subsequently regained, the new Finger object representing that 
- * finger may have a different ID than that representing the finger in an 
+ * Note that the ID values assigned to fingers persist across frames, but only
+ * until tracking of a particular finger is lost. If tracking of a finger is
+ * lost and subsequently regained, the new Finger object representing that
+ * finger may have a different ID than that representing the finger in an
  * earlier frame.
  *
  * @method Leap.Hand.prototype.finger
  * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The Finger object with 
- * the matching ID if one exists for this hand in this frame; otherwise, an 
+ * @returns {Leap.Pointable | Leap.Pointable.Invalid} The Finger object with
+ * the matching ID if one exists for this hand in this frame; otherwise, an
  * invalid Finger object is returned.
  */
 Hand.prototype.finger = function(id) {
@@ -1104,49 +1011,38 @@ Leap.extend(Hand.Invalid, Motion)
 
 /**
  * The Leap.loop() function passes a frame of Leap data to your
- * callback function and then calls window.requestAnimationFrame() after 
+ * callback function and then calls window.requestAnimationFrame() after
  * executing your callback function.
- * 
+ *
  * Leap.loop() sets up the Leap controller and WebSocket connection for you.
  * You do not need to create your own controller when using this method.
  *
- * Your callback function is called on an interval determined by the client 
+ * Your callback function is called on an interval determined by the client
  * browser. Typically, this is on an interval of 60 frames/second. The most
  * recent frame of Leap data is passed to your callback function. If the Leap
  * is producing frames at a slower rate than the browser frame rate, the same
- * frame of Leap data can be passed to your function in successive animation 
+ * frame of Leap data can be passed to your function in successive animation
  * updates.
  *
  * As an alternative, you can create your own Controller object and use a
  * {@link Leap.Controller#onFrame onFrame} callback to process the data at
- * the frame rate of the Leap device. See {@link Leap.Controller} for an 
+ * the frame rate of the Leap device. See {@link Leap.Controller} for an
  * example.
  *
  * @method Leap.loop
- * @param {function} callback A function called when the browser is ready to 
- * draw to the screen. The most recent {@link Leap.Frame} object is passed to  
+ * @param {function} callback A function called when the browser is ready to
+ * draw to the screen. The most recent {@link Leap.Frame} object is passed to
  * your callback function.
  * @example
  *    Leap.loop( function( frame ) {
  *        // ... your code here
  *    })
  */
-var loopController = null
+var loopController = undefined
 
 exports.loop = function(callback) {
-  if (loopController) {
-    loopController.connect.disconnect();
-    loopController = null
-  }
-
-  loopController = new Leap.Controller()
-  loopController.onReady(function() {
-    var drawCallback = function() {
-      callback(loopController.lastFrame)
-      window.requestAnimFrame(drawCallback)
-    };
-    window.requestAnimFrame(drawCallback)
-  })
+  if (!loopController) loopController = new Leap.Controller()
+  loopController.on('loop', callback)
   loopController.connect()
 }
 
@@ -1167,8 +1063,8 @@ var multiply = function(vec, c) {
 
 /**
  * A utility function to normalize a vector represented by a 3-element array.
- * 
- * A normalized vector has the same direction as the original, but a length 
+ *
+ * A normalized vector has the same direction as the original, but a length
  * of 1.0.
  *
  * @method Leap.normalize
@@ -1188,7 +1084,7 @@ var Motion = exports.Motion = {
    * matrix() method description.
    * @method Motion.prototype.matrix
    * @returns {Sylvester.Matrix} matrix Return description.
-   */   
+   */
   matrix: function() {
     if (this._matrix) return this._matrix;
     return this._matrix = $M(this.rotation);
@@ -1208,10 +1104,10 @@ var Motion = exports.Motion = {
    * method returns a zero vector.
    *
    * @method Motion.prototype.translation
-   * @param {Leap.Frame} fromFrame The starting frame for computing the 
+   * @param {Leap.Frame} fromFrame The starting frame for computing the
    * relative translation.
-   * @returns {Array: [x,y,z]} A vector representing the heuristically 
-   * determined change in position of all objects between the current frame 
+   * @returns {Array: [x,y,z]} A vector representing the heuristically
+   * determined change in position of all objects between the current frame
    * and that specified in the fromFrame parameter.
    */
   translation: function(fromFrame) {
@@ -1222,7 +1118,7 @@ var Motion = exports.Motion = {
              this._translation[1] - fromFrame._translation[1],
              this._translation[2] - fromFrame._translation[2] ];
   },
-  /** 
+  /**
    * rotationAxis() description.
    * @method Motion.prototype.rotationAxis
    * @param {Leap.Frame} fromFrame A different frame description.
@@ -1245,17 +1141,17 @@ var Motion = exports.Motion = {
    *
    * The Leap derives frame rotation from the relative change in position and
    * orientation of all objects detected in the field of view. It derives
-   * hand rotation from the rotation of the hand and any associated fingers 
+   * hand rotation from the rotation of the hand and any associated fingers
    * and tools.
    *
    * If either this frame or fromFrame is an invalid Frame object, then the
    * angle of rotation is zero.
    *
    * @method Motion.prototype.rotationAngle
-   * @param {Leap.Frame} fromFrame The starting frame for computing the 
+   * @param {Leap.Frame} fromFrame The starting frame for computing the
    * relative rotation.
-   * @returns {Number} A positive value containing the heuristically 
-   * determined rotational change between the current frame and that specified 
+   * @returns {Number} A positive value containing the heuristically
+   * determined rotational change between the current frame and that specified
    * in the fromFrame parameter.
    */
   rotationAngle: function(fromFrame) {
@@ -1277,10 +1173,10 @@ var Motion = exports.Motion = {
    * method returns an identity matrix.
    *
    * @method Motion.prototype.rotationMatrix
-   * @param {Leap.Frame} fromFrame The starting frame for computing the 
+   * @param {Leap.Frame} fromFrame The starting frame for computing the
    * relative rotation.
    * @returns {Sylvester.Matrix} A transformation matrix containing the
-   * heuristically determined rotational change between the current frame and 
+   * heuristically determined rotational change between the current frame and
    * that specified in the fromFrame parameter.
    */
   rotationMatrix: function(fromFrame) {
@@ -1295,8 +1191,8 @@ var Motion = exports.Motion = {
    * scaling took place. Values between 0.0 and 1.0 indicate contraction
    * and values greater than 1.0 indicate expansion.
    *
-   * The Leap derives scaling for a frame from the relative inward or outward 
-   * motion of all objects detected in the field of view (independent of 
+   * The Leap derives scaling for a frame from the relative inward or outward
+   * motion of all objects detected in the field of view (independent of
    * translation and rotation). It derives scaling for a hand from the spread
    * of the associated hands and fingers.
    *
@@ -1304,16 +1200,33 @@ var Motion = exports.Motion = {
    * method returns 1.0.
    *
    * @method Motion.prototype.scaleFactor
-   * @param {Leap.Frame} fromFrame The starting frame for computing the 
+   * @param {Leap.Frame} fromFrame The starting frame for computing the
    * relative scaling.
-   * @returns {Number} scaleFactor A positive value representing the 
-   * heuristically determined scaling change ratio between the current frame 
+   * @returns {Number} scaleFactor A positive value representing the
+   * heuristically determined scaling change ratio between the current frame
    * and that specified in the fromFrame parameter.
    */
   scaleFactor: function(fromFrame) {
-    if (!this.valid || !fromFrame.valid) return 1.0;
+    if (!this.valid || !fromFrame.valid) 1.0;
     return Math.exp(this._scaleFactor - fromFrame._scaleFactor);
   }
+}
+
+var Pipeline = exports.Pipeline = function() {
+  this.steps = []
+}
+
+Pipeline.prototype.addStep = function(step) {
+  this.steps.push(step)
+}
+
+Pipeline.prototype.run = function(frame) {
+  var stepsLength = this.steps.length
+  for (var i = 0; i != stepsLength; i++) {
+    if (!frame) break
+    frame = this.steps[i](frame)
+  }
+  return frame
 }
 
 /**
@@ -1321,24 +1234,24 @@ var Motion = exports.Motion = {
  *
  * An uninitialized pointable is considered invalid.
  * Get valid Pointable objects from a Frame or a Hand object.
- * 
+ *
  * @class Leap.Pointable
  * @classdesc
- * The Pointable class reports the physical characteristics of a detected 
+ * The Pointable class reports the physical characteristics of a detected
  * finger or tool.
  *
- * Both fingers and tools are classified as Pointable objects. Use the 
+ * Both fingers and tools are classified as Pointable objects. Use the
  * Pointable.tool property to determine whether a Pointable object represents a
  * tool or finger. The Leap classifies a detected entity as a tool when it is
  * thinner, straighter, and longer than a typical finger.
  *
- * Note that Pointable objects can be invalid, which means that they do not 
- * contain valid tracking data and do not correspond to a physical entity. 
- * Invalid Pointable objects can be the result of asking for a Pointable object 
- * using an ID from an earlier frame when no Pointable objects with that ID 
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
  * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid 
- * property. 
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
  */
 var Pointable = exports.Pointable = function(data) {
   /**
@@ -1354,7 +1267,7 @@ var Pointable = exports.Pointable = function(data) {
    * another finger or when it is withdrawn from the Leap field of view), the
    * Leap may assign a new ID when it detects the entity in a future frame.
    *
-   * Use the ID value with the pointable() functions defined for the 
+   * Use the ID value with the pointable() functions defined for the
    * {@link Leap.Frame} and {@link Frame.Hand} classes to find this
    * Pointable object in future frames.
    *
@@ -1423,7 +1336,7 @@ var Pointable = exports.Pointable = function(data) {
  *
  * @method Leap.Pointable.prototype.toString
  * @returns {String} A description of the Pointable object as a string.
- */   
+ */
 Pointable.prototype.toString = function() {
   return "pointable id:" + this.id + " " + this.length + "mmx" + this.width + "mm " + this.direction;
 }
@@ -1436,7 +1349,7 @@ Pointable.prototype.translation = Motion.translation;
  * You can use this Pointable instance in comparisons testing
  * whether a given Pointable instance is valid or invalid. (You can also use the
  * Pointable.valid property.)
- 
+
  * @constant
  * @type {Leap.Pointable}
  * @name Leap.Pointable.Invalid
@@ -1446,17 +1359,17 @@ Pointable.Invalid = { valid: false }
 // === Sylvester ===
 // Vector and Matrix mathematics modules for JavaScript
 // Copyright (c) 2007 James Coglan
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -1512,7 +1425,7 @@ Vector.prototype = {
     });
     return Vector.create(elements);
   },
-  
+
   // Calls the iterator for each element of the vector in turn
   each: function(fn) {
     var n = this.elements.length, k = n, i;
@@ -1671,7 +1584,7 @@ Vector.prototype = {
     return plane.contains(this);
   },
 
-  // Rotates the vector about the given object. The object should be a 
+  // Rotates the vector about the given object. The object should be a
   // point if the vector is 2D, and a line if it is 3D. Be careful with line directions!
   rotate: function(t, obj) {
     var V, R, x, y, z;
@@ -1742,7 +1655,7 @@ Vector.prototype = {
     return this;
   }
 };
-  
+
 // Constructor function
 Vector.create = function(elements) {
   var V = new Vector();
@@ -2064,7 +1977,7 @@ Matrix.prototype = {
     } while (--ni);
     return rank;
   },
-  
+
   rk: function() { return this.rank(); },
 
   // Returns the result of attaching the given argument to the right-hand side of the matrix
@@ -2457,7 +2370,7 @@ Line.prototype = {
   }
 };
 
-  
+
 // Constructor function
 Line.create = function(anchor, direction) {
   var L = new Line();
@@ -2508,7 +2421,7 @@ Plane.prototype = {
     }
     return null;
   },
-  
+
   // Returns true iff the receiver is perpendicular to the argument
   isPerpendicularTo: function(plane) {
     var theta = this.normal.angleFrom(plane.normal);
@@ -2700,129 +2613,175 @@ var $P = Plane.create;
 
 var UI = exports.UI = { }
 
-// Util functions
-
-UI.fingerDetector = function(fingerCount) {
+UI.Cursor = function() {
   return function(frame) {
-    return frame.fingers.length == fingerCount
+    var pointable = frame.pointables.sort(function(a, b) { return a[2] - b[2] })[0]
+    if (pointable && pointable.valid) {
+      frame.cursorPosition = pointable.tipPosition
+    }
+    return frame
   }
 }
 
-// Edge event
-
-var EdgeEvent = UI.EdgeEvent = function(opts) {
-  this.top = opts.top
-  this.bottom = opts.bottom
-  this.left = opts.left
-  this.right = opts.right
-  if      (this.top && this.left)     this.edgeName = "topLeft"
-  else if (this.top && this.right)    this.edgeName = "topRight"
-  else if (this.bottom && this.left)  this.edgeName = "bottomLeft"
-  else if (this.bottom && this.right) this.edgeName = "bottomRight"
-  else if (this.left)                 this.edgeName = "left"
-  else if (this.right)                this.edgeName = "right"
-  else if (this.top)                  this.edgeName = "top"
-  else if (this.bottom)               this.edgeName = "bottom"
+UI.Region = function(start, end) {
+  this.start = start
+  this.end = end
 }
 
-// UI Box
-
-var Box = UI.Box = function(opts) {
-  if (opts === undefined) opts = {}
-  this.size = opts.size || 10
+UI.Region.prototype.hasPointables = function(frame) {
+  for (var i = 0; i != frame.pointables.length; i++) {
+    var position = frame.pointables[i].tipPosition
+    if (position[0] >= this.start[0] && position[0] <= this.end[0] && position[1] >= this.start[1] && position[1] <= this.end[1] && position[2] >= this.start[2] && position[2] <= this.end[2]) {
+      return true
+    }
+  }
+  return false
 }
 
-Box.prototype.translate = function(vec) {
-  var x = vec[0] / this.size, y = -vec[1] / this.size, z = vec[2];
-  if (x < -1) x = -1;
-  if (y < -1) y = -1;
-  if (x > 1) x = 1;
-  if (y > 1) y = 1;
-  return [x, y, z];
+UI.Region.prototype.clipper = function() {
+  var region = this
+  return function(frame) {
+    return region.hasPointables(frame) ? frame : null
+  }
 }
 
-Box.prototype.mapToDiv = function(vec, div) {
+UI.Region.prototype.normalize = function(position) {
   return [
-    Math.round((vec[0] / 2 + 0.5) * div.clientWidth),
-    Math.round((vec[1] / 2 + 0.5) * div.clientHeight),
-    vec[2]
+    (position[0] - this.start[0]) / (this.end[0] - this.start[0]),
+    (position[1] - this.start[1]) / (this.end[1] - this.start[1]),
+    (position[2] - this.start[2]) / (this.end[2] - this.start[2])
   ]
 }
 
-// UI Cursor
-
-var Cursor = UI.Cursor = function(opts) {
-  this.startsOn = opts && opts.startsOn || function(frame) { return frame.pointables.length + frame.hands.length != 0 }
-  this.continuesOn = opts && opts.continuesOn || this.startsOn
-  this.referenceFrame = null
-  this.ttl = null
-  this.x = 0
-  this.y = 0
+UI.Region.prototype.mapToXY = function(position, width, height) {
+  var normalized = this.normalize(position)
+  var x = normalized[0], y = normalized[1]
+  if (x > 1) x = 1
+  else if (x < -1) x = -1
+  if (y > 1) y = 1
+  else if (y < -1) y = -1
+  return [
+    (x + 1) / 2 * width,
+    (1 - y) / 2 * height,
+    normalized[2]
+  ]
 }
 
-Cursor.prototype.reportGrab = function(state) {
-  if (this.onGrabStart && state === true) {
-    this.onGrabStart()
-  } else if (this.onGrabEnd && state === false) {
-    this.onGrabEnd()
-  }
-}
+// Util functions
 
-Cursor.prototype.update = function(frame) {
-  if (this.ttl) {
-    // calculate the relative co-ords and report to div
-    // nothing to track ...
-    if (this.continuesOn(frame)) {
-      // there must be something to track
-      this.ttl = (new Date()).getTime() + 1000;
-      var translation = frame.translation(this.referenceFrame)
-      if (this.onMove) this.onMove(translation)
-    } else {
-      // and kill the cursor here
-      if (this.ttl > (new Date()).getTime()) {
-        this.ttl = null
-        if (this.onEnd) this.onEnd()
-      }
-    }
-  } else {
-    if (this.startsOn(frame)) {
-      this.ttl = (new Date()).getTime() + 1000;
-      this.referenceFrame = frame;
-      if (this.onStart) this.onStart()
-    }
-  }
-}
+//UI.fingerDetector = function(fingerCount) {
+//  return function(frame) {
+//    return frame.fingers.length == fingerCount
+//  }
+//}
 
-// UI BoxedCursor
+// Edge event
 
-var BoxedCursor = UI.BoxedCursor = function(opts) {
-  this.cursor = opts && opts.cursor || new Cursor(opts)
-  this.box = opts && opts.box || new Box(opts)
-  var boxedCursor = this
-  this.cursor.onEnd = function() {
-    if (boxedCursor.onEnd) boxedCursor.onEnd()
-  }
-
-  this.cursor.onStart = function() {
-    if (boxedCursor.onStart) boxedCursor.onStart()
-  }
-
-  this.cursor.onMove = function(translation) {
-    var boxedT = boxedCursor.box.translate(translation)
-    if (boxedCursor.onMove) boxedCursor.onMove(boxedT)
-    if (boxedCursor.onEdge) {
-      if (boxedT[0] == 1 || boxedT[0] == -1 || boxedT[1] == 1 || boxedT[1] == -1) {
-        boxedCursor.onEdge(new EdgeEvent({top: boxedT[1] == -1, bottom: boxedT[1] == 1,
-          left: boxedT[0] == -1, right: boxedT[0] == 1}))
-      }
-    }
-  }
-}
-
-BoxedCursor.prototype.update = function(frame) {
-  this.cursor.update(frame)
-}
-
+//var EdgeEvent = UI.EdgeEvent = function(opts) {
+//  this.top = opts.top
+//  this.bottom = opts.bottom
+//  this.left = opts.left
+//  this.right = opts.right
+//  if      (this.top && this.left)     this.edgeName = "topLeft"
+//  else if (this.top && this.right)    this.edgeName = "topRight"
+//  else if (this.bottom && this.left)  this.edgeName = "bottomLeft"
+//  else if (this.bottom && this.right) this.edgeName = "bottomRight"
+//  else if (this.left)                 this.edgeName = "left"
+//  else if (this.right)                this.edgeName = "right"
+//  else if (this.top)                  this.edgeName = "top"
+//  else if (this.bottom)               this.edgeName = "bottom"
+//}
+//
+//// UI Box
+//
+//var Box = UI.Box = function(opts) {
+//  if (opts === undefined) opts = {}
+//  this.size = opts.size || 10
+//}
+//
+//Box.prototype.translate = function(vec) {
+//  var x = vec[0] / this.size, y = -vec[1] / this.size, z = vec[2];
+//  if (x < -1) x = -1;
+//  if (y < -1) y = -1;
+//  if (x > 1) x = 1;
+//  if (y > 1) y = 1;
+//  return [x, y, z];
+//}
+//
+//Box.prototype.mapToDiv = function(vec, div) {
+//  return [
+//    Math.round((vec[0] / 2 + 0.5) * div.clientWidth),
+//    Math.round((vec[1] / 2 + 0.5) * div.clientHeight),
+//    vec[2]
+//  ]
+//}
+//
+//// UI Cursor
+//
+//var Cursor = UI.Cursor = function(opts) {
+//  this.startsOn = opts && opts.startsOn || function(frame) { return frame.pointables.length + frame.hands.length != 0 }
+//  this.continuesOn = opts && opts.continuesOn || this.startsOn
+//  this.referenceFrame = null
+//  this.ttl = null
+//  this.x = 0
+//  this.y = 0
+//}
+//
+//Cursor.prototype.update = function(frame) {
+//  if (this.ttl) {
+//    // calculate the relative co-ords and report to div
+//    // nothing to track ...
+//    if (this.continuesOn(frame)) {
+//      // there must be something to track
+//      this.ttl = (new Date()).getTime() + 1000;
+//      var translation = frame.translation(this.referenceFrame)
+//      if (this.onMove) this.onMove(translation)
+//    } else {
+//      // and kill the cursor here
+//      if (this.ttl > (new Date()).getTime()) {
+//        this.ttl = null
+//        if (this.onEnd) this.onEnd()
+//      }
+//    }
+//  } else {
+//    if (this.startsOn(frame)) {
+//      this.ttl = (new Date()).getTime() + 1000;
+//      this.referenceFrame = frame;
+//      if (this.onStart) this.onStart()
+//    }
+//  }
+//}
+//
+//// UI BoxedCursor
+//
+//var BoxedCursor = UI.BoxedCursor = function(opts) {
+//  this.cursor = opts && opts.cursor || new Cursor(opts)
+//  this.box = opts && opts.box || new Box(opts)
+//  var boxedCursor = this
+//  this.cursor.onEnd = function() {
+//    if (boxedCursor.onEnd) boxedCursor.onEnd()
+//  }
+//
+//  this.cursor.onStart = function() {
+//    if (boxedCursor.onStart) boxedCursor.onStart()
+//  }
+//
+//  this.cursor.onMove = function(translation) {
+//    var boxedT = boxedCursor.box.translate(translation)
+//    if (boxedCursor.onMove) boxedCursor.onMove(boxedT)
+//    if (boxedCursor.onEdge) {
+//      if (boxedT[0] == 1 || boxedT[0] == -1 || boxedT[1] == 1 || boxedT[1] == -1) {
+//        boxedCursor.onEdge(new EdgeEvent({top: boxedT[1] == -1, bottom: boxedT[1] == 1,
+//          left: boxedT[0] == -1, right: boxedT[0] == 1}))
+//      }
+//    }
+//  }
+//}
+//
+//BoxedCursor.prototype.update = function(frame) {
+//  this.cursor.update(frame)
+//}
+//
 
 	for (var readyIdx in Leap.ready) {
 		Leap.ready[readyIdx](new Leap.Controller())
