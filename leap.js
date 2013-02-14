@@ -440,6 +440,7 @@ exports.Leap = {
 
 require.define("/lib/controller.js",function(require,module,exports,__dirname,__filename,process,global){var Frame = require('./frame').Frame
   , Connection = require('./connection').Connection
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
 
 
 var Controller = exports.Controller = function(opts) {
@@ -457,13 +458,14 @@ var Controller = exports.Controller = function(opts) {
 }
 
 Controller.prototype.connect = function() {
-  this.connection.connect()
-  var controller = this
-  var callback = function() {
-    controller.dispatchEvent('animationFrame', controller.lastFrame)
+  if (this.connection.connect()) {
+    var controller = this
+    var callback = function() {
+      controller.dispatchEvent('animationFrame', controller.lastFrame)
+      window.requestAnimFrame(callback)
+    }
     window.requestAnimFrame(callback)
   }
-  window.requestAnimFrame(callback)
 }
 
 Controller.prototype.disconnect = function() {
@@ -3791,7 +3793,7 @@ Connection.prototype.handleClose = function() {
 };
 
 Connection.prototype.connect = function() {
-  if (this.socket) return
+  if (this.socket) return false
   var connection = this
   this.socket = new WebSocket("ws://" + this.host + ":6437")
   this.socket.onopen = connection.handleOpen
@@ -3805,12 +3807,33 @@ Connection.prototype.connect = function() {
     }
   }
   this.socket.onclose = connection.handleClose
+  return true
 }
 
 Connection.prototype.disconnect = function() {
   if (!this.socket) return
   this.socket.close()
   this.socket = undefined
+}
+
+});
+
+require.define("/lib/circular_buffer.js",function(require,module,exports,__dirname,__filename,process,global){var CircularBuffer = exports.CircularBuffer = function(size) {
+  this.pos = 0
+  this._buf = []
+  this.size = size
+}
+
+CircularBuffer.prototype.get = function(i) {
+  if (i == undefined) i = 0;
+  if (i > this.size) return null;
+  if (i > this._buf.length) return null;
+  return this._buf[this.pos - i % this.length]
+}
+
+CircularBuffer.prototype.push = function(o) {
+  this._buf[this.pos % this.length] = o
+  this.pos++
 }
 
 });
