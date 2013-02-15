@@ -126,11 +126,13 @@
       window.camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
       camera.lookAt( scene.position )
       camera.position.set( 0, 0, 290 )
+      console.log(camera);
 
       //initite variables
       var firstValidFrame = null
       var cameraRadius = 290
       var rotateY = 90, rotateX = 0, curY = 0
+      var fov = camera.fov;
 
 
       //request animation frame and connect to leap socket
@@ -151,11 +153,17 @@
           rotateX = t[0]
           rotateY = -curY
 
+          zoom = Math.max(0, t[2]);
+          zoomFactor = 1/(1 + (zoom / 150));
+
           //adjust 3D spherical coordinates of the camera
           camera.position.x = earth.position.x + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.cos(rotateX * Math.PI/180)
           camera.position.z = earth.position.y + cameraRadius * Math.sin(rotateY * Math.PI/180) * Math.sin(rotateX * Math.PI/180)
           camera.position.y = earth.position.z + cameraRadius * Math.cos(rotateY * Math.PI/180)
+          camera.fov = fov * zoomFactor;
         }
+
+        camera.updateProjectionMatrix();
         camera.lookAt(scene.position)
         renderer.render(scene, camera)
       });
@@ -171,3 +179,4 @@
     </script>
   </body>
 </html>
+
