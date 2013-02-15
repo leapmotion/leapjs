@@ -1,13 +1,13 @@
 {
   "name": "leapjs",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Leap Motion Client",
   "main": "leap.js",
   "scripts": {
     "test": "test.js"
   },
   "license": "BSD-2-Clause",
-  "devDependencies": {
+  "dependencies": {
     "underscore": "*"
   },
   "devDependencies": {
