@@ -8,12 +8,14 @@
   },
   "license": "BSD-2-Clause",
   "devDependencies": {
+    "underscore": "*"
+  },
+  "devDependencies": {
     "browserify": "git://github.com/substack/node-browserify.git",
     "mocha": "1.7.4",
     "node-static": "*",
     "uglify-js": "*",
     "chai": "*",
-    "mocha-phantomjs": "*",
-    "underscore": "*"
+    "mocha-phantomjs": "*"
   }
 }

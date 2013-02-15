@@ -1,10 +1,10 @@
 # Leap JS
 
-This is the js framework for working with the Leap.
+Welcome to the Leap JavaScript framework. This is intended for use with the Leap (https://www.leapmotion.com/).
 
 ## Installation
 
-Either grab the js file in the root of the project. There is a minified version there too.
+
 
 If you're using npm, you can use `npm install leapjs`.
 
