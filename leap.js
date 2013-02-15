@@ -391,7 +391,14 @@ process.binding = function (name) {
 
 });
 
-require.define("/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){/**
+require.define("/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){var Controller = require("./controller").Controller
+  , Frame = require("./frame").Frame
+  , Connection = require("./connection").Connection
+  , UI = require("./ui").UI
+  , loopController = undefined
+
+
+/**
  * The Leap.loop() function passes a frame of Leap data to your
  * callback function and then calls window.requestAnimationFrame() after
  * executing your callback function.
@@ -420,12 +427,6 @@ require.define("/lib/index.js",function(require,module,exports,__dirname,__filen
  *        // ... your code here
  *    })
  */
-
-var Controller = require("./controller").Controller
-  , Frame = require("./frame").Frame
-  , Connection = require("./connection").Connection
-  , UI = require("./ui").UI
-  , loopController = undefined
 
 exports.Leap = {
   loop: function(callback) {
@@ -618,6 +619,7 @@ var Frame = exports.Frame = function(data) {
   this._translation = data.t;
   this.rotation = data.r;
   this._scaleFactor = data.s;
+  this.data = data;
   var handMap = {}
   for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
     var hand = new Hand(data.hands[handIdx]);
@@ -740,7 +742,7 @@ Frame.prototype.hand = function(id) {
  * @returns {String} A brief description of this frame.
  */
 Frame.prototype.toString = function() {
-  return "frame id:"+this.id+" timestamp:"+this.timestamp+" hands("+this.hands.length+") pointables("+this.pointables.length+")"
+  return "Frame [ id:"+this.id+" | timestamp:"+this.timestamp+" | Hand count:("+this.hands.length+") | Pointable count:("+this.pointables.length+") ]"
 }
 
 /**
@@ -752,16 +754,18 @@ Frame.prototype.toString = function() {
  */
 Frame.prototype.dump = function() {
   var out = '';
-  out += "\nHands:\n"
-  for (var handIdx = 0, handCount = this.hands.length; handIdx != handCount; handIdx++) {
-    out += "  "+ this.hands[handIdx].toString() + "\n"
-  }
-  out += "Pointables:\n"
-    for (var pointableIdx = 0, pointableCount = this.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
-    out += "  "+ this.pointables[pointableIdx].toString() + "\n"
-  }
-  out += "Raw JSON:\n";
+  out += "Frame Info:<br/>";
   out += this.toString();
+  out += "<br/><br/>Hands:<br/>"
+  for (var handIdx = 0, handCount = this.hands.length; handIdx != handCount; handIdx++) {
+    out += "  "+ this.hands[handIdx].toString() + "<br/>"
+  }
+  out += "<br/><br/>Pointables:<br/>"
+  for (var pointableIdx = 0, pointableCount = this.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
+    out += "  "+ this.pointables[pointableIdx].toString() + "<br/>"
+  }
+  out += "<br/><br/>Raw JSON:<br/>";
+  out += JSON.stringify(this.data);
   return out;
 }
 
@@ -853,10 +857,10 @@ var Hand = exports.Hand = function(data) {
    * The direction is expressed as a unit vector pointing in the same
    * direction as the directed line from the palm position to the fingers.
    *
-   * @member Leap.Hand.prototype.palmDirection
+   * @member Leap.Hand.prototype.direction
    * @type {Array: [x,y,z]}
    */
-  this.palmDirection = data.palmDirection
+  this.direction = data.direction
   /**
    * The rate of change of the palm position in millimeters/second.
    *
@@ -973,7 +977,7 @@ Hand.prototype.finger = function(id) {
  * @returns {String} A description of the Hand as a string.
  */
 Hand.prototype.toString = function() {
-  return "Hand [ id: "+ this.id + " data:"+JSON.stringify(this.data)+"] ";
+  return "Hand [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
 }
 
 /**
@@ -3754,7 +3758,11 @@ var Pointable = exports.Pointable = function(data) {
  * @returns {String} A description of the Pointable object as a string.
  */
 Pointable.prototype.toString = function() {
-  return "pointable id:" + this.id + " " + this.length + "mmx" + this.width + "mm " + this.direction;
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
 }
 
 Pointable.prototype.translation = Motion.translation;
