@@ -4,8 +4,6 @@ Welcome to the Leap JavaScript framework. This is intended for use with the Leap
 
 ## Installation
 
-
-
 If you're using npm, you can use `npm install leapjs`.
 
 ## Usage
@@ -36,7 +34,7 @@ To use the leap motion api do the following...
 
 ```javascript
 var controller = new Leap.Controller();
-controller.onFrame(function() {
+controller.on('frame', function() {
   console.log("hello")
   console.log(controller.frame().id)
   console.log(controller.frame().fingers.length)
