@@ -48,7 +48,7 @@ controller.connect()
 Inside the examples directory are a few great examples. To get them running, do the following:
 
 * Run `npm install`
-* Run `./node_modules/.bin/static .`
+* Run `make serve`
 * Point your browser at http://localhost:8080/examples and enjoy
 
 ## Tests
@@ -56,4 +56,4 @@ Inside the examples directory are a few great examples. To get them running, do 
 There are currently rudamentary tests. To get them running, do the following:
 
 * Run `npm install`
-* Run `rake test`
+* Run `make test`
