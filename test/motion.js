@@ -4,7 +4,7 @@ describe('Motion', function(){
       it('should return a rotation matrix', function(){
         var data1 = fakeFrame({rotation: [[0,1,2], [2,3,4], [2,3,4]]})
         var frame1 = new Leap.Frame(data1);
-        assert.deepEqual({"elements":[[0,1,2],[2,3,4],[2,3,4]]}, frame1.matrix())
+        assert.deepEqual([[0,1,2],[2,3,4],[2,3,4]], frame1.matrix().elements)
       })
     })
 
@@ -48,7 +48,7 @@ describe('Motion', function(){
       it('should return a rotation matrix', function(){
         var data1 = fakeFrame({handData: [fakeHand({rotation: [[0,1,2], [2,3,4], [2,3,4]]})]})
         var frame1 = new Leap.Frame(data1);
-        assert.deepEqual({"elements":[[0,1,2],[2,3,4],[2,3,4]]}, frame1.hand(0).matrix())
+        assert.deepEqual([[0,1,2],[2,3,4],[2,3,4]], frame1.hand(0).matrix().elements)
       })
     })
 
