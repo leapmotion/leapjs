@@ -517,7 +517,7 @@ Controller.prototype.disconnect = function() {
 }
 
 Controller.prototype.frame = function(num) {
-  return this.history.get(num) || Leap.Controller.Frame.Invalid;
+  return this.history.get(num) || Frame.Invalid;
 }
 
 Controller.prototype.on = function(type, callback) {
@@ -568,9 +568,9 @@ require.define("/lib/frame.js",function(require,module,exports,__dirname,__filen
  *
  * Frame instances created with this constructor are invalid.
  * Get valid Frame objects by calling the
- * {@link Leap.Controller#frame}() function.
+ * {@link Controller#frame}() function.
  *
- * @class Leap.Frame
+ * @class Frame
  * @classdesc
  * The Frame class represents a set of hand and finger tracking data detected
  * in a single frame.
@@ -578,7 +578,7 @@ require.define("/lib/frame.js",function(require,module,exports,__dirname,__filen
  * The Leap detects hands, fingers and tools within the tracking area, reporting
  * their positions, orientations and motions in frames at the Leap frame rate.
  *
- * Access Frame objects using the {@link Leap.Controller#frame}() function.
+ * Access Frame objects using the {@link Controller#frame}() function.
  *
  * @borrows Motion#translation as #translation
  * @borrows Motion#matrix as #matrix
@@ -606,20 +606,20 @@ var Frame = exports.Frame = function(data) {
    * frame(n) returned a null object. (You should still check that the
    * returned Finger instance is valid.)
    *
-   * @member Leap.Frame.prototype.valid
+   * @member Frame.prototype.valid
    * @type {Boolean}
    */
   this.valid = true
   /**
    * A unique ID for this Frame. Consecutive frames processed by the Leap
    * have consecutive increasing values.
-   * @member Leap.Frame.prototype.id
+   * @member Frame.prototype.id
    * @type {String}
    */
   this.id = data.id
   /**
    * The frame capture time in microseconds elapsed since the Leap started.
-   * @member Leap.Frame.prototype.timestamp
+   * @member Frame.prototype.timestamp
    * @type {Number}
    */
   this.timestamp = data.timestamp
@@ -627,8 +627,8 @@ var Frame = exports.Frame = function(data) {
    * The list of Hand objects detected in this frame, given in arbitrary order.
    * The list can be empty if no hands are detected.
    *
-   * @member Leap.Frame.prototype.hands[]
-   * @type {Leap.Hand}
+   * @member Frame.prototype.hands[]
+   * @type {Hand}
    */
   this.hands = []
   this.handsMap = {}
@@ -637,23 +637,23 @@ var Frame = exports.Frame = function(data) {
    * given in arbitrary order. The list can be empty if no fingers or tools are
    * detected.
    *
-   * @member Leap.Frame.prototype.pointables[]
-   * @type {Leap.Pointable}
+   * @member Frame.prototype.pointables[]
+   * @type {Pointable}
    */
   this.pointables = []
   /**
    * The list of Tool objects detected in this frame, given in arbitrary order.
    * The list can be empty if no tools are detected.
    *
-   * @member Leap.Frame.prototype.tools[]
-   * @type {Leap.Pointable}
+   * @member Frame.prototype.tools[]
+   * @type {Pointable}
    */
   this.tools = []
   /**
    * The list of Finger objects detected in this frame, given in arbitrary order.
    * The list can be empty if no fingers are detected.
-   * @member Leap.Frame.prototype.fingers[]
-   * @type {Leap.Pointable}
+   * @member Frame.prototype.fingers[]
+   * @type {Pointable}
    */
   this.fingers = []
   this.pointablesMap = {}
@@ -696,9 +696,9 @@ var Frame = exports.Frame = function(data) {
  * regained, the new Pointable object representing that tool may have a
  * different ID than that representing the tool in an earlier frame.
  *
- * @method Leap.Frame.prototype.tool
+ * @method Frame.prototype.tool
  * @param {String} id The ID value of a Tool object from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The tool with the
+ * @returns {Pointable | Pointable.Invalid} The tool with the
  * matching ID if one exists in this frame; otherwise, an invalid Pointable object
  * is returned.
  */
@@ -720,9 +720,9 @@ Frame.prototype.tool = function(id) {
  * regained, the new Pointable object representing that finger or tool may have
  * a different ID than that representing the finger or tool in an earlier frame.
  *
- * @method Leap.Frame.prototype.pointable
+ * @method Frame.prototype.pointable
  * @param {String} id The ID value of a Pointable object from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The Pointable object with
+ * @returns {Pointable | Pointable.Invalid} The Pointable object with
  * the matching ID if one exists in this frame;
  * otherwise, an invalid Pointable object is returned.
  */
@@ -743,9 +743,9 @@ Frame.prototype.pointable = function(id) {
  * regained, the new Pointable object representing that physical finger may have
  * a different ID than that representing the finger in an earlier frame.
  *
- * @method Leap.Frame.prototype.finger
+ * @method Frame.prototype.finger
  * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The finger with the
+ * @returns {Pointable | Pointable.Invalid} The finger with the
  * matching ID if one exists in this frame; otherwise, an invalid Pointable
  * object is returned.
  */
@@ -767,9 +767,9 @@ Frame.prototype.finger = function(id) {
  * regained, the new Hand object representing that physical hand may have
  * a different ID than that representing the physical hand in an earlier frame.
  *
- * @method Leap.Frame.prototype.hand
+ * @method Frame.prototype.hand
  * @param {String} id The ID value of a Hand object from a previous frame.
- * @returns {Leap.Hand | Leap.Hand.Invalid} The Hand object with the matching
+ * @returns {Hand | Hand.Invalid} The Hand object with the matching
  * ID if one exists in this frame; otherwise, an invalid Hand object is returned.
  */
 Frame.prototype.hand = function(id) {
@@ -779,7 +779,7 @@ Frame.prototype.hand = function(id) {
 /**
  * A string containing a brief, human readable description of the Frame object.
  *
- * @method Leap.Frame.prototype.toString
+ * @method Frame.prototype.toString
  * @returns {String} A brief description of this frame.
  */
 Frame.prototype.toString = function() {
@@ -790,7 +790,7 @@ Frame.prototype.toString = function() {
  * Returns a JSON-formatted string containing the hands and pointables in this
  * frame.
  *
- * @method Leap.Frame.prototype.dump
+ * @method Frame.prototype.dump
  * @returns {String} A JSON-formatted string.
  */
 Frame.prototype.dump = function() {
@@ -815,11 +815,11 @@ Frame.prototype.dump = function() {
  *
  * You can use this invalid Frame in comparisons testing
  * whether a given Frame instance is valid or invalid. (You can also check the
- * {@link Leap.Frame#valid} property.)
+ * {@link Frame#valid} property.)
  *
  * @constant
- * @type {Leap.Frame}
- * @name Leap.Frame.Invalid
+ * @type {Frame}
+ * @name Frame.Invalid
  */
 Frame.Invalid = {
   valid: false,
@@ -836,11 +836,10 @@ Frame.Invalid = {
 extend(Frame.prototype, Motion)
 extend(Frame.Invalid, Motion)
 
-//Leap.extend(Frame.Invalid, Motion)
-
 });
 
 require.define("/lib/hand.js",function(require,module,exports,__dirname,__filename,process,global){var Motion = require("./motion").Motion
+  , Pointable = require("./pointable").Pointable
   , extend = require("./util").extend
 
 /**
@@ -848,7 +847,7 @@ require.define("/lib/hand.js",function(require,module,exports,__dirname,__filena
  *
  * An uninitialized hand is considered invalid.
  * Get valid Hand objects from a Frame object.
- * @class Leap.Hand
+ * @class Hand
  *
  * @classdesc
  * The Hand class reports the physical characteristics of a detected hand.
@@ -862,7 +861,7 @@ require.define("/lib/hand.js",function(require,module,exports,__dirname,__filena
  * objects can be the result of asking for a Hand object using an ID from an
  * earlier frame when no Hand objects with that ID exist in the current frame.
  * A Hand object created from the Hand constructor is also invalid.
- * Test for validity with the {@link Leap.Hand#valid} property.
+ * Test for validity with the {@link Hand#valid} property.
  *
  * @borrows Motion#translation as #translation
  * @borrows Motion#matrix as #matrix
@@ -879,16 +878,16 @@ var Hand = exports.Hand = function(data) {
    * or when it is withdrawn from or reaches the edge of the Leap field of view),
    * the Leap may assign a new ID when it detects the hand in a future frame.
    *
-   * Use the ID value with the {@link Leap.Frame.hand}() function to find this
+   * Use the ID value with the {@link Frame.hand}() function to find this
    * Hand object in future frames.
    *
-   * @member Leap.Hand.prototype.id
+   * @member Hand.prototype.id
    * @type {String}
    */
   this.id = data.id
   /**
    * The center position of the palm in millimeters from the Leap origin.
-   * @member Leap.Hand.prototype.palmPosition
+   * @member Hand.prototype.palmPosition
    * @type {Array: [x,y,z]}
    */
   this.palmPosition = data.palmPosition
@@ -898,14 +897,14 @@ var Hand = exports.Hand = function(data) {
    * The direction is expressed as a unit vector pointing in the same
    * direction as the directed line from the palm position to the fingers.
    *
-   * @member Leap.Hand.prototype.direction
+   * @member Hand.prototype.direction
    * @type {Array: [x,y,z]}
    */
   this.direction = data.direction
   /**
    * The rate of change of the palm position in millimeters/second.
    *
-   * @member Leap.Hand.prototype.palmVeclocity
+   * @member Hand.prototype.palmVeclocity
    * @type {Array: [Vx,Vy,Vz]}
    */
   this.palmVelocity = data.palmVelocity
@@ -917,7 +916,7 @@ var Hand = exports.Hand = function(data) {
    *
    * The direction is expressed as a unit vector pointing in the same
    * direction as the palm normal (that is, a vector orthogonal to the palm).
-   * @member Leap.Hand.prototype.palmNormal
+   * @member Hand.prototype.palmNormal
    * @type {Array: [x,y,z]}
    */
   this.palmNormal = data.palmNormal
@@ -927,7 +926,7 @@ var Hand = exports.Hand = function(data) {
    * This sphere is placed roughly as if the hand were holding a ball.
    *
    * <img src="images/Leap_Hand_Ball.png"/>
-   * @member Leap.Hand.prototype.sphereCenter
+   * @member Hand.prototype.sphereCenter
    * @type {Array: [x,y,z]}
    */
   this.sphereCenter = data.sphereCenter
@@ -937,14 +936,14 @@ var Hand = exports.Hand = function(data) {
    * This sphere is placed roughly as if the hand were holding a ball. Thus the
    * size of the sphere decreases as the fingers are curled into a fist.
    *
-   * @member Leap.Hand.prototype.sphereRadius
+   * @member Hand.prototype.sphereRadius
    * @type {Number}
    */
   this.sphereRadius = data.sphereRadius
   /**
    * Reports whether this is a valid Hand object.
    *
-   * @member Leap.Hand.prototype.valid
+   * @member Hand.prototype.valid
    * @type {Boolean}
    */
   this.valid = true
@@ -953,13 +952,13 @@ var Hand = exports.Hand = function(data) {
    * that are associated with this hand, given in arbitrary order. The list
    * can be empty if no fingers or tools associated with this hand are detected.
    *
-   * Use the {@link Leap.Pointable} tool property to determine
+   * Use the {@link Pointable} tool property to determine
    * whether or not an item in the list represents a tool or finger.
    * You can also get only the tools using the Hand.tools[] list or
    * only the fingers using the Hand.fingers[] list.
    *
-   * @member Leap.Hand.prototype.pointables[]
-   * @type {Leap.Pointable}
+   * @member Hand.prototype.pointables[]
+   * @type {Pointable}
    */
   this.pointables = []
   /**
@@ -968,8 +967,8 @@ var Hand = exports.Hand = function(data) {
    *
    * The list can be empty if no fingers attached to this hand are detected.
    *
-   * @member Leap.Frame.prototype.fingers[]
-   * @type {Leap.Pointable}
+   * @member Frame.prototype.fingers[]
+   * @type {Pointable}
    */
   this.fingers = []
   /**
@@ -978,8 +977,8 @@ var Hand = exports.Hand = function(data) {
    *
    * The list can be empty if no tools held by this hand are detected.
    *
-   * @member Leap.Hand.prototype.tools[]
-   * @type {Leap.Pointable}
+   * @member Hand.prototype.tools[]
+   * @type {Pointable}
    */
   this.tools = []
   this._translation = data.t;
@@ -1001,20 +1000,20 @@ var Hand = exports.Hand = function(data) {
  * finger may have a different ID than that representing the finger in an
  * earlier frame.
  *
- * @method Leap.Hand.prototype.finger
+ * @method Hand.prototype.finger
  * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Leap.Pointable | Leap.Pointable.Invalid} The Finger object with
+ * @returns {Pointable | Pointable.Invalid} The Finger object with
  * the matching ID if one exists for this hand in this frame; otherwise, an
  * invalid Finger object is returned.
  */
 Hand.prototype.finger = function(id) {
   var finger = this.frame.finger(id)
-  return (finger && finger.handId == this.id) ? finger : Leap.Pointable.Invalid
+  return (finger && finger.handId == this.id) ? finger : Pointable.Invalid
 }
 
 /**
  * A string containing a brief, human readable description of the Hand object.
- * @method Leap.Hand.prototype.toString
+ * @method Hand.prototype.toString
  * @returns {String} A description of the Hand as a string.
  */
 Hand.prototype.toString = function() {
@@ -1029,8 +1028,8 @@ Hand.prototype.toString = function() {
  * Hand valid property.)
  *
  * @constant
- * @type {Leap.Hand}
- * @name Leap.Hand.Invalid
+ * @type {Hand}
+ * @name Hand.Invalid
  */
 Hand.Invalid = { valid: false }
 extend(Hand.Invalid, Motion)
@@ -1062,7 +1061,7 @@ var Motion = exports.Motion = {
    * method returns a zero vector.
    *
    * @method Motion.prototype.translation
-   * @param {Leap.Frame} fromFrame The starting frame for computing the
+   * @param {Frame} fromFrame The starting frame for computing the
    * relative translation.
    * @returns {Array: [x,y,z]} A vector representing the heuristically
    * determined change in position of all objects between the current frame
@@ -1079,7 +1078,7 @@ var Motion = exports.Motion = {
   /**
    * rotationAxis() description.
    * @method Motion.prototype.rotationAxis
-   * @param {Leap.Frame} fromFrame A different frame description.
+   * @param {Frame} fromFrame A different frame description.
    * @returns {Array: [x,y,z]} rotationAxis Return description.
    */
   rotationAxis: function(fromFrame) {
@@ -1106,7 +1105,7 @@ var Motion = exports.Motion = {
    * angle of rotation is zero.
    *
    * @method Motion.prototype.rotationAngle
-   * @param {Leap.Frame} fromFrame The starting frame for computing the
+   * @param {Frame} fromFrame The starting frame for computing the
    * relative rotation.
    * @returns {Number} A positive value containing the heuristically
    * determined rotational change between the current frame and that specified
@@ -1131,7 +1130,7 @@ var Motion = exports.Motion = {
    * method returns an identity matrix.
    *
    * @method Motion.prototype.rotationMatrix
-   * @param {Leap.Frame} fromFrame The starting frame for computing the
+   * @param {Frame} fromFrame The starting frame for computing the
    * relative rotation.
    * @returns {Sylvester.Matrix} A transformation matrix containing the
    * heuristically determined rotational change between the current frame and
@@ -1157,7 +1156,7 @@ var Motion = exports.Motion = {
    * method returns 1.0.
    *
    * @method Motion.prototype.scaleFactor
-   * @param {Leap.Frame} fromFrame The starting frame for computing the
+   * @param {Frame} fromFrame The starting frame for computing the
    * relative scaling.
    * @returns {Number} scaleFactor A positive value representing the
    * heuristically determined scaling change ratio between the current frame
@@ -1272,7 +1271,7 @@ require.define("/lib/pointable.js",function(require,module,exports,__dirname,__f
  * An uninitialized pointable is considered invalid.
  * Get valid Pointable objects from a Frame or a Hand object.
  *
- * @class Leap.Pointable
+ * @class Pointable
  * @classdesc
  * The Pointable class reports the physical characteristics of a detected
  * finger or tool.
@@ -1294,7 +1293,7 @@ var Pointable = exports.Pointable = function(data) {
   /**
    * Indicates whether this is a valid Pointable object.
    *
-   * @member Leap.Pointable.prototype.valid {Boolean}
+   * @member Pointable.prototype.valid {Boolean}
    */
   this.valid = true
   /**
@@ -1305,10 +1304,10 @@ var Pointable = exports.Pointable = function(data) {
    * Leap may assign a new ID when it detects the entity in a future frame.
    *
    * Use the ID value with the pointable() functions defined for the
-   * {@link Leap.Frame} and {@link Frame.Hand} classes to find this
+   * {@link Frame} and {@link Frame.Hand} classes to find this
    * Pointable object in future frames.
    *
-   * @member Leap.Pointable.prototype.id {String}
+   * @member Pointable.prototype.id {String}
    */
   this.id = data.id
   this.handId = data.handId
@@ -1318,7 +1317,7 @@ var Pointable = exports.Pointable = function(data) {
    * The reported length is the visible length of the finger or tool from the
    * hand to tip. If the length isn't known, then a value of 0 is returned.
    *
-   * @member Leap.Pointable.prototype.length {Number}
+   * @member Pointable.prototype.length {Number}
    */
   this.length = data.length
   /**
@@ -1327,7 +1326,7 @@ var Pointable = exports.Pointable = function(data) {
    *
    * If tool is false, then this Pointable must be a finger.
    *
-   * @member Leap.Pointable.prototype.tool {Boolean}
+   * @member Pointable.prototype.tool {Boolean}
    */
   this.tool = data.tool
   /**
@@ -1339,7 +1338,7 @@ var Pointable = exports.Pointable = function(data) {
    *
    * Pointable objects representing fingers do not have a width property.
    *
-   * @member Leap.Pointable.prototype.width {Number}
+   * @member Pointable.prototype.width {Number}
    */
   this.width = data.width
   /**
@@ -1349,19 +1348,19 @@ var Pointable = exports.Pointable = function(data) {
    * direction as the tip.
    *
    * <img src="images/Leap_Finger_Model.png"/>
-   * @member Leap.Pointable.prototype.direction {Array: [x,y,z]}
+   * @member Pointable.prototype.direction {Array: [x,y,z]}
    */
   this.direction = data.direction
   /**
    * The tip position in millimeters from the Leap origin.
    *
-   * @member Leap.Pointable.prototype.tipPosition {Array: [x,y,z]}
+   * @member Pointable.prototype.tipPosition {Array: [x,y,z]}
    */
   this.tipPosition = data.tipPosition
   /**
    * The rate of change of the tip position in millimeters/second.
    *
-   * @member Leap.Pointable.prototype.tipVelocity {Array: [Vx,Vy,Vz]}
+   * @member Pointable.prototype.tipVelocity {Array: [Vx,Vy,Vz]}
    */
   this.tipVelocity = data.tipVelocity
   this._translation = data.tipPosition
@@ -1371,7 +1370,7 @@ var Pointable = exports.Pointable = function(data) {
  * A string containing a brief, human readable description of the Pointable
  * object.
  *
- * @method Leap.Pointable.prototype.toString
+ * @method Pointable.prototype.toString
  * @returns {String} A description of the Pointable object as a string.
  */
 Pointable.prototype.toString = function() {
@@ -1392,8 +1391,8 @@ Pointable.prototype.translation = Motion.translation;
  * Pointable.valid property.)
 
  * @constant
- * @type {Leap.Pointable}
- * @name Leap.Pointable.Invalid
+ * @type {Pointable}
+ * @name Pointable.Invalid
  */
 Pointable.Invalid = { valid: false }
 
