@@ -519,7 +519,7 @@ Controller.prototype.disconnect = function() {
 }
 
 Controller.prototype.frame = function(num) {
-  return this.history.get(num) || Frame.Invalid;
+  return this.history.get(num) || Frame.Invalid
 }
 
 Controller.prototype.on = function(type, callback) {
@@ -555,7 +555,7 @@ Controller.prototype.processRawFrame = function(frame) {
 
 Controller.prototype.dispatchEvent = function(type, e) {
   for (var index = 0, count = this.listeners[type].length; index != count; index++) {
-    this.listeners[type][index](e);
+    this.listeners[type][index](e)
   }
 }
 });
