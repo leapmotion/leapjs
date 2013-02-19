@@ -11,4 +11,16 @@ describe('CircularBuffer', function(){
       assert.equal(undefined, buf.get(3))
     })
   })
+
+  describe('overflowing', function(){
+    it('should return elements after its overflowed', function(){
+      var buf = new Leap.CircularBuffer(10);
+      for (var i = 0; i != 20; i++) {
+        buf.push(i)
+      }
+      assert.equal(19, buf.get())
+      assert.equal(18, buf.get(1))
+      assert.equal(undefined, buf.get(10))
+    })
+  })
 })
