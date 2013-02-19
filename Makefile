@@ -1,3 +1,5 @@
+BROWSERIFY_ARGS=--ignore=./node_connection lib/websocketjs/swfobject.js lib/websocketjs/web_socket.js template/entry.js
+
 serve:
 	./node_modules/.bin/static .
 
@@ -7,14 +9,10 @@ test: build
 build: compile compress
 
 watch:
-	./node_modules/.bin/browserify \
-		lib/websocketjs/swfobject.js lib/websocketjs/web_socket.js template/entry.js \
-		-o leap.js -w
+	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js -w
 
 compress:
 	./node_modules/.bin/uglifyjs ./leap.js -o leap.min.js
 
 compile:
-	./node_modules/.bin/browserify \
-		lib/websocketjs/swfobject.js lib/websocketjs/web_socket.js template/entry.js \
-		-o leap.js
+	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js
