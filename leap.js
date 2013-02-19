@@ -435,6 +435,7 @@ process.binding = function (name) {
 require.define("/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){var Controller = require("./controller").Controller
   , Frame = require("./frame").Frame
   , Connection = require("./connection").Connection
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
   , UI = require("./ui").UI
   , loopController = undefined
 
@@ -455,13 +456,13 @@ require.define("/lib/index.js",function(require,module,exports,__dirname,__filen
  * updates.
  *
  * As an alternative, you can create your own Controller object and use a
- * {@link Leap.Controller#onFrame onFrame} callback to process the data at
- * the frame rate of the Leap device. See {@link Leap.Controller} for an
+ * {@link Controller#onFrame onFrame} callback to process the data at
+ * the frame rate of the Leap device. See {@link Controller} for an
  * example.
  *
  * @method Leap.loop
  * @param {function} callback A function called when the browser is ready to
- * draw to the screen. The most recent {@link Leap.Frame} object is passed to
+ * draw to the screen. The most recent {@link Frame} object is passed to
  * your callback function.
  * @example
  *    Leap.loop( function( frame ) {
@@ -477,6 +478,7 @@ exports.Leap = {
   Controller: Controller,
   Frame: Frame,
   Connection: Connection,
+  CircularBuffer: CircularBuffer,
   UI: UI
 }
 
@@ -502,7 +504,7 @@ var Controller = exports.Controller = function(opts) {
 }
 
 Controller.prototype.connect = function() {
-  if (this.connection.connect()) {
+  if (this.connection.connect() && typeof(window) !== undefined) {
     var controller = this
     var callback = function() {
       controller.dispatchEvent('animationFrame', controller.lastFrame)
@@ -1452,14 +1454,15 @@ require.define("/lib/circular_buffer.js",function(require,module,exports,__dirna
 
 CircularBuffer.prototype.get = function(i) {
   if (i == undefined) i = 0;
-  if (i > this.size) return null;
-  if (i > this._buf.length) return null;
-  return this._buf[this.pos - i % this.length]
+  if (i >= this.size) return undefined;
+  if (i >= this._buf.length) return undefined;
+  return this._buf[this.pos - i % this._buf.length - 1]
 }
 
 CircularBuffer.prototype.push = function(o) {
-  this._buf[this.pos % this.length] = o
+  this._buf[this.pos % this.size] = o
   this.pos++
+  return o
 }
 
 });
