@@ -7,10 +7,8 @@
     "test": "test.js"
   },
   "license": "BSD-2-Clause",
-  "dependencies": {
-    "underscore": "*"
-  },
   "devDependencies": {
+    "underscore": "*",
     "browserify": "git://github.com/substack/node-browserify.git",
     "mocha": "1.7.4",
     "node-static": "*",
