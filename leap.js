@@ -1486,7 +1486,6 @@ require.define("/lib/protocol.js",function(require,module,exports,__dirname,__fi
 var Protocol = exports.Protocol = function(header) {
   switch(header.version) {
     case 1:  return new Protocol1()
-    case 2:  return new Protocol2()
     default: throw "unrecognized version"
   }
 }
