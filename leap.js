@@ -434,11 +434,10 @@ process.binding = function (name) {
 
 require.define("/lib/index.js",function(require,module,exports,__dirname,__filename,process,global){var Controller = require("./controller").Controller
   , Frame = require("./frame").Frame
-  , Connection = require("./connection").Connection
   , CircularBuffer = require("./circular_buffer").CircularBuffer
+  , Connection = require("./connection").Connection
   , UI = require("./ui").UI
   , loopController = undefined
-
 
 /**
  * The Leap.loop() function passes a frame of Leap data to your
@@ -476,8 +475,8 @@ exports.Leap = {
     loopController.loop(callback)
   },
   Controller: Controller,
-  Frame: Frame,
   Connection: Connection,
+  Frame: Frame,
   CircularBuffer: CircularBuffer,
   UI: UI
 }
@@ -485,7 +484,6 @@ exports.Leap = {
 });
 
 require.define("/lib/controller.js",function(require,module,exports,__dirname,__filename,process,global){var Frame = require('./frame').Frame
-  , Connection = require('./connection').Connection
   , CircularBuffer = require("./circular_buffer").CircularBuffer
   , Pipeline = require("./pipeline").Pipeline
 
@@ -495,7 +493,8 @@ var Controller = exports.Controller = function(opts) {
   var controller = this
   this.lastFrame = Frame.Invalid
   this.lastValidFrame = Frame.Invalid
-  this.connection = new Connection({
+  var connectionType = this.connectionType()
+  this.connection = new connectionType({
     host: opts && opts.host,
     frame: function(frame) {
       controller.processFrame(frame)
@@ -503,8 +502,16 @@ var Controller = exports.Controller = function(opts) {
   })
 }
 
+Controller.prototype.inBrowser = function() {
+  return typeof(window) !== 'undefined'
+}
+
+Controller.prototype.connectionType = function() {
+  return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection
+}
+
 Controller.prototype.connect = function() {
-  if (this.connection.connect() && typeof(window) !== undefined) {
+  if (this.connection.connect() && this.inBrowser()) {
     var controller = this
     var callback = function() {
       controller.dispatchEvent('animationFrame', controller.lastFrame)
@@ -527,7 +534,11 @@ Controller.prototype.on = function(type, callback) {
 }
 
 Controller.prototype.loop = function(callback) {
-  this.on('animationFrame', callback)
+  if (this.inBrowser()) {
+    this.on('animationFrame', callback)
+  } else {
+    this.on('frame', callback)
+  }
   this.connect()
 }
 
@@ -1400,52 +1411,6 @@ Pointable.Invalid = { valid: false }
 
 });
 
-require.define("/lib/connection.js",function(require,module,exports,__dirname,__filename,process,global){var Frame = require('./frame').Frame
-
-var Connection = exports.Connection = function(opts) {
-  this.host = opts && opts.host || "127.0.0.1"
-  if (opts && opts.frame) this.frameHandler = opts.frame
-  if (opts && opts.ready) this.readyHandler = opts.ready
-};
-
-Connection.prototype.handleOpen = function() {
-  if (this.openTimer) {
-    clearTimeout(this.openTimer)
-    this.openTimer = undefined
-  }
-};
-
-Connection.prototype.handleClose = function() {
-  var connection = this;
-  this.openTimer = setTimeout(function() { console.log("reconnecting..."); connection.connect(); }, 1000)
-};
-
-Connection.prototype.connect = function() {
-  if (this.socket) return false
-  var connection = this
-  this.socket = new WebSocket("ws://" + this.host + ":6437")
-  this.socket.onopen = connection.handleOpen
-  this.socket.onmessage = function(message) {
-    var data = JSON.parse(message.data)
-    if (data.version) {
-      connection.serverVersion = data.version
-      if (connection.readyHandler) connection.readyHandler(connection.serverVersion)
-    } else {
-      if (connection.frameHandler) connection.frameHandler(new Frame(data))
-    }
-  }
-  this.socket.onclose = connection.handleClose
-  return true
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return
-  this.socket.close()
-  this.socket = undefined
-}
-
-});
-
 require.define("/lib/circular_buffer.js",function(require,module,exports,__dirname,__filename,process,global){var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0
   this._buf = []
@@ -1482,6 +1447,58 @@ Pipeline.prototype.run = function(frame) {
     frame = this.steps[i](frame)
   }
   return frame
+}
+
+});
+
+require.define("/lib/connection.js",function(require,module,exports,__dirname,__filename,process,global){var Frame = require('./frame').Frame
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.connect = function() {
+  if (this.socket) return false
+  var connection = this
+  this.socket = new WebSocket("ws://" + this.host + ":6437")
+  this.socket.onopen = connection.handleOpen
+  this.socket.onmessage = function(message) {
+    var data = JSON.parse(message.data)
+    if (data.version) {
+      connection.serverVersion = data.version
+      if (connection.readyHandler) connection.readyHandler(connection.serverVersion)
+    } else {
+      if (connection.frameHandler) connection.frameHandler(new Frame(data))
+    }
+  }
+  this.socket.onclose = connection.handleClose
+  return true
+}
+
+});
+
+require.define("/lib/base_connection.js",function(require,module,exports,__dirname,__filename,process,global){var Frame = require('./frame').Frame
+
+var Connection = exports.Connection = function(opts) {
+  this.host = opts && opts.host || "127.0.0.1"
+  if (opts && opts.frame) this.frameHandler = opts.frame
+  if (opts && opts.ready) this.readyHandler = opts.ready
+};
+
+Connection.prototype.handleOpen = function() {
+  if (this.openTimer) {
+    clearTimeout(this.openTimer)
+    this.openTimer = undefined
+  }
+};
+
+Connection.prototype.handleClose = function() {
+  var connection = this;
+  this.openTimer = setTimeout(function() { connection.connect(); }, 1000)
+};
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return
+  this.socket.close()
+  this.socket = undefined
 }
 
 });
