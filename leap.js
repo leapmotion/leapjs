@@ -506,6 +506,10 @@ Controller.prototype.inBrowser = function() {
   return typeof(window) !== 'undefined'
 }
 
+Controller.prototype.useAnimationLoop = function() {
+  return typeof(window) !== 'undefined' && typeof(chrome) === "undefined"
+}
+
 Controller.prototype.connectionType = function() {
   return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection
 }
@@ -534,7 +538,7 @@ Controller.prototype.on = function(type, callback) {
 }
 
 Controller.prototype.loop = function(callback) {
-  if (this.inBrowser()) {
+  if (this.useAnimationLoop()) {
     this.on('animationFrame', callback)
   } else {
     this.on('frame', callback)
@@ -1217,7 +1221,7 @@ var extend = exports.extend = function(obj) {
 };
 
 var transposeMultiply = exports.transposeMultiply = function(m1, m2) {
-  return multiple(transpose(m1), m2)
+  return multiply(transpose(m1), m2)
 }
 
 var transpose = exports.transposeMultiply = function(m) {
