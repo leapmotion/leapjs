@@ -38,7 +38,7 @@ Leap.loop(function(frame) {
 ```
 
 As well, you can call a special version of `Leap.loop` where you provide a second argument to the callback.
-This allows you not respond to further frame events until you're ready for them. Here is an exmaple of
+This allows you to wait until you're ready to receieve further frame events. Here is an exmaple of
 this approach.
 
 ```javascript
