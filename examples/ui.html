@@ -27,8 +27,38 @@
     var controller = new Leap.Controller()
     var region = new Leap.UI.Region([-100, 100, -100], [100, 300, 100])
     controller.addStep(new Leap.UI.Cursor())
+    controller.addStep(region.listener({nearThreshold:50}))
+    var backgroundColor = "blue"
+
+    var drawing = false
+
+    region.on('enter', function() {
+      context.fillStyle = "white";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      console.log("enter")
+      backgroundColor = "blue"
+      drawing = true
+    })
+
+    region.on('exit', function() {
+      console.log("exiting")
+      drawing = false
+    })
+
+    region.on('near', function() {
+      console.log("near")
+      backgroundColor = "#aaf"
+    })
+
+    region.on('far', function() {
+      console.log("far")
+      backgroundColor = "blue"
+    })
     controller.loop(function(frame) {
-      context.clearRect(0, 0, canvas.width, canvas.height);
+      if (!drawing) {
+        context.fillStyle = backgroundColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
       context.fillStyle = "blue";
       context.font = "normal 20px Arial";
       if (frame.cursorPosition) {
