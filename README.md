@@ -51,13 +51,12 @@ Leap.loop(function(frame, done) {
 ### Internals of the event loop
 
 Leap.loop attempts to pick the right event loop to use. Within the
-background page of a Chrome extension, Chrome will not use the `animationFrame` loop.
+background page of a Chrome extension, Chrome will not use the `animationFrame` loop. As well,
+in Node.js no animation event exists.
 
 In general, browsers optimize the load of requestAnimationFrame based on load, element visibility,
 battery status, etc. Chrome has chosen to optimize this by omitting the functionality
 altogether in the background.js of its extensions.
-
-As well, in Node.js no animation event exists.
 
 To manually pick the event type you'd like to use, create a leap controller and listen for the appropriate event
 type, either `frame` or `animationFrame`.
