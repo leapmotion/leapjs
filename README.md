@@ -1,4 +1,4 @@
-# Leap JS
+# LeapJS
 
 Welcome to the Leap JavaScript framework. This is intended for use with the Leap (https://www.leapmotion.com/).
 
@@ -8,7 +8,28 @@ If you're using npm, you can use `npm install leapjs`.
 
 ## Usage
 
-### Using the javascript event loop
+LeapJS works from with Node.js or your browser.
+
+### From the browser
+
+Include the leap.js script included at the root of this package, or, use the minified version provided at leap.min.js.
+
+```html
+<script src="./leap.min.js"></script>
+```
+
+### From node
+
+Use the following:
+
+```javascript
+var Leap = require('leap').Leap
+```
+
+### Getting frames
+
+To listen to the frame events, you can use the friendly `Leap.loop` function.
+This will auto-detect which type of event loop you can accept, and, call your callback with frames.
 
 ```javascript
 Leap.loop(function(frame) {
@@ -16,7 +37,7 @@ Leap.loop(function(frame) {
 })
 ```
 
-### WARNING
+### Internals of the event loop
 
 Leap.loop uses requestAnimationFrame internally, which *will not run* inside the
 background page of a Chrome extension, due to Chrome's implementation of it.
@@ -25,20 +46,24 @@ In general, browsers optimize the load of requestAnimationFrame based on load, e
 battery status, etc. Chrome has chosen to optimize this by omitting the functionality
 altogether in the background.js of its extensions.
 
-So, if you're hacking on a Chrome extension, and you need to receive frames inside background.js,
-the best solution for now is to use the "Do-it-yourself loop" described below.
+As well, in Node.js no animation event exists.
 
-### Do-it-yourself loop
+To pick the event type you'd like to use, create a leap controller and listen for the appropriate event
+type, either `frame` or `animationFrame`.
 
-To use the leap motion api do the following...
+### Picking your own event type
 
 ```javascript
 var controller = new Leap.Controller();
+
+// for the frame event
 controller.on('frame', function() {
-  console.log("hello")
-  console.log(controller.frame().id)
-  console.log(controller.frame().fingers.length)
-  console.log(controller.frame().finger(0))
+  console.log("hello frame")
+})
+
+// for the animationFrame event. this is only supported from within the browser
+controller.on('animationFrame', function() {
+  console.log("hello frame")
 })
 controller.connect()
 ```
@@ -51,9 +76,17 @@ Inside the examples directory are a few great examples. To get them running, do 
 * Run `make serve`
 * Point your browser at http://localhost:8080/examples and enjoy
 
+## Development
+
+You can build your own leap.js file by using `make build`. If you're doing any amount of development, you'll find it
+convenient to run `make watch`. This takes care of building leap.js for you on every edit. As well, you can both
+watch and running `make watch-test`.
+
 ## Tests
 
 There are currently rudamentary tests. To get them running, do the following:
 
 * Run `npm install`
 * Run `make test`
+
+Or use make watch-test as noted above.
