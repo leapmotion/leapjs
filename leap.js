@@ -520,7 +520,6 @@ Controller.prototype.loop = function(callback) {
       var controller = this
       var scheduler = null
       var immediateRunnerCallback = function(frame) {
-        console.log("whoa .. frame")
         callback(frame, function() {
           if (controller.lastFrame != frame) {
             immediateRunnerCallback(controller.lastFrame)
@@ -1709,7 +1708,6 @@ Connection.prototype.handleData = function(data) {
 },{"./protocol":18}],18:[function(require,module,exports){var Frame = require('./frame').Frame
 
 var chooseProtocol = exports.chooseProtocol = function(header) {
-  console.log("header:"+JSON.stringify(header.version))
   switch(header.version) {
     case 1:
       var protocol = function(data, connection) {
@@ -1767,8 +1765,6 @@ Region.prototype.setupNearRegion = function(distance) {
     [this.start[0] - distance, this.start[1] - distance, this.start[2] - distance],
     [this.end[0] + distance, this.end[1] + distance, this.end[2] + distance]
   )
-  console.log("setup this.nearRegion:"+this.nearRegion.start+" end:"+this.nearRegion.end)
-
   var region = this
   nearRegion.on("enter", function(frame) {
     region.emit("near", frame)
@@ -1777,7 +1773,6 @@ Region.prototype.setupNearRegion = function(distance) {
     region.emit("far", frame)
   })
   region.on('exit', function(frame) {
-    console.log("entering near from exiting")
     region.emit("near", frame)
   })
 }
