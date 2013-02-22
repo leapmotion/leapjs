@@ -16,7 +16,7 @@ test-node:
 build: compile compress
 
 watch:
-	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js -w -v
+	./node_modules/.bin/nodemon --watch lib --exec "make" test
 
 compress:
 	./node_modules/.bin/uglifyjs ./leap.js -o leap.min.js
@@ -24,6 +24,4 @@ compress:
 compile:
 	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js
 
-watch-test:
-	./node_modules/.bin/nodemon --watch lib --exec "make" test
-
+watch-test: watch
