@@ -39,8 +39,8 @@ Leap.loop(function(frame) {
 
 ### Internals of the event loop
 
-Leap.loop uses requestAnimationFrame internally, which *will not run* inside the
-background page of a Chrome extension, due to Chrome's implementation of it.
+Leap.loop attempts to pick the right event loop to use. Within the
+background page of a Chrome extension, Chrome will not use the `animationFrame` loop.
 
 In general, browsers optimize the load of requestAnimationFrame based on load, element visibility,
 battery status, etc. Chrome has chosen to optimize this by omitting the functionality
@@ -48,7 +48,7 @@ altogether in the background.js of its extensions.
 
 As well, in Node.js no animation event exists.
 
-To pick the event type you'd like to use, create a leap controller and listen for the appropriate event
+To manually pick the event type you'd like to use, create a leap controller and listen for the appropriate event
 type, either `frame` or `animationFrame`.
 
 ### Picking your own event type
@@ -75,6 +75,10 @@ Inside the examples directory are a few great examples. To get them running, do 
 * Run `npm install`
 * Run `make serve`
 * Point your browser at http://localhost:8080/examples and enjoy
+
+### Node.js example
+
+To run the node.js example, run `node exmaples/node.js`.
 
 ## Development
 
