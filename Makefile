@@ -9,7 +9,7 @@ test: build
 build: compile compress
 
 watch:
-	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js -w
+	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js -w -v
 
 compress:
 	./node_modules/.bin/uglifyjs ./leap.js -o leap.min.js
