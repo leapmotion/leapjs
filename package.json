@@ -17,6 +17,7 @@
     "node-static": "*",
     "uglify-js": "*",
     "chai": "*",
-    "mocha-phantomjs": "*"
+    "mocha-phantomjs": "*",
+    "nodemon": "*"
   }
 }

@@ -16,3 +16,6 @@ compress:
 
 compile:
 	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js
+
+watch-test:
+	./node_modules/.bin/nodemon --watch lib --exec "make" test
