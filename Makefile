@@ -3,8 +3,15 @@ BROWSERIFY_ARGS=--ignore=./node_connection lib/websocketjs/swfobject.js lib/webs
 serve:
 	./node_modules/.bin/static .
 
-test: build
+test: test-all
+
+test-all: test-browser test-node
+
+test-browser: build
 	./node_modules/.bin/mocha-phantomjs test/runner.html
+
+test-node:
+	./node_modules/.bin/mocha lib/index.js test/common.js test/test.js test/*.js -R dot
 
 build: compile compress
 
@@ -19,3 +26,4 @@ compile:
 
 watch-test:
 	./node_modules/.bin/nodemon --watch lib --exec "make" test
+

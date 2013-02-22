@@ -1,8 +1,10 @@
+if (typeof(exports) === 'undefined') exports = {}
+
 var fingerId = 0
   , handId = 0
   , frameId =0;
 
-var fakeFrame = function(opts) {
+var fakeFrame = exports.fakeFrame = function(opts) {
   if (opts === undefined) opts = {};
 
   handId = 0
@@ -19,7 +21,7 @@ var fakeFrame = function(opts) {
   }
 }
 
-var fakeHand = function(opts) {
+var fakeHand = exports.fakeHand = function(opts) {
   handId++
   return {
     id: handId - 1,
@@ -30,7 +32,7 @@ var fakeHand = function(opts) {
   }
 }
 
-var fakeFinger = function() {
+var fakeFinger = exports.fakeFinger = function() {
   fingerId++
   return {
     id: fingerId - 1,
