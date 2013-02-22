@@ -54,7 +54,8 @@
       console.log("far")
       backgroundColor = "blue"
     })
-    controller.loop(function(frame) {
+
+    controller.loop(function(frame, done) {
       if (!drawing) {
         context.fillStyle = backgroundColor;
         context.fillRect(0, 0, canvas.width, canvas.height);
@@ -72,6 +73,7 @@
         context.stroke();
       }
       context.fillText("there are "+frame.pointables.length+" things", 80, 80);
+      done()
     })
   </script>
 </html>
