@@ -48,7 +48,6 @@ Leap.loop(function(frame, done) {
 })
 ```
 
-
 ### Internals of the event loop
 
 Leap.loop attempts to pick the right event loop to use. Within the
