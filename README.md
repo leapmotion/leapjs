@@ -37,6 +37,18 @@ Leap.loop(function(frame) {
 })
 ```
 
+As well, you can call a special version of `Leap.loop` where you provide a second argument to the callback.
+This allows you not respond to further frame events until you're ready for them. Here is an exmaple of
+this approach.
+
+```javascript
+Leap.loop(function(frame, done) {
+  // do somethings
+  done() // if you don't invoke this, you won't get more events
+})
+```
+
+
 ### Internals of the event loop
 
 Leap.loop attempts to pick the right event loop to use. Within the
