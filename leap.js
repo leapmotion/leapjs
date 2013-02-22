@@ -444,9 +444,13 @@ Leap = require("../lib/index").Leap
  */
 
 exports.Leap = {
-  loop: function(callback) {
+  loop: function(callback, done) {
     if (!loopController) loopController = new Controller()
-    loopController.loop(callback)
+    if (done !== undefined) {
+      loopController.loop(callback)
+    } else {
+      loopController.loop(callback, done)
+    }
   },
   Controller: Controller,
   Connection: Connection,
