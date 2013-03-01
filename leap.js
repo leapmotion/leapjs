@@ -685,7 +685,7 @@ var Frame = exports.Frame = function(data) {
   if (data.gestures) {
     this.gestures = []
     for (var gestureIdx = 0, gestureCount = data.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
-      this.gestures.push(new Gesture(data.gestures[gestureIdx]))
+      this.gestures.push(Gesture(data.gestures[gestureIdx]))
     }
   }
 }
@@ -1396,18 +1396,56 @@ Pointable.prototype.translation = Motion.translation;
 Pointable.Invalid = { valid: false }
 
 },{"./motion":15}],16:[function(require,module,exports){var Gesture = exports.Gesture = function(data) {
-  this.id = data.id
-  this.type = data.type
-  this.state = data.state
-  this.startTime = data.startTime
-  this.lastUpdatedTime = data.lastUpdatedTime
-  this.duration = data.duration
+  var gesture = undefined
+  switch (data.type) {
+    case 'circle':
+      gesture = new CircleGesture(data)
+      break
+    case 'swipe':
+      gesture = new SwipeGesture(data)
+      break
+    case 'screenTap':
+      gesture = new ScreenTapGesture(data)
+      break
+    case 'keyTap':
+      gesture = new KeyTapGesture(data)
+      break
+    default:
+      throw "unkown gesture type"
+  }
+  gesture.id = data.id
+  gesture.handIds = data.handIds
+  gesture.pointableIds = data.pointableIds
+  gesture.duration = data.duration
+  gesture.state = data.state
+  gesture.type = data.type
+  return gesture
+}
+
+var CircleGesture = function(data) {
+  this.center = data.center
+  this.normal = data.direction
   this.progress = data.progress
-  this.magnitude = data.magnitude
+  this.radius = data.radius
+}
+
+var SwipeGesture = function(data) {
+  this.startPosition = data.startPosition
   this.position = data.position
   this.direction = data.direction
-  this.handIds = data.handIds
-  this.pointableIds = data.pointableIds
+  this.speed = data.speed
+}
+
+var ScreenTapGesture = function(data) {
+  this.position = data.position
+  this.direction = data.direction
+  this.progress = data.progress
+}
+
+var KeyTapGesture = function(data) {
+  this.position = data.position
+  this.direction = data.direction
+  this.progress = data.progress
 }
 
 },{}],6:[function(require,module,exports){var CircularBuffer = exports.CircularBuffer = function(size) {
