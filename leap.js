@@ -444,8 +444,12 @@ Leap = require("../lib/index").Leap
  */
 
 exports.Leap = {
-  loop: function(callback) {
-    if (!loopController) loopController = new Controller()
+  loop: function(opts, callback) {
+    if (callback === undefined) {
+      callback = opts
+      opts = {}
+    }
+    if (!loopController) loopController = new Controller(opts)
     loopController.loop(callback)
   },
   Controller: Controller,
@@ -469,6 +473,7 @@ var Controller = exports.Controller = function(opts) {
   this.lastValidFrame = Frame.Invalid
   var connectionType = this.connectionType()
   this.connection = new connectionType({
+    enableGestures: opts && opts.enableGestures,
     host: opts && opts.host,
     frame: function(frame) {
       controller.processFrame(frame)
@@ -545,10 +550,9 @@ Controller.prototype.processFrame = function(frame) {
 
 Controller.prototype.processRawFrame = function(frame) {
   frame.controller = this
-  this.history.push(frame)
+  frame.historyIdx = this.history.push(frame)
   this.lastFrame = frame
   if (this.lastFrame.valid) this.lastValidFrame = this.lastFrame
-  this.historyIdx = (this.historyIdx + 1) % this.historyLength
   this.emit('frame', frame)
 }
 
@@ -556,6 +560,7 @@ extend(Controller.prototype, EventEmitter.prototype)
 },{"./frame":5,"./circular_buffer":6,"./pipeline":9,"events":10,"./util":11,"./connection":7,"./node_connection":12}],5:[function(require,module,exports){var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Motion = require("./motion").Motion
+  , Gesture = require("./gesture").Gesture
   , extend = require("./util").extend
 
 /**
@@ -650,16 +655,17 @@ var Frame = exports.Frame = function(data) {
    * @member Frame.prototype.fingers[]
    * @type {Pointable}
    */
+
   this.fingers = []
   this.pointablesMap = {}
-  this._translation = data.t;
-  this.rotation = data.r;
-  this._scaleFactor = data.s;
-  this.data = data;
+  this._translation = data.t
+  this.rotation = data.r
+  this._scaleFactor = data.s
+  this.data = data
   var handMap = {}
   for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
     var hand = new Hand(data.hands[handIdx]);
-    hand.frame = this;
+    hand.frame = this
     this.hands.push(hand)
     this.handsMap[hand.id] = hand
     handMap[hand.id] = handIdx
@@ -674,6 +680,12 @@ var Frame = exports.Frame = function(data) {
       var hand = this.hands[handMap[pointable.handId]]
       hand.pointables.push(pointable);
       (pointable.tool ? hand.tools : hand.fingers).push(pointable);
+    }
+  }
+  if (data.gestures) {
+    this.gestures = []
+    for (var gestureIdx = 0, gestureCount = data.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
+      this.gestures.push(Gesture(data.gestures[gestureIdx]))
     }
   }
 }
@@ -831,7 +843,7 @@ Frame.Invalid = {
 extend(Frame.prototype, Motion)
 extend(Frame.Invalid, Motion)
 
-},{"./hand":13,"./pointable":14,"./motion":15,"./util":11}],13:[function(require,module,exports){var Motion = require("./motion").Motion
+},{"./hand":13,"./pointable":14,"./motion":15,"./gesture":16,"./util":11}],13:[function(require,module,exports){var Motion = require("./motion").Motion
   , Pointable = require("./pointable").Pointable
   , extend = require("./util").extend
 
@@ -1383,7 +1395,60 @@ Pointable.prototype.translation = Motion.translation;
  */
 Pointable.Invalid = { valid: false }
 
-},{"./motion":15}],6:[function(require,module,exports){var CircularBuffer = exports.CircularBuffer = function(size) {
+},{"./motion":15}],16:[function(require,module,exports){var Gesture = exports.Gesture = function(data) {
+  var gesture = undefined
+  switch (data.type) {
+    case 'circle':
+      gesture = new CircleGesture(data)
+      break
+    case 'swipe':
+      gesture = new SwipeGesture(data)
+      break
+    case 'screenTap':
+      gesture = new ScreenTapGesture(data)
+      break
+    case 'keyTap':
+      gesture = new KeyTapGesture(data)
+      break
+    default:
+      throw "unkown gesture type"
+  }
+  gesture.id = data.id
+  gesture.handIds = data.handIds
+  gesture.pointableIds = data.pointableIds
+  gesture.duration = data.duration
+  gesture.state = data.state
+  gesture.type = data.type
+  return gesture
+}
+
+var CircleGesture = function(data) {
+  this.center = data.center
+  this.normal = data.direction
+  this.progress = data.progress
+  this.radius = data.radius
+}
+
+var SwipeGesture = function(data) {
+  this.startPosition = data.startPosition
+  this.position = data.position
+  this.direction = data.direction
+  this.speed = data.speed
+}
+
+var ScreenTapGesture = function(data) {
+  this.position = data.position
+  this.direction = data.direction
+  this.progress = data.progress
+}
+
+var KeyTapGesture = function(data) {
+  this.position = data.position
+  this.direction = data.direction
+  this.progress = data.progress
+}
+
+},{}],6:[function(require,module,exports){var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0
   this._buf = []
   this.size = size
@@ -1398,8 +1463,7 @@ CircularBuffer.prototype.get = function(i) {
 
 CircularBuffer.prototype.push = function(o) {
   this._buf[this.pos % this.size] = o
-  this.pos++
-  return o
+  return this.pos++
 }
 
 },{}],9:[function(require,module,exports){var Pipeline = exports.Pipeline = function() {
@@ -1599,7 +1663,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":16}],16:[function(require,module,exports){// shim for using process in browser
+},{"__browserify_process":17}],17:[function(require,module,exports){// shim for using process in browser
 
 var process = module.exports = {};
 
@@ -1658,18 +1722,19 @@ Connection.prototype.connect = function() {
   if (this.socket) return false
   var connection = this
   this.socket = new WebSocket("ws://" + this.host + ":6437")
-  this.socket.onopen = connection.handleOpen
+  this.socket.onopen = function() { connection.handleOpen() }
   this.socket.onmessage = function(message) { connection.handleData(message.data) }
-  this.socket.onclose = connection.handleClose
+  this.socket.onclose = function() { connection.handleClose() }
   return true
 }
 
-},{"./base_connection":17}],17:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
+},{"./base_connection":18}],18:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
+  , util = require('util')
 
 var Connection = exports.Connection = function(opts) {
   this.host = opts && opts.host || "127.0.0.1"
   if (opts && opts.frame) this.frameHandler = opts.frame
-  if (opts && opts.ready) this.readyHandler = opts.ready
+  this.enableGestures = opts && opts.enableGestures ? true : false
 }
 
 Connection.prototype.handleOpen = function() {
@@ -1677,10 +1742,11 @@ Connection.prototype.handleOpen = function() {
     clearTimeout(this.openTimer)
     this.openTimer = undefined
   }
+  this.socket.send(util.format("%j", {enableGestures: this.enableGestures}))
 }
 
 Connection.prototype.handleClose = function() {
-  var connection = this;
+  var connection = this
   this.openTimer = setTimeout(function() { connection.connect() }, 1000)
 }
 
@@ -1701,7 +1767,7 @@ Connection.prototype.handleData = function(data) {
   }
 }
 
-},{"./protocol":18}],18:[function(require,module,exports){var Frame = require('./frame').Frame
+},{"./protocol":19,"util":20}],19:[function(require,module,exports){var Frame = require('./frame').Frame
 
 var chooseProtocol = exports.chooseProtocol = function(header) {
   switch(header.version) {
@@ -1717,11 +1783,363 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"./frame":5}],8:[function(require,module,exports){exports.UI = {
+},{"./frame":5}],20:[function(require,module,exports){var events = require('events');
+
+exports.isArray = isArray;
+exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
+exports.isRegExp = function(obj){return Object.prototype.toString.call(obj) === '[object RegExp]'};
+
+
+exports.print = function () {};
+exports.puts = function () {};
+exports.debug = function() {};
+
+exports.inspect = function(obj, showHidden, depth, colors) {
+  var seen = [];
+
+  var stylize = function(str, styleType) {
+    // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+    var styles =
+        { 'bold' : [1, 22],
+          'italic' : [3, 23],
+          'underline' : [4, 24],
+          'inverse' : [7, 27],
+          'white' : [37, 39],
+          'grey' : [90, 39],
+          'black' : [30, 39],
+          'blue' : [34, 39],
+          'cyan' : [36, 39],
+          'green' : [32, 39],
+          'magenta' : [35, 39],
+          'red' : [31, 39],
+          'yellow' : [33, 39] };
+
+    var style =
+        { 'special': 'cyan',
+          'number': 'blue',
+          'boolean': 'yellow',
+          'undefined': 'grey',
+          'null': 'bold',
+          'string': 'green',
+          'date': 'magenta',
+          // "name": intentionally not styling
+          'regexp': 'red' }[styleType];
+
+    if (style) {
+      return '\033[' + styles[style][0] + 'm' + str +
+             '\033[' + styles[style][1] + 'm';
+    } else {
+      return str;
+    }
+  };
+  if (! colors) {
+    stylize = function(str, styleType) { return str; };
+  }
+
+  function format(value, recurseTimes) {
+    // Provide a hook for user-specified inspect functions.
+    // Check that value is an object with an inspect function on it
+    if (value && typeof value.inspect === 'function' &&
+        // Filter out the util module, it's inspect function is special
+        value !== exports &&
+        // Also filter out any prototype objects using the circular check.
+        !(value.constructor && value.constructor.prototype === value)) {
+      return value.inspect(recurseTimes);
+    }
+
+    // Primitive types cannot have properties
+    switch (typeof value) {
+      case 'undefined':
+        return stylize('undefined', 'undefined');
+
+      case 'string':
+        var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                                 .replace(/'/g, "\\'")
+                                                 .replace(/\\"/g, '"') + '\'';
+        return stylize(simple, 'string');
+
+      case 'number':
+        return stylize('' + value, 'number');
+
+      case 'boolean':
+        return stylize('' + value, 'boolean');
+    }
+    // For some reason typeof null is "object", so special case here.
+    if (value === null) {
+      return stylize('null', 'null');
+    }
+
+    // Look up the keys of the object.
+    var visible_keys = Object_keys(value);
+    var keys = showHidden ? Object_getOwnPropertyNames(value) : visible_keys;
+
+    // Functions without properties can be shortcutted.
+    if (typeof value === 'function' && keys.length === 0) {
+      if (isRegExp(value)) {
+        return stylize('' + value, 'regexp');
+      } else {
+        var name = value.name ? ': ' + value.name : '';
+        return stylize('[Function' + name + ']', 'special');
+      }
+    }
+
+    // Dates without properties can be shortcutted
+    if (isDate(value) && keys.length === 0) {
+      return stylize(value.toUTCString(), 'date');
+    }
+
+    var base, type, braces;
+    // Determine the object type
+    if (isArray(value)) {
+      type = 'Array';
+      braces = ['[', ']'];
+    } else {
+      type = 'Object';
+      braces = ['{', '}'];
+    }
+
+    // Make functions say that they are functions
+    if (typeof value === 'function') {
+      var n = value.name ? ': ' + value.name : '';
+      base = (isRegExp(value)) ? ' ' + value : ' [Function' + n + ']';
+    } else {
+      base = '';
+    }
+
+    // Make dates with properties first say the date
+    if (isDate(value)) {
+      base = ' ' + value.toUTCString();
+    }
+
+    if (keys.length === 0) {
+      return braces[0] + base + braces[1];
+    }
+
+    if (recurseTimes < 0) {
+      if (isRegExp(value)) {
+        return stylize('' + value, 'regexp');
+      } else {
+        return stylize('[Object]', 'special');
+      }
+    }
+
+    seen.push(value);
+
+    var output = keys.map(function(key) {
+      var name, str;
+      if (value.__lookupGetter__) {
+        if (value.__lookupGetter__(key)) {
+          if (value.__lookupSetter__(key)) {
+            str = stylize('[Getter/Setter]', 'special');
+          } else {
+            str = stylize('[Getter]', 'special');
+          }
+        } else {
+          if (value.__lookupSetter__(key)) {
+            str = stylize('[Setter]', 'special');
+          }
+        }
+      }
+      if (visible_keys.indexOf(key) < 0) {
+        name = '[' + key + ']';
+      }
+      if (!str) {
+        if (seen.indexOf(value[key]) < 0) {
+          if (recurseTimes === null) {
+            str = format(value[key]);
+          } else {
+            str = format(value[key], recurseTimes - 1);
+          }
+          if (str.indexOf('\n') > -1) {
+            if (isArray(value)) {
+              str = str.split('\n').map(function(line) {
+                return '  ' + line;
+              }).join('\n').substr(2);
+            } else {
+              str = '\n' + str.split('\n').map(function(line) {
+                return '   ' + line;
+              }).join('\n');
+            }
+          }
+        } else {
+          str = stylize('[Circular]', 'special');
+        }
+      }
+      if (typeof name === 'undefined') {
+        if (type === 'Array' && key.match(/^\d+$/)) {
+          return str;
+        }
+        name = JSON.stringify('' + key);
+        if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+          name = name.substr(1, name.length - 2);
+          name = stylize(name, 'name');
+        } else {
+          name = name.replace(/'/g, "\\'")
+                     .replace(/\\"/g, '"')
+                     .replace(/(^"|"$)/g, "'");
+          name = stylize(name, 'string');
+        }
+      }
+
+      return name + ': ' + str;
+    });
+
+    seen.pop();
+
+    var numLinesEst = 0;
+    var length = output.reduce(function(prev, cur) {
+      numLinesEst++;
+      if (cur.indexOf('\n') >= 0) numLinesEst++;
+      return prev + cur.length + 1;
+    }, 0);
+
+    if (length > 50) {
+      output = braces[0] +
+               (base === '' ? '' : base + '\n ') +
+               ' ' +
+               output.join(',\n  ') +
+               ' ' +
+               braces[1];
+
+    } else {
+      output = braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+    }
+
+    return output;
+  }
+  return format(obj, (typeof depth === 'undefined' ? 2 : depth));
+};
+
+
+function isArray(ar) {
+  return ar instanceof Array ||
+         Array.isArray(ar) ||
+         (ar && ar !== Object.prototype && isArray(ar.__proto__));
+}
+
+
+function isRegExp(re) {
+  return re instanceof RegExp ||
+    (typeof re === 'object' && Object.prototype.toString.call(re) === '[object RegExp]');
+}
+
+
+function isDate(d) {
+  if (d instanceof Date) return true;
+  if (typeof d !== 'object') return false;
+  var properties = Date.prototype && Object_getOwnPropertyNames(Date.prototype);
+  var proto = d.__proto__ && Object_getOwnPropertyNames(d.__proto__);
+  return JSON.stringify(proto) === JSON.stringify(properties);
+}
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+exports.log = function (msg) {};
+
+exports.pump = null;
+
+var Object_keys = Object.keys || function (obj) {
+    var res = [];
+    for (var key in obj) res.push(key);
+    return res;
+};
+
+var Object_getOwnPropertyNames = Object.getOwnPropertyNames || function (obj) {
+    var res = [];
+    for (var key in obj) {
+        if (Object.hasOwnProperty.call(obj, key)) res.push(key);
+    }
+    return res;
+};
+
+var Object_create = Object.create || function (prototype, properties) {
+    // from es5-shim
+    var object;
+    if (prototype === null) {
+        object = { '__proto__' : null };
+    }
+    else {
+        if (typeof prototype !== 'object') {
+            throw new TypeError(
+                'typeof prototype[' + (typeof prototype) + '] != \'object\''
+            );
+        }
+        var Type = function () {};
+        Type.prototype = prototype;
+        object = new Type();
+        object.__proto__ = prototype;
+    }
+    if (typeof properties !== 'undefined' && Object.defineProperties) {
+        Object.defineProperties(object, properties);
+    }
+    return object;
+};
+
+exports.inherits = function(ctor, superCtor) {
+  ctor.super_ = superCtor;
+  ctor.prototype = Object_create(superCtor.prototype, {
+    constructor: {
+      value: ctor,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+};
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (typeof f !== 'string') {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(exports.inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j': return JSON.stringify(args[i++]);
+      default:
+        return x;
+    }
+  });
+  for(var x = args[i]; i < len; x = args[++i]){
+    if (x === null || typeof x !== 'object') {
+      str += ' ' + x;
+    } else {
+      str += ' ' + exports.inspect(x);
+    }
+  }
+  return str;
+};
+
+},{"events":10}],8:[function(require,module,exports){exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 }
-},{"./ui/region":19,"./ui/cursor":20}],19:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
+},{"./ui/region":21,"./ui/cursor":22}],21:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
   , extend = require('../util').extend
 
 var Region = exports.Region = function(start, end) {
@@ -1808,7 +2226,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 extend(Region.prototype, EventEmitter.prototype)
-},{"events":10,"../util":11}],20:[function(require,module,exports){var Cursor = exports.Cursor = function() {
+},{"events":10,"../util":11}],22:[function(require,module,exports){var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a[2] - b[2] })[0]
     if (pointable && pointable.valid) {
