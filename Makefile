@@ -13,7 +13,7 @@ test-browser: build
 test-node:
 	./node_modules/.bin/mocha lib/index.js test/common.js test/test.js test/*.js -R dot
 
-build: compile compress
+build: compile compress docs
 
 watch:
 	./node_modules/.bin/nodemon --watch lib --exec "make" test
@@ -25,3 +25,6 @@ compile:
 	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js
 
 watch-test: watch
+
+docs: 
+	./node_modules/jsdoc/jsdoc -c jsdoc_conf.json lib README.md -d /Volumes/LEAP/leapjs-docs/leapjs
