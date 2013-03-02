@@ -12,4 +12,26 @@ describe('Controller', function(){
       controller.processFrame(fakeFrame())
     })
   })
+
+  describe('#connect', function(){
+    it('should fire a "connect" event', function(done){
+      var controller = new Leap.Controller()
+
+      controller.on('connect', done)
+      controller.connect()
+    })
+  })
+
+  describe('#disconnect', function() {
+    it('should fire a "disconnect" event', function(done){
+      var controller = new Leap.Controller()
+
+      controller.on('disconnect', done)
+      controller.on('connect', function() {
+        controller.disconnect()
+      })
+
+      controller.connect()
+    })
+  })
 })
