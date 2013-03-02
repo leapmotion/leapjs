@@ -11,7 +11,7 @@ describe('Connection', function(){
     })
   })
 
-  describe('#events', function(){
+  describe('#connect', function(){
     it('should fire a "connect" event', function(done){
       var controller = new Leap.Controller()
       var connection = controller.connection
