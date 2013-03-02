@@ -19,6 +19,6 @@
     "chai": "*",
     "mocha-phantomjs": "*",
     "nodemon": "*",
-	"jsdoc": "git://github.com/jsdoc3/jsdoc.git"
+    "jsdoc": "git://github.com/jsdoc3/jsdoc.git"
   }
 }

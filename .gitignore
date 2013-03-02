@@ -3,3 +3,4 @@
 *.bak
 node_modules
 *.idea
+docs-repo
