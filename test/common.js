@@ -1,8 +1,23 @@
-if (typeof(exports) === 'undefined') exports = {}
+if (typeof(exports) === 'undefined') {
+  exports = {};
+}
 
 var fingerId = 0
   , handId = 0
   , frameId =0;
+
+var fakeController = exports.fakeController = function(opts) {
+  var controller = new Leap.Controller(opts)
+  var connection = controller.connection;
+  controller.connection.connect = function() {
+    connection.handleOpen()
+  }
+  controller.connection.disconnect = function() {
+    connection.handleClose()
+  }
+  controller.connection.socket = { send: function(msg) {} }
+  return controller;
+}
 
 var fakeFrame = exports.fakeFrame = function(opts) {
   if (opts === undefined) opts = {};
