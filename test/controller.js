@@ -1,7 +1,7 @@
 describe('Controller', function(){
   describe('#connect()', function(){
     it('should pump frames', function(done) {
-      var controller = new Leap.Controller()
+      var controller = fakeController()
       var count = 0
       controller.on('frame', function() {
         count++
@@ -15,8 +15,8 @@ describe('Controller', function(){
 
   describe('#connect', function(){
     it('should fire a "connect" event', function(done){
-      var controller = new Leap.Controller()
-
+      var controller = fakeController()
+      controller.connection.socket = { send: function() {} }
       controller.on('connect', done)
       controller.connect()
     })
@@ -24,8 +24,8 @@ describe('Controller', function(){
 
   describe('#disconnect', function() {
     it('should fire a "disconnect" event', function(done){
-      var controller = new Leap.Controller()
-
+      var controller = fakeController()
+      controller.connection.socket = { send: function() {} }
       controller.on('disconnect', done)
       controller.on('connect', function() {
         controller.disconnect()
