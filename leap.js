@@ -822,7 +822,10 @@ Frame.prototype.hand = function(id) {
  * @returns {String} A brief description of this frame.
  */
 Frame.prototype.toString = function() {
-  return "Frame [ id:"+this.id+" | timestamp:"+this.timestamp+" | Hand count:("+this.hands.length+") | Pointable count:("+this.pointables.length+" | Gesture count:("+this.gestures.length+") ]"
+  var str = "Frame [ id:"+this.id+" | timestamp:"+this.timestamp+" | Hand count:("+this.hands.length+") | Pointable count:("+this.pointables.length+")";
+  if (this.gestures) str += " | Gesture count:("+this.gestures.length+")";
+  str += " ]";
+  return str;
 }
 
 /**
@@ -844,9 +847,11 @@ Frame.prototype.dump = function() {
     for (var pointableIdx = 0, pointableCount = this.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
         out += "  "+ this.pointables[pointableIdx].toString() + "<br/>"
     }
-    out += "<br/><br/>Gestures:<br/>"
-    for (var gestureIdx = 0, gestureCount = this.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
-        out += "  "+ this.gestures[gestureIdx].toString() + "<br/>"
+    if (this.gestures) {
+      out += "<br/><br/>Gestures:<br/>"
+      for (var gestureIdx = 0, gestureCount = this.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
+          out += "  "+ this.gestures[gestureIdx].toString() + "<br/>"
+      }
     }
     out += "<br/><br/>Raw JSON:<br/>";
   out += JSON.stringify(this.data);
@@ -2110,18 +2115,27 @@ var Connection = exports.Connection = function(opts) {
 }
 
 Connection.prototype.handleOpen = function() {
-  if (this.openTimer) {
-    clearTimeout(this.openTimer)
-    this.openTimer = undefined
-  }
+  this.stopReconnection();
   this.socket.send(util.format("%j", {enableGestures: this.enableGestures}))
   this.emit('connect');
 }
 
 Connection.prototype.handleClose = function() {
-  var connection = this
-  this.openTimer = setTimeout(function() { connection.connect() }, 1000)
+  this.startReconnection()
   this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this
+  if (!this.openTimer) this.openTimer = setInterval(function() { connection.connect() }, 1000)
+}
+
+Connection.prototype.stopReconnection = function() {
+  var connection = this
+  if (this.openTimer) {
+    clearTimeout(this.openTimer)
+    this.openTimer = undefined
+  }
 }
 
 Connection.prototype.disconnect = function() {
@@ -2142,7 +2156,10 @@ Connection.prototype.handleData = function(data) {
 }
 
 Connection.prototype.connect = function() {
-  if (this.socket) return false;
+  if (this.socket) {
+    this.socket.disconnect()
+    this.socket = null
+  }
   this.socket = this.setupSocket()
   return true
 }
@@ -2615,6 +2632,7 @@ Connection.prototype.setupSocket = function() {
   socket.on('open', function() { connection.handleOpen() })
   socket.on('message', function(m) { connection.handleData(m) })
   socket.on('close', function() { connection.handleClose() })
+  socket.on('error', function() { connection.startReconnection() })
   return socket;
 }
 
