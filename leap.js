@@ -883,10 +883,11 @@ extend(Frame.Invalid, Motion)
 
 Connection.prototype.setupSocket = function() {
   var connection = this;
-  this.socket = new WebSocket("ws://" + this.host + ":6437")
-  this.socket.onopen = function() { connection.handleOpen() }
-  this.socket.onmessage = function(message) { connection.handleData(message.data) }
-  this.socket.onclose = function() { connection.handleClose() }
+  var socket = new WebSocket("ws://" + this.host + ":6437")
+  socket.onopen = function() { connection.handleOpen() }
+  socket.onmessage = function(message) { connection.handleData(message.data) }
+  socket.onclose = function() { connection.handleClose() }
+  return socket;
 }
 
 },{"./base_connection":18}],9:[function(require,module,exports){exports.UI = {
@@ -2108,7 +2109,6 @@ var Connection = exports.Connection = function(opts) {
   this.enableGestures = opts && opts.enableGestures ? true : false
 }
 
-
 Connection.prototype.handleOpen = function() {
   if (this.openTimer) {
     clearTimeout(this.openTimer)
@@ -2143,7 +2143,7 @@ Connection.prototype.handleData = function(data) {
 
 Connection.prototype.connect = function() {
   if (this.socket) return false;
-  this.setupSocket()
+  this.socket = this.setupSocket()
   return true
 }
 
@@ -2611,10 +2611,11 @@ var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
   var connection = this;
-  this.socket = new WebSocket("ws://" + this.host + ":6437")
-  this.socket.on('open', function() { connection.handleOpen() })
-  this.socket.on('message', function(m) { connection.handleData(m) })
-  this.socket.on('close', function() { connection.handleClose() })
+  var socket = new WebSocket("ws://" + this.host + ":6437")
+  socket.on('open', function() { connection.handleOpen() })
+  socket.on('message', function(m) { connection.handleData(m) })
+  socket.on('close', function() { connection.handleClose() })
+  return socket;
 }
 
 },{"./frame":6,"./base_connection":18,"ws":24}],24:[function(require,module,exports){(function(global){/// shim for browser packaging
