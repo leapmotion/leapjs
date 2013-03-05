@@ -4,7 +4,7 @@
   "description": "Leap Motion Client",
   "main": "lib",
   "scripts": {
-    "test": "test.js"
+    "test": "make test-node"
   },
   "license": "BSD-2-Clause",
   "dependencies" : {
