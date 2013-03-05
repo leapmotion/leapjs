@@ -478,7 +478,109 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],6:[function(require,module,exports){var Hand = require("./hand").Hand
+},{}],5:[function(require,module,exports){var Frame = require('./frame').Frame
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
+  , Pipeline = require("./pipeline").Pipeline
+  , EventEmitter = require('events').EventEmitter
+  , extend = require('./util').extend;
+
+var Controller = exports.Controller = function(opts) {
+  this.history = new CircularBuffer(200);
+  var controller = this;
+  this.lastFrame = Frame.Invalid;
+  this.lastValidFrame = Frame.Invalid;
+  var connectionType = this.connectionType();
+  this.connection = new connectionType({
+    enableGestures: opts && opts.enableGestures,
+    host: opts && opts.host,
+    frame: function(frame) {
+      controller.processFrame(frame)
+    }
+  });
+
+  // Delegate connection events
+  this.connection.on('connect', function() { controller.emit('connect') });
+  this.connection.on('disconnect', function() { controller.emit('disconnect') });
+}
+
+Controller.prototype.inBrowser = function() {
+  return typeof(window) !== 'undefined';
+}
+
+Controller.prototype.useAnimationLoop = function() {
+  return typeof(window) !== 'undefined' && typeof(chrome) === "undefined";
+}
+
+Controller.prototype.connectionType = function() {
+  return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
+}
+
+Controller.prototype.connect = function() {
+  if (this.connection.connect() && this.inBrowser()) {
+    var controller = this;
+    var callback = function() {
+      controller.emit('animationFrame', controller.lastFrame);
+      window.requestAnimFrame(callback);
+    }
+    window.requestAnimFrame(callback);
+  }
+}
+
+Controller.prototype.disconnect = function() {
+  this.connection.disconnect();
+}
+
+Controller.prototype.frame = function(num) {
+  return this.history.get(num) || Frame.Invalid;
+}
+
+Controller.prototype.loop = function(callback) {
+  switch (callback.length) {
+    case 1:
+      this.on(this.useAnimationLoop() ? 'animationFrame' : 'frame', callback);
+      break;
+    case 2:
+      var controller = this;
+      var scheduler = null;
+      var immediateRunnerCallback = function(frame) {
+        callback(frame, function() {
+          if (controller.lastFrame != frame) {
+            immediateRunnerCallback(controller.lastFrame);
+          } else {
+            controller.once(controller.useAnimationLoop() ? 'animationFrame' : 'frame', immediateRunnerCallback);
+          }
+        });
+      }
+      this.once(this.useAnimationLoop() ? 'animationFrame' : 'frame', immediateRunnerCallback);
+      break;
+  }
+  this.connect();
+}
+
+Controller.prototype.addStep = function(step) {
+  if (!this.pipeline) this.pipeline = new Pipeline(this);
+  this.pipeline.addStep(step);
+}
+
+Controller.prototype.processFrame = function(frame) {
+  if (this.pipeline) {
+    var frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
+  }
+  this.processRawFrame(frame);
+}
+
+Controller.prototype.processRawFrame = function(frame) {
+  frame.controller = this;
+  frame.historyIdx = this.history.push(frame);
+  this.lastFrame = frame;
+  if (this.lastFrame.valid) this.lastValidFrame = this.lastFrame;
+  this.emit('frame', frame);
+}
+
+extend(Controller.prototype, EventEmitter.prototype);
+
+},{"events":10,"./frame":6,"./circular_buffer":7,"./pipeline":11,"./util":12,"./connection":8,"./node_connection":13}],6:[function(require,module,exports){var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Motion = require("./motion").Motion
   , Gesture = require("./gesture").Gesture
@@ -782,109 +884,7 @@ Frame.Invalid = {
 extend(Frame.prototype, Motion);
 extend(Frame.Invalid, Motion);
 
-},{"./hand":10,"./pointable":11,"./motion":12,"./util":13,"./gesture":14}],5:[function(require,module,exports){var Frame = require('./frame').Frame
-  , CircularBuffer = require("./circular_buffer").CircularBuffer
-  , Pipeline = require("./pipeline").Pipeline
-  , EventEmitter = require('events').EventEmitter
-  , extend = require('./util').extend;
-
-var Controller = exports.Controller = function(opts) {
-  this.history = new CircularBuffer(200);
-  var controller = this;
-  this.lastFrame = Frame.Invalid;
-  this.lastValidFrame = Frame.Invalid;
-  var connectionType = this.connectionType();
-  this.connection = new connectionType({
-    enableGestures: opts && opts.enableGestures,
-    host: opts && opts.host,
-    frame: function(frame) {
-      controller.processFrame(frame)
-    }
-  });
-
-  // Delegate connection events
-  this.connection.on('connect', function() { controller.emit('connect') });
-  this.connection.on('disconnect', function() { controller.emit('disconnect') });
-}
-
-Controller.prototype.inBrowser = function() {
-  return typeof(window) !== 'undefined';
-}
-
-Controller.prototype.useAnimationLoop = function() {
-  return typeof(window) !== 'undefined' && typeof(chrome) === "undefined";
-}
-
-Controller.prototype.connectionType = function() {
-  return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
-}
-
-Controller.prototype.connect = function() {
-  if (this.connection.connect() && this.inBrowser()) {
-    var controller = this;
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastFrame);
-      window.requestAnimFrame(callback);
-    }
-    window.requestAnimFrame(callback);
-  }
-}
-
-Controller.prototype.disconnect = function() {
-  this.connection.disconnect();
-}
-
-Controller.prototype.frame = function(num) {
-  return this.history.get(num) || Frame.Invalid;
-}
-
-Controller.prototype.loop = function(callback) {
-  switch (callback.length) {
-    case 1:
-      this.on(this.useAnimationLoop() ? 'animationFrame' : 'frame', callback);
-      break;
-    case 2:
-      var controller = this;
-      var scheduler = null;
-      var immediateRunnerCallback = function(frame) {
-        callback(frame, function() {
-          if (controller.lastFrame != frame) {
-            immediateRunnerCallback(controller.lastFrame);
-          } else {
-            controller.once(controller.useAnimationLoop() ? 'animationFrame' : 'frame', immediateRunnerCallback);
-          }
-        });
-      }
-      this.once(this.useAnimationLoop() ? 'animationFrame' : 'frame', immediateRunnerCallback);
-      break;
-  }
-  this.connect();
-}
-
-Controller.prototype.addStep = function(step) {
-  if (!this.pipeline) this.pipeline = new Pipeline(this);
-  this.pipeline.addStep(step);
-}
-
-Controller.prototype.processFrame = function(frame) {
-  if (this.pipeline) {
-    var frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
-  }
-  this.processRawFrame(frame);
-}
-
-Controller.prototype.processRawFrame = function(frame) {
-  frame.controller = this;
-  frame.historyIdx = this.history.push(frame);
-  this.lastFrame = frame;
-  if (this.lastFrame.valid) this.lastValidFrame = this.lastFrame;
-  this.emit('frame', frame);
-}
-
-extend(Controller.prototype, EventEmitter.prototype);
-
-},{"events":15,"./frame":6,"./circular_buffer":7,"./pipeline":16,"./util":13,"./connection":8,"./node_connection":17}],8:[function(require,module,exports){var Connection = exports.Connection = require('./base_connection').Connection
+},{"./hand":14,"./pointable":15,"./motion":16,"./gesture":17,"./util":12}],8:[function(require,module,exports){var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
   var connection = this;
@@ -895,6 +895,10 @@ Connection.prototype.setupSocket = function() {
   return socket;
 }
 
+Connection.prototype.teardownSocket = function() {
+  this.socket.disconnect();
+  this.socket = null;
+}
 },{"./base_connection":18}],9:[function(require,module,exports){exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
@@ -952,7 +956,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],15:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+},{}],10:[function(require,module,exports){(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
@@ -1137,7 +1141,24 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":21}],13:[function(require,module,exports){// mostly lifted from underscore
+},{"__browserify_process":21}],11:[function(require,module,exports){var Pipeline = exports.Pipeline = function() {
+  this.steps = [];
+}
+
+Pipeline.prototype.addStep = function(step) {
+  this.steps.push(step);
+}
+
+Pipeline.prototype.run = function(frame) {
+  var stepsLength = this.steps.length;
+  for (var i = 0; i != stepsLength; i++) {
+    if (!frame) break;
+    frame = this.steps[i](frame);
+  }
+  return frame;
+}
+
+},{}],12:[function(require,module,exports){// mostly lifted from underscore
 
 var slice = Array.prototype.slice
   , nativeForEach = Array.prototype.forEach;
@@ -1228,7 +1249,7 @@ var normalizeVector = exports.normalizeVector = function(vec) {
   return multiplyVector(vec, c);
 }
 
-},{}],14:[function(require,module,exports){/**
+},{}],17:[function(require,module,exports){/**
  * Constructs a new Gesture object.
  *
  * An uninitialized Gesture object is considered invalid. Get valid instances
@@ -1615,23 +1636,6 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{}],16:[function(require,module,exports){var Pipeline = exports.Pipeline = function() {
-  this.steps = [];
-}
-
-Pipeline.prototype.addStep = function(step) {
-  this.steps.push(step);
-}
-
-Pipeline.prototype.run = function(frame) {
-  var stepsLength = this.steps.length;
-  for (var i = 0; i != stepsLength; i++) {
-    if (!frame) break;
-    frame = this.steps[i](frame);
-  }
-  return frame;
-}
-
 },{}],20:[function(require,module,exports){var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a[2] - b[2] })[0]
@@ -1642,7 +1646,7 @@ Pipeline.prototype.run = function(frame) {
   }
 }
 
-},{}],10:[function(require,module,exports){var Motion = require("./motion").Motion
+},{}],14:[function(require,module,exports){var Motion = require("./motion").Motion
   , Pointable = require("./pointable").Pointable
   , extend = require("./util").extend;
 
@@ -1839,7 +1843,7 @@ Hand.Invalid = { valid: false };
 extend(Hand.Invalid, Motion);
 extend(Hand.prototype, Motion);
 
-},{"./motion":12,"./pointable":11,"./util":13}],11:[function(require,module,exports){var Motion = require("./motion").Motion
+},{"./motion":16,"./pointable":15,"./util":12}],15:[function(require,module,exports){var Motion = require("./motion").Motion
 
 /**
  * Constructs a Pointable object.
@@ -1972,7 +1976,7 @@ Pointable.prototype.translation = Motion.translation;
  */
 Pointable.Invalid = { valid: false };
 
-},{"./motion":12}],12:[function(require,module,exports){//var $M = require("./sylvester").$M
+},{"./motion":16}],16:[function(require,module,exports){//var $M = require("./sylvester").$M
 var transposeMultiply = require('./util').transposeMultiply
   , normalizeVector = require('./util').normalizeVector;
 
@@ -2103,7 +2107,7 @@ var Motion = exports.Motion = {
   }
 }
 
-},{"./util":13}],18:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
+},{"./util":12}],18:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
   , util = require('util')
   , EventEmitter = require('events').EventEmitter
   , extend = require('./util').extend;
@@ -2157,8 +2161,7 @@ Connection.prototype.handleData = function(data) {
 
 Connection.prototype.connect = function() {
   if (this.socket) {
-    this.socket.disconnect();
-    this.socket = null;
+    this.teardownSocket();
   }
   this.socket = this.setupSocket();
   return true;
@@ -2166,7 +2169,7 @@ Connection.prototype.connect = function() {
 
 extend(Connection.prototype, EventEmitter.prototype);
 
-},{"util":22,"events":15,"./protocol":23,"./util":13}],19:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
+},{"util":22,"events":10,"./protocol":23,"./util":12}],19:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
   , extend = require('../util').extend
 
 var Region = exports.Region = function(start, end) {
@@ -2253,7 +2256,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 extend(Region.prototype, EventEmitter.prototype)
-},{"events":15,"../util":13}],22:[function(require,module,exports){var events = require('events');
+},{"events":10,"../util":12}],22:[function(require,module,exports){var events = require('events');
 
 exports.isArray = isArray;
 exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
@@ -2605,7 +2608,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":15}],23:[function(require,module,exports){var Frame = require('./frame').Frame
+},{"events":10}],23:[function(require,module,exports){var Frame = require('./frame').Frame
 
 var chooseProtocol = exports.chooseProtocol = function(header) {
   switch(header.version) {
@@ -2621,7 +2624,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"./frame":6}],17:[function(require,module,exports){var Frame = require('./frame').Frame
+},{"./frame":6}],13:[function(require,module,exports){var Frame = require('./frame').Frame
   , WebSocket = require('ws')
 
 var Connection = exports.Connection = require('./base_connection').Connection
@@ -2636,6 +2639,10 @@ Connection.prototype.setupSocket = function() {
   return socket;
 }
 
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  this.socket = null;
+}
 },{"./frame":6,"./base_connection":18,"ws":24}],24:[function(require,module,exports){(function(global){/// shim for browser packaging
 
 module.exports = function() {
