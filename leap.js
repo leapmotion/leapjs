@@ -492,10 +492,10 @@ var Controller = exports.Controller = function(opts) {
   var connectionType = this.connectionType();
   this.connection = new connectionType({
     enableGestures: opts && opts.enableGestures,
-    host: opts && opts.host,
-    frame: function(frame) {
-      controller.processFrame(frame)
-    }
+    host: opts && opts.host
+  });
+  this.connection.on('frame', function(frame) {
+    controller.processFrame(frame);
   });
 
   // Delegate connection events
@@ -567,10 +567,6 @@ Controller.prototype.processFrame = function(frame) {
     var frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
-  this.processRawFrame(frame);
-}
-
-Controller.prototype.processRawFrame = function(frame) {
   frame.controller = this;
   frame.historyIdx = this.history.push(frame);
   this.lastFrame = frame;
@@ -604,7 +600,6 @@ extend(Controller.prototype, EventEmitter.prototype);
  * Access Frame objects using the {@link Controller#frame}() function.
  *
  * @borrows Motion#translation as #translation
- * @borrows Motion#matrix as #matrix
  * @borrows Motion#rotationAxis as #rotationAxis
  * @borrows Motion#rotationAngle as #rotationAngle
  * @borrows Motion#rotationMatrix as #rotationMatrix
@@ -685,6 +680,7 @@ var Frame = exports.Frame = function(data) {
   this.rotation = data.r;
   this._scaleFactor = data.s;
   this.data = data;
+  this.type = 'frame'; // used by event emitting
   var handMap = {};
   for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
     var hand = new Hand(data.hands[handIdx]);
@@ -899,115 +895,7 @@ Connection.prototype.setupSocket = function() {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/region":19,"./ui/cursor":20}],11:[function(require,module,exports){var Pipeline = exports.Pipeline = function() {
-  this.steps = [];
-}
-
-Pipeline.prototype.addStep = function(step) {
-  this.steps.push(step);
-}
-
-Pipeline.prototype.run = function(frame) {
-  var stepsLength = this.steps.length;
-  for (var i = 0; i != stepsLength; i++) {
-    if (!frame) break;
-    frame = this.steps[i](frame);
-  }
-  return frame;
-}
-
-},{}],12:[function(require,module,exports){// mostly lifted from underscore
-
-var slice = Array.prototype.slice
-  , nativeForEach = Array.prototype.forEach;
-
-var each = exports.each = function(obj, iterator, context) {
-  if (obj == null) return;
-  if (nativeForEach && obj.forEach === nativeForEach) {
-    obj.forEach(iterator, context);
-  } else if (obj.length === +obj.length) {
-    for (var i = 0, l = obj.length; i < l; i++) {
-      if (iterator.call(context, obj[i], i, obj) === breaker) return;
-    }
-  } else {
-    for (var key in obj) {
-      if (_.has(obj, key)) {
-        if (iterator.call(context, obj[key], key, obj) === breaker) return;
-      }
-    }
-  }
-};
-
-var extend = exports.extend = function(obj) {
-  each(slice.call(arguments, 1), function(source) {
-    if (source) {
-      for (var prop in source) {
-        obj[prop] = source[prop];
-      }
-    }
-  });
-  return obj;
-};
-
-var transposeMultiply = exports.transposeMultiply = function(m1, m2) {
-  return multiply(transpose(m1), m2);
-}
-
-var transpose = exports.transposeMultiply = function(m) {
-  return [[m[0][0], m[1][0], m[2][0]], [m[0][1], m[1][1], m[2][1]], [m[0][2], m[1][2], m[2][2]]];
-}
-
-var multiply = exports.multiply = function(m1, m2) {
-  return [
-    [
-      m1[0][0] * m2[0][0] + m1[0][1] * m2[1][0] + m1[0][2] * m2[2][0],
-      m1[0][0] * m2[0][1] + m1[0][1] * m2[1][1] + m1[0][2] * m2[2][1],
-      m1[0][0] * m2[0][2] + m1[0][1] * m2[1][2] + m1[0][2] * m2[2][2]
-    ], [
-      m1[1][0] * m2[0][0] + m1[1][1] * m2[1][0] + m1[1][2] * m2[2][0],
-      m1[1][0] * m2[0][1] + m1[1][1] * m2[1][1] + m1[1][2] * m2[2][1],
-      m1[1][0] * m2[0][2] + m1[1][1] * m2[1][2] + m1[1][2] * m2[2][2]
-    ], [
-      m1[2][0] * m2[0][0] + m1[2][1] * m2[1][0] + m1[2][2] * m2[2][0],
-      m1[2][0] * m2[0][1] + m1[2][1] * m2[1][1] + m1[2][2] * m2[2][1],
-      m1[2][0] * m2[0][2] + m1[2][1] * m2[1][2] + m1[2][2] * m2[2][2]
-    ]
-  ];
-}
-
-/**
- * A utility function to multiply a vector represented by a 3-element array
- * by a scalar.
- *
- * @method Leap.multiply
- * @param {Array: [x,y,z]} vec An array containing three elements representing
- * coordinates in 3-dimensional space.
- * @param {Number} c A scalar value.
- * @returns {Array: [c*x, c*y, c*z]} The product of a 3-d vector and a scalar.
- */
-var multiplyVector = exports.multiplyVector = function(vec, c) {
-  return [vec[0] * c, vec[1] * c, vec[2] * c];
-};
-
-/**
- * A utility function to normalize a vector represented by a 3-element array.
- *
- * A normalized vector has the same direction as the original, but a length
- * of 1.0.
- *
- * @method Leap.normalize
- * @param {Array: [x,y,z]} vec An array containing three elements representing
- * coordinates in 3-dimensional space.
- * @returns {Array: [x,y,z]} The normalized vector.
- */
-var normalizeVector = exports.normalizeVector = function(vec) {
-  var denom = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
-  if (denom <= 0) return [0,0,0];
-  var c = 1.0 / Math.sqrt(denom);
-  return multiplyVector(vec, c);
-}
-
-},{}],21:[function(require,module,exports){// shim for using process in browser
+},{"./ui/region":19,"./ui/cursor":20}],21:[function(require,module,exports){// shim for using process in browser
 
 var process = module.exports = {};
 
@@ -1245,7 +1133,115 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":21}],17:[function(require,module,exports){/**
+},{"__browserify_process":21}],11:[function(require,module,exports){var Pipeline = exports.Pipeline = function() {
+  this.steps = [];
+}
+
+Pipeline.prototype.addStep = function(step) {
+  this.steps.push(step);
+}
+
+Pipeline.prototype.run = function(frame) {
+  var stepsLength = this.steps.length;
+  for (var i = 0; i != stepsLength; i++) {
+    if (!frame) break;
+    frame = this.steps[i](frame);
+  }
+  return frame;
+}
+
+},{}],12:[function(require,module,exports){// mostly lifted from underscore
+
+var slice = Array.prototype.slice
+  , nativeForEach = Array.prototype.forEach;
+
+var each = exports.each = function(obj, iterator, context) {
+  if (obj == null) return;
+  if (nativeForEach && obj.forEach === nativeForEach) {
+    obj.forEach(iterator, context);
+  } else if (obj.length === +obj.length) {
+    for (var i = 0, l = obj.length; i < l; i++) {
+      if (iterator.call(context, obj[i], i, obj) === breaker) return;
+    }
+  } else {
+    for (var key in obj) {
+      if (_.has(obj, key)) {
+        if (iterator.call(context, obj[key], key, obj) === breaker) return;
+      }
+    }
+  }
+};
+
+var extend = exports.extend = function(obj) {
+  each(slice.call(arguments, 1), function(source) {
+    if (source) {
+      for (var prop in source) {
+        obj[prop] = source[prop];
+      }
+    }
+  });
+  return obj;
+};
+
+var transposeMultiply = exports.transposeMultiply = function(m1, m2) {
+  return multiply(transpose(m1), m2);
+}
+
+var transpose = exports.transposeMultiply = function(m) {
+  return [[m[0][0], m[1][0], m[2][0]], [m[0][1], m[1][1], m[2][1]], [m[0][2], m[1][2], m[2][2]]];
+}
+
+var multiply = exports.multiply = function(m1, m2) {
+  return [
+    [
+      m1[0][0] * m2[0][0] + m1[0][1] * m2[1][0] + m1[0][2] * m2[2][0],
+      m1[0][0] * m2[0][1] + m1[0][1] * m2[1][1] + m1[0][2] * m2[2][1],
+      m1[0][0] * m2[0][2] + m1[0][1] * m2[1][2] + m1[0][2] * m2[2][2]
+    ], [
+      m1[1][0] * m2[0][0] + m1[1][1] * m2[1][0] + m1[1][2] * m2[2][0],
+      m1[1][0] * m2[0][1] + m1[1][1] * m2[1][1] + m1[1][2] * m2[2][1],
+      m1[1][0] * m2[0][2] + m1[1][1] * m2[1][2] + m1[1][2] * m2[2][2]
+    ], [
+      m1[2][0] * m2[0][0] + m1[2][1] * m2[1][0] + m1[2][2] * m2[2][0],
+      m1[2][0] * m2[0][1] + m1[2][1] * m2[1][1] + m1[2][2] * m2[2][1],
+      m1[2][0] * m2[0][2] + m1[2][1] * m2[1][2] + m1[2][2] * m2[2][2]
+    ]
+  ];
+}
+
+/**
+ * A utility function to multiply a vector represented by a 3-element array
+ * by a scalar.
+ *
+ * @method Leap.multiply
+ * @param {Array: [x,y,z]} vec An array containing three elements representing
+ * coordinates in 3-dimensional space.
+ * @param {Number} c A scalar value.
+ * @returns {Array: [c*x, c*y, c*z]} The product of a 3-d vector and a scalar.
+ */
+var multiplyVector = exports.multiplyVector = function(vec, c) {
+  return [vec[0] * c, vec[1] * c, vec[2] * c];
+};
+
+/**
+ * A utility function to normalize a vector represented by a 3-element array.
+ *
+ * A normalized vector has the same direction as the original, but a length
+ * of 1.0.
+ *
+ * @method Leap.normalize
+ * @param {Array: [x,y,z]} vec An array containing three elements representing
+ * coordinates in 3-dimensional space.
+ * @returns {Array: [x,y,z]} The normalized vector.
+ */
+var normalizeVector = exports.normalizeVector = function(vec) {
+  var denom = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
+  if (denom <= 0) return [0,0,0];
+  var c = 1.0 / Math.sqrt(denom);
+  return multiplyVector(vec, c);
+}
+
+},{}],17:[function(require,module,exports){/**
  * Constructs a new Gesture object.
  *
  * An uninitialized Gesture object is considered invalid. Get valid instances
@@ -1407,7 +1403,8 @@ var Gesture = exports.Gesture = function(data) {
  * <img src="images/Leap_Gesture_Circle.png"/>
  *
  * **Important:** To use circle gestures in your application, you must enable
- * recognition of the circle gesture. You can enable recognition with:
+ * recognition of the circle gesture. You can enable recognition when you create
+ * the Leap Controller or start the Leap.loop().
  *
  *    TODO
  *
@@ -1668,7 +1665,6 @@ var KeyTapGesture = function(data) {
  * Test for validity with the {@link Hand#valid} property.
  *
  * @borrows Motion#translation as #translation
- * @borrows Motion#matrix as #matrix
  * @borrows Motion#rotationAxis as #rotationAxis
  * @borrows Motion#rotationAngle as #rotationAngle
  * @borrows Motion#rotationMatrix as #rotationMatrix
@@ -2011,7 +2007,7 @@ var Motion = exports.Motion = {
              this._translation[2] - fromFrame._translation[2] ];
   },
   /**
-   * rotationAxis() description.
+   * The axis around which the rotation takes place.
    * @method Motion.prototype.rotationAxis
    * @param {Frame} fromFrame A different frame description.
    * @returns {Array: [x,y,z]} rotationAxis Return description.
@@ -2110,14 +2106,20 @@ var Motion = exports.Motion = {
 
 var Connection = exports.Connection = function(opts) {
   this.host = opts && opts.host || "127.0.0.1";
-  if (opts && opts.frame) this.frameHandler = opts.frame;
-  this.enableGestures = opts && opts.enableGestures ? true : false;
+  var connection = this;
+  this.on('connect', function() {
+    connection.enableGestures(opts && opts.enableGestures);
+  })
 }
 
 Connection.prototype.handleOpen = function() {
   this.stopReconnection();
-  this.socket.send(util.format("%j", {enableGestures: this.enableGestures}));
   this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.socket.send(util.format("%j", {"enableGestures": enabled}));
+  this.gesturesEnabled = enabled;
 }
 
 Connection.prototype.handleClose = function() {
@@ -2142,24 +2144,22 @@ Connection.prototype.disconnect = function() {
   if (!this.socket) return;
   this.socket.close();
   this.socket = undefined;
+  this.protocol = undefined;
 }
 
 Connection.prototype.handleData = function(data) {
   var message = JSON.parse(data);
-  if (message.version) {
-    this.protocol = chooseProtocol(message);
-    this.serverVersion = this.protocol.version;
-    if (this.readyHandler) this.readyHandler(this.serverVersion);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
   } else {
-    this.protocol(message, this);
+    messageEvent = this.protocol(message);
   }
+  this.emit(messageEvent.type, messageEvent);
 }
 
 Connection.prototype.connect = function() {
-  if (this.socket) {
-    this.socket.disconnect();
-    this.socket = null;
-  }
+  this.disconnect();
   this.socket = this.setupSocket();
   return true;
 }
@@ -2610,11 +2610,12 @@ exports.format = function(f) {
 var chooseProtocol = exports.chooseProtocol = function(header) {
   switch(header.version) {
     case 1:
-      var protocol = function(data, connection) {
-        if (connection.frameHandler) connection.frameHandler(new Frame(data));
+      var protocol = function(data) {
+        return new Frame(data);
       }
       protocol.version = 1;
       protocol.versionLong = 'Version 1';
+      protocol.type = 'version';
       return protocol;
     default:
       throw "unrecognized version";
