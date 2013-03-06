@@ -25,3 +25,12 @@ compile:
 	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js
 
 watch-test: watch
+
+docs:
+	rm -rf docs-repo
+	git clone -b gh-pages git@github.com:leapmotion/leapjs.git docs-repo
+	./node_modules/jsdoc/jsdoc -c jsdoc_conf.json lib README.md -d docs-repo
+	cd docs-repo
+	git commit -a -m"regenerate docs"
+	git push origin gh-pages
+	cd ..
