@@ -43,9 +43,33 @@ this approach.
 
 ```javascript
 Leap.loop(function(frame, done) {
-  // do somethings
+  // do things
   done() // if you don't invoke this, you won't get more events
 })
+```
+
+### Options
+
+Using version 0.7.5 of SDK on onwards, options can now be recognized by the connection.
+
+#### Enabling gestures
+
+The only currently recognized key is `enabledGestures`. This can be set to either `true` or `false`;
+
+#### Passing options
+
+Using the `loop` method, you can pass in options in the following way:
+
+```javascript
+Leap.loop({enableGestures: true}, {
+  // do things
+});
+```
+
+To pass in options when constructing the controller, do the following:
+
+```javascript
+var controller = new Leap.Controller({enableGestures: true});
 ```
 
 ### Internals of the event loop
