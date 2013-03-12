@@ -1,36 +1,48 @@
 describe('Controller', function(){
-  describe('#connect()', function(){
+  describe('#new', function(){
+    it('should allow passing in options', function(done) {
+      var controller = fakeController({enableGestures:true})
+      controller.connection.send = function(message) {
+        if (message == '{"enableGestures":true}') {
+          done();
+        }
+      }
+      controller.connect()
+    })
+  });
+
+  describe('#connect', function(){
     it('should pump frames', function(done) {
       var controller = fakeController()
       var count = 0
-      controller.on('frame', function() {
-        count++
-        if (count == 3) done()
+      controller.on('frame', function(frame) {
+        count++;
+        if (count == 3) {
+          done()
+        }
       })
-      controller.processFrame(fakeFrame())
-      controller.processFrame(fakeFrame())
-      controller.processFrame(fakeFrame())
-    })
-  })
-
-  describe('#connect', function(){
-    it('should fire a "connect" event', function(done){
-      var controller = fakeController()
-      controller.connection.socket = { send: function() {} }
-      controller.on('connect', done)
+      controller.on('ready', function() {
+        controller.processFrame(fakeFrame())
+        controller.processFrame(fakeFrame())
+        controller.processFrame(fakeFrame())
+      })
       controller.connect()
     })
-  })
+
+    it('should fire a "connect" event', function(done) {
+      var controller = fakeController()
+      controller.on('ready', done)
+      controller.connect()
+    })
+  });
 
   describe('#disconnect', function() {
-    it('should fire a "disconnect" event', function(done){
+    it('should fire a "disconnect" event', function(done) {
       var controller = fakeController()
-      controller.connection.socket = { send: function() {} }
       controller.on('disconnect', done)
-      controller.on('connect', function() {
+      controller.on('ready', function() {
         controller.disconnect()
       })
-
       controller.connect()
     })
   })
