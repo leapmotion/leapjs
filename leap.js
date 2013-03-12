@@ -1484,10 +1484,7 @@ var Controller = exports.Controller = function(opts) {
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
   var connectionType = this.connectionType();
-  this.connection = new connectionType({
-    enableGestures: opts && opts.enableGestures,
-    host: opts && opts.host
-  });
+  this.connection = new connectionType(opts);
   this.connection.on('frame', function(frame) {
     controller.processFrame(frame);
   });
@@ -3696,10 +3693,10 @@ Connection.prototype.teardownSocket = function() {
   , _ = require('underscore');
 
 var Connection = exports.Connection = function(opts) {
-  this.host = opts && opts.host || "127.0.0.1";
-  var connection = this;
+  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false});
+  this.host = opts.host;
   this.on('ready', function() {
-    connection.enableGestures(opts && opts.enableGestures);
+    this.enableGestures(opts.enableGestures);
   });
 }
 
