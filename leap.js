@@ -892,6 +892,10 @@ Connection.prototype.setupSocket = function() {
   return socket;
 }
 
+Connection.prototype.teardownSocket = function() {
+  this.socket.disconnect();
+  this.socket = null;
+}
 },{"./base_connection":18}],9:[function(require,module,exports){exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
@@ -2160,7 +2164,9 @@ Connection.prototype.handleData = function(data) {
 }
 
 Connection.prototype.connect = function() {
-  this.disconnect();
+  if (this.socket) {
+    this.teardownSocket();
+  }
   this.socket = this.setupSocket();
   return true;
 }
@@ -2646,6 +2652,10 @@ Connection.prototype.setupSocket = function() {
   return socket;
 }
 
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  this.socket = null;
+}
 },{"./frame":6,"./base_connection":18,"ws":24}],24:[function(require,module,exports){(function(global){/// shim for browser packaging
 
 module.exports = function() {
