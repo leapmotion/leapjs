@@ -482,7 +482,7 @@ CircularBuffer.prototype.push = function(o) {
 
 Connection.prototype.setupSocket = function() {
   var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":6437");
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
   socket.onopen = function() { connection.handleOpen() };
   socket.onmessage = function(message) { connection.handleData(message.data) };
   socket.onclose = function() { connection.handleClose() };
@@ -3484,7 +3484,26 @@ exports.format = function(f) {
 }).call(this);
 
 })()
-},{}],22:[function(require,module,exports){var Motion = require("./motion").Motion
+},{}],20:[function(require,module,exports){var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  this.socket = null;
+}
+},{"./frame":6,"./base_connection":10,"ws":25}],22:[function(require,module,exports){var Motion = require("./motion").Motion
   , Pointable = require("./pointable").Pointable
   , _ = require("underscore");
 
@@ -3680,32 +3699,14 @@ Hand.Invalid = { valid: false };
 _.extend(Hand.Invalid, Motion);
 _.extend(Hand.prototype, Motion);
 
-},{"./motion":18,"./pointable":17,"underscore":21}],20:[function(require,module,exports){var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":6437");
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  this.socket = null;
-}
-},{"./frame":6,"./base_connection":10,"ws":25}],10:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
+},{"./motion":18,"./pointable":17,"underscore":21}],10:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
 
 var Connection = exports.Connection = function(opts) {
-  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false});
+  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
   this.host = opts.host;
+  this.port = opts.port;
   this.on('ready', function() {
     this.enableGestures(opts.enableGestures);
   });

@@ -5,6 +5,8 @@ describe('Connection', function(){
       var connection = controller.connection
       controller.on('ready', function() {
         connection.handleData(JSON.stringify(fakeFrame({id:123})))
+      })
+      controller.on('frame', function() {
         assert.equal(123, controller.lastFrame.id)
         done()
       })
