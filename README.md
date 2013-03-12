@@ -54,10 +54,10 @@ Leap.loop(function(frame, done) {
 
 The controller supports several options.
 
-`host` -- The host used by the WebSocket connection, default is `"127.0.0.1"`
-`port` -- The port used by the WebSocket connection, default is `6437`
-`enableGestures` -- Enabled or disabled gesture recognition for this controller, default is `false`
-`frameEventName` -- The name of the frame event to pass through as a `frame` event. This auto-detects which type of frame event to use.
+* `host` – The host used by the WebSocket connection, default is `"127.0.0.1"`
+* `port` – The port used by the WebSocket connection, default is `6437`
+* `enableGestures` – Enabled or disabled gesture recognition for this controller, default is `false`
+* `frameEventName` – The name of the frame event to pass through as a `frame` event. This auto-detects which type of frame event to use.
 
 #### Passing options
 
