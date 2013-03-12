@@ -1479,14 +1479,19 @@ var normalizeVector = exports.normalizeVector = function(vec) {
   , _ = require('underscore');
 
 var Controller = exports.Controller = function(opts) {
+  opts = _.defaults(opts || {}, {frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'});
   this.history = new CircularBuffer(200);
   var controller = this;
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
+  this.frameEventName = opts.frameEventName;
   var connectionType = this.connectionType();
   this.connection = new connectionType(opts);
   this.connection.on('frame', function(frame) {
     controller.processFrame(frame);
+  });
+  this.on(this.frameEventName, function(frame) {
+    controller.processFinishedFrame(frame);
   });
 
   // Delegate connection events
@@ -1529,7 +1534,7 @@ Controller.prototype.frame = function(num) {
 Controller.prototype.loop = function(callback) {
   switch (callback.length) {
     case 1:
-      this.on(this.useAnimationLoop() ? 'animationFrame' : 'frame', callback);
+      this.on(this.frameEventName, callback);
       break;
     case 2:
       var controller = this;
@@ -1539,11 +1544,11 @@ Controller.prototype.loop = function(callback) {
           if (controller.lastFrame != frame) {
             immediateRunnerCallback(controller.lastFrame);
           } else {
-            controller.once(controller.useAnimationLoop() ? 'animationFrame' : 'frame', immediateRunnerCallback);
+            controller.once(controller.frameEventName, immediateRunnerCallback);
           }
         });
       }
-      this.once(this.useAnimationLoop() ? 'animationFrame' : 'frame', immediateRunnerCallback);
+      this.once(this.frameEventName, immediateRunnerCallback);
       break;
   }
   this.connect();
@@ -1559,10 +1564,16 @@ Controller.prototype.processFrame = function(frame) {
     var frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
+  this.emit('connectionFrame', frame);
+}
+
+Controller.prototype.processFinishedFrame = function(frame) {
+  this.lastFrame = frame;
+  if (frame.valid) {
+    this.lastValidFrame = frame;
+  }
   frame.controller = this;
   frame.historyIdx = this.history.push(frame);
-  this.lastFrame = frame;
-  if (this.lastFrame.valid) this.lastValidFrame = this.lastFrame;
   this.emit('frame', frame);
 }
 
