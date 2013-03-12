@@ -1,13 +1,14 @@
 describe('Connection', function(){
   describe('#new', function(){
-    it('should return a connection that pumps events', function(){
+    it('should return a connection that pumps events', function(done) {
       var controller = fakeController()
       var connection = controller.connection
-      connection.setupSocket = function() { this.socket = { } }
+      controller.on('ready', function() {
+        connection.handleData(JSON.stringify(fakeFrame({id:123})))
+        assert.equal(123, controller.lastFrame.id)
+        done()
+      })
       connection.connect()
-      connection.handleData(JSON.stringify({version: 1}))
-      connection.handleData(JSON.stringify(fakeFrame({id:123})))
-      assert.equal(123, controller.lastFrame.id)
     })
   })
 
@@ -15,8 +16,7 @@ describe('Connection', function(){
     it('should fire a "connect" event', function(done){
       var controller = fakeController()
       var connection = controller.connection
-      controller.connection.socket = { send: function() {}, close: function() {} }
-      connection.on('connect', done)
+      connection.on('ready', done)
       connection.connect()
     })
   })
@@ -25,9 +25,8 @@ describe('Connection', function(){
     it('should fire a "disconnect" event', function(done){
       var controller = fakeController()
       var connection = controller.connection
-      controller.connection.socket = { send: function() {}, close: function() {} }
       connection.on('disconnect', done)
-      connection.on('connect', function() {
+      connection.on('ready', function() {
         connection.disconnect()
       })
       connection.connect()

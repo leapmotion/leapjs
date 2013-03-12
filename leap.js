@@ -499,6 +499,7 @@ var Controller = exports.Controller = function(opts) {
   });
 
   // Delegate connection events
+  this.connection.on('ready', function() { controller.emit('ready') });
   this.connection.on('connect', function() { controller.emit('connect') });
   this.connection.on('disconnect', function() { controller.emit('disconnect') });
 }
@@ -2100,16 +2101,15 @@ var Motion = exports.Motion = {
 }
 
 },{"./util":12}],18:[function(require,module,exports){var chooseProtocol = require('./protocol').chooseProtocol
-  , util = require('util')
   , EventEmitter = require('events').EventEmitter
   , extend = require('./util').extend;
 
 var Connection = exports.Connection = function(opts) {
   this.host = opts && opts.host || "127.0.0.1";
   var connection = this;
-  this.on('connect', function() {
+  this.on('ready', function() {
     connection.enableGestures(opts && opts.enableGestures);
-  })
+  });
 }
 
 Connection.prototype.handleOpen = function() {
@@ -2118,8 +2118,8 @@ Connection.prototype.handleOpen = function() {
 }
 
 Connection.prototype.enableGestures = function(enabled) {
-  this.socket.send(util.format("%j", {"enableGestures": enabled}));
-  this.gesturesEnabled = enabled;
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
 }
 
 Connection.prototype.handleClose = function() {
@@ -2152,6 +2152,7 @@ Connection.prototype.handleData = function(data) {
   var messageEvent;
   if (this.protocol === undefined) {
     messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
   } else {
     messageEvent = this.protocol(message);
   }
@@ -2164,9 +2165,13 @@ Connection.prototype.connect = function() {
   return true;
 }
 
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
 extend(Connection.prototype, EventEmitter.prototype);
 
-},{"util":22,"events":10,"./protocol":23,"./util":12}],19:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
+},{"events":10,"./protocol":22,"./util":12}],19:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
   , extend = require('../util').extend
 
 var Region = exports.Region = function(start, end) {
@@ -2253,7 +2258,28 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 extend(Region.prototype, EventEmitter.prototype)
-},{"events":10,"../util":12}],22:[function(require,module,exports){var events = require('events');
+},{"events":10,"../util":12}],22:[function(require,module,exports){var Frame = require('./frame').Frame
+  , util = require('util');
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  switch(header.version) {
+    case 1:
+      var protocol = function(data) {
+        return new Frame(data);
+      }
+      protocol.encode = function(message) {
+        return util.format("%j", message);
+      }
+      protocol.version = 1;
+      protocol.versionLong = 'Version 1';
+      protocol.type = 'version';
+      return protocol;
+    default:
+      throw "unrecognized version";
+  }
+}
+
+},{"util":23,"./frame":6}],23:[function(require,module,exports){var events = require('events');
 
 exports.isArray = isArray;
 exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
@@ -2605,24 +2631,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":10}],23:[function(require,module,exports){var Frame = require('./frame').Frame
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  switch(header.version) {
-    case 1:
-      var protocol = function(data) {
-        return new Frame(data);
-      }
-      protocol.version = 1;
-      protocol.versionLong = 'Version 1';
-      protocol.type = 'version';
-      return protocol;
-    default:
-      throw "unrecognized version";
-  }
-}
-
-},{"./frame":6}],13:[function(require,module,exports){var Frame = require('./frame').Frame
+},{"events":10}],13:[function(require,module,exports){var Frame = require('./frame').Frame
   , WebSocket = require('ws')
 
 var Connection = exports.Connection = require('./base_connection').Connection

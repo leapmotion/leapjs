@@ -50,11 +50,11 @@ Leap.loop(function(frame, done) {
 
 ### Options
 
-Using version 0.7.5 of SDK on onwards, options can now be recognized by the connection.
+Using v0.7.5 of SDK on onwards, options can now be recognized by the connection.
 
 #### Enabling gestures
 
-The only currently recognized key is `enabledGestures`. This can be set to either `true` or `false`;
+Currently, the only recognized option is `enabledGestures`. This can be set to either `true` or `false`;
 
 #### Passing options
 

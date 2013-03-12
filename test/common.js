@@ -9,13 +9,24 @@ var fingerId = 0
 var fakeController = exports.fakeController = function(opts) {
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
-  controller.connection.connect = function() {
-    connection.handleOpen()
+
+  connection.setupSocket = function() {
+    setTimeout(function() { connection.handleOpen() }, 10)
+    var socket = {
+      messages: [],
+      send: function(message) {
+        socket.messages.push(message);
+      },
+      close: function() {
+        connection.handleClose();
+      }
+    };
+    connection.on('connect', function() {
+      connection.handleData(JSON.stringify({version: 1}))
+    });
+    return socket;
   }
-  controller.connection.disconnect = function() {
-    connection.handleClose()
-  }
-  controller.connection.socket = { send: function(msg) {} }
+
   return controller;
 }
 
