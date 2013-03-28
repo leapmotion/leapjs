@@ -478,7 +478,9 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],5:[function(require,module,exports){var Frame = require('./frame').Frame
+},{}],5:[function(require,module,exports){var inNode = typeof(window) === 'undefined';
+
+var Frame = require('./frame').Frame
   , CircularBuffer = require("./circular_buffer").CircularBuffer
   , Pipeline = require("./pipeline").Pipeline
   , EventEmitter = require('events').EventEmitter
@@ -505,7 +507,7 @@ var Controller = exports.Controller = function(opts) {
 }
 
 Controller.prototype.inBrowser = function() {
-  return !typeof(typeof module !== 'undefined' && module.exports);
+  return !inNode;
 }
 
 Controller.prototype.useAnimationLoop = function() {
@@ -577,7 +579,7 @@ Controller.prototype.processFrame = function(frame) {
 
 extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":10,"./frame":6,"./pipeline":11,"./circular_buffer":7,"./util":12,"./connection":8,"./node_connection":13}],6:[function(require,module,exports){var Hand = require("./hand").Hand
+},{"events":10,"./frame":6,"./circular_buffer":7,"./pipeline":11,"./util":12,"./connection":8,"./node_connection":13}],6:[function(require,module,exports){var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Motion = require("./motion").Motion
   , Gesture = require("./gesture").Gesture
@@ -893,7 +895,7 @@ Connection.prototype.setupSocket = function() {
 }
 
 Connection.prototype.teardownSocket = function() {
-  this.socket.close();
+  this.socket.disconnect();
   delete this.socket;
   delete this.protocol;
 }
