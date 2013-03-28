@@ -895,7 +895,7 @@ Connection.prototype.setupSocket = function() {
 }
 
 Connection.prototype.teardownSocket = function() {
-  this.socket.disconnect();
+  this.socket.close();
   delete this.socket;
   delete this.protocol;
 }
