@@ -25,8 +25,14 @@ describe('Connection', function(){
     it('should fire a "disconnect" event', function(done){
       var controller = fakeController()
       var connection = controller.connection
-      connection.on('disconnect', done)
+      connection.on('disconnect', function() {
+        assert.isUndefined(connection.socket);
+        assert.isUndefined(connection.protocol);
+        done();
+      });
       connection.on('ready', function() {
+        assert.isDefined(connection.socket);
+        assert.isDefined(connection.protocol);
         connection.disconnect()
       })
       connection.connect()

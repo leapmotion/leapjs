@@ -505,11 +505,11 @@ var Controller = exports.Controller = function(opts) {
 }
 
 Controller.prototype.inBrowser = function() {
-  return typeof(window) !== 'undefined';
+  return !typeof(typeof module !== 'undefined' && module.exports);
 }
 
 Controller.prototype.useAnimationLoop = function() {
-  return typeof(window) !== 'undefined' && typeof(chrome) === "undefined";
+  return this.inBrowser() && typeof(chrome) === "undefined";
 }
 
 Controller.prototype.connectionType = function() {
@@ -577,7 +577,7 @@ Controller.prototype.processFrame = function(frame) {
 
 extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":10,"./frame":6,"./circular_buffer":7,"./pipeline":11,"./util":12,"./connection":8,"./node_connection":13}],6:[function(require,module,exports){var Hand = require("./hand").Hand
+},{"events":10,"./frame":6,"./pipeline":11,"./circular_buffer":7,"./util":12,"./connection":8,"./node_connection":13}],6:[function(require,module,exports){var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Motion = require("./motion").Motion
   , Gesture = require("./gesture").Gesture
@@ -2147,7 +2147,7 @@ Connection.prototype.stopReconnection = function() {
 
 Connection.prototype.disconnect = function() {
   if (!this.socket) return;
-  this.socket.close();
+  this.teardownSocket();
   this.socket = undefined;
   this.protocol = undefined;
 }
@@ -2655,7 +2655,8 @@ Connection.prototype.setupSocket = function() {
 
 Connection.prototype.teardownSocket = function() {
   this.socket.close();
-  this.socket = null;
+  delete this.socket;
+  delete this.protocol;
 }
 },{"./frame":6,"./base_connection":18,"ws":24}],24:[function(require,module,exports){(function(global){/// shim for browser packaging
 
