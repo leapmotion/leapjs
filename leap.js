@@ -893,8 +893,9 @@ Connection.prototype.setupSocket = function() {
 }
 
 Connection.prototype.teardownSocket = function() {
-  this.socket.disconnect();
-  this.socket = null;
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
 }
 },{"./base_connection":18}],9:[function(require,module,exports){exports.UI = {
   Region: require("./ui/region").Region,
