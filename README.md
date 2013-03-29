@@ -10,7 +10,7 @@ If you're using npm, you can use `npm install leapjs`.
 
 ## Usage
 
-LeapJS works from with Node.js or your browser.
+LeapJS works with Node.js or your browser.
 
 ### From the browser
 
