@@ -1482,18 +1482,22 @@ var Frame = require('./frame').Frame
   , _ = require('underscore');
 
 var Controller = exports.Controller = function(opts) {
-  opts = _.defaults(opts || {}, {frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'});
+  this.opts = _.defaults(opts || {}, {frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'});
   this.history = new CircularBuffer(200);
   var controller = this;
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
-  this.frameEventName = opts.frameEventName;
   var connectionType = this.connectionType();
-  this.connection = new connectionType(opts);
+  this.connection = new connectionType(this.opts);
+  this.accumulatedGestures = [];
   this.connection.on('frame', function(frame) {
     controller.processFrame(frame);
+    if (frame.gestures) {
+      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
+    }
   });
-  this.on(this.frameEventName, function(frame) {
+  this.on(this.opts.frameEventName, function(frame) {
+
     controller.processFinishedFrame(frame);
   });
 
@@ -1520,9 +1524,11 @@ Controller.prototype.connect = function() {
     var controller = this;
     var callback = function() {
       controller.emit('animationFrame', controller.lastFrame);
-      window.requestAnimFrame(callback);
+      if (controller.opts.supressAnimationLoop !== true) window.requestAnimFrame(callback);
     }
-    window.requestAnimFrame(callback);
+    if (this.opts.supressAnimationLoop !== true) {
+      window.requestAnimFrame(callback);
+    };
   }
 }
 
@@ -1537,7 +1543,7 @@ Controller.prototype.frame = function(num) {
 Controller.prototype.loop = function(callback) {
   switch (callback.length) {
     case 1:
-      this.on(this.frameEventName, callback);
+      this.on(this.opts.frameEventName, callback);
       break;
     case 2:
       var controller = this;
@@ -1547,11 +1553,11 @@ Controller.prototype.loop = function(callback) {
           if (controller.lastFrame != frame) {
             immediateRunnerCallback(controller.lastFrame);
           } else {
-            controller.once(controller.frameEventName, immediateRunnerCallback);
+            controller.once(controller.opts.frameEventName, immediateRunnerCallback);
           }
         });
       }
-      this.once(this.frameEventName, immediateRunnerCallback);
+      this.once(this.opts.frameEventName, immediateRunnerCallback);
       break;
   }
   this.connect();
@@ -1564,9 +1570,10 @@ Controller.prototype.addStep = function(step) {
 
 Controller.prototype.processFrame = function(frame) {
   if (this.pipeline) {
-    var frame = this.pipeline.run(frame);
+    frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
+  this.lastConnectionFrame = frame;
   this.emit('connectionFrame', frame);
 }
 
@@ -1574,6 +1581,10 @@ Controller.prototype.processFinishedFrame = function(frame) {
   this.lastFrame = frame;
   if (frame.valid) {
     this.lastValidFrame = frame;
+  }
+  if (frame.gestures) {
+    frame.gestures = this.accumulatedGestures;
+    this.accumulatedGestures = [];
   }
   frame.controller = this;
   frame.historyIdx = this.history.push(frame);
@@ -1707,6 +1718,7 @@ var Frame = exports.Frame = function(data) {
       (pointable.tool ? hand.tools : hand.fingers).push(pointable);
     }
   }
+
   if (data.gestures) {
    /**
     * The list of Gesture objects detected in this frame, given in arbitrary order.
@@ -3777,14 +3789,7 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":14,"./protocol":23,"underscore":21}],25:[function(require,module,exports){(function(global){/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-})(window)
-},{}],11:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
+},{"events":14,"./protocol":23,"underscore":21}],11:[function(require,module,exports){var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
 var Region = exports.Region = function(start, end) {
@@ -3871,4 +3876,11 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":14,"underscore":21}]},{},[1,2,3]);
+},{"events":14,"underscore":21}],25:[function(require,module,exports){(function(global){/// shim for browser packaging
+
+module.exports = function() {
+  return global.WebSocket || global.MozWebSocket;
+}
+
+})(window)
+},{}]},{},[1,2,3]);
