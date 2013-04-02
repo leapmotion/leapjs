@@ -11,6 +11,14 @@ var fakeController = exports.fakeController = function(opts) {
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
 
+  connection.teardownSocket = function() {
+    delete connection.protocol;
+    var socket = this.socket;
+    setTimeout(function() { socket.close(); }, 10)
+    delete connection.socket;
+  };
+
+
   connection.setupSocket = function() {
     setTimeout(function() { connection.handleOpen() }, 10)
     var socket = {
