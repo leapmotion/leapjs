@@ -7,6 +7,7 @@ var fingerId = 0
   , frameId =0;
 
 var fakeController = exports.fakeController = function(opts) {
+  opts = _.defaults(opts || {}, {supressAnimationLoop: false, frameEventName: "connectionFrame"})
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
 
@@ -16,7 +17,6 @@ var fakeController = exports.fakeController = function(opts) {
     setTimeout(function() { socket.close(); }, 10)
     delete connection.socket;
   };
-
 
   connection.setupSocket = function() {
     setTimeout(function() { connection.handleOpen() }, 10)
@@ -44,7 +44,7 @@ var fakeFrame = exports.fakeFrame = function(opts) {
   handId = 0
   fingerId = 0
 
-  return {
+  var frame = {
     id: opts.id || ++frameId,
     valid: true,
     timestamp: frameId,
@@ -52,8 +52,20 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
+  };
+  if (opts.gestures) {
+    frame.gestures = opts.gestures;
   }
-}
+  return frame;
+};
+
+var fakeGesture = exports.fakeGesture = function(opts) {
+  if (opts === undefined) opts = {};
+  var gesture = {
+    type: 'circle'
+  };
+  return gesture;
+};
 
 var fakeHand = exports.fakeHand = function(opts) {
   handId++
