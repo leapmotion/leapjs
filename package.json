@@ -14,7 +14,7 @@
     "underscore": "*",
     "browserify": "git://github.com/substack/node-browserify.git",
     "mocha": "1.7.4",
-    "node-static": "*",
+    "http-server": "*",
     "uglify-js": "*",
     "chai": "*",
     "mocha-phantomjs": "*",

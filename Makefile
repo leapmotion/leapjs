@@ -1,7 +1,7 @@
 BROWSERIFY_ARGS=--ignore=./node_connection lib/websocketjs/swfobject.js lib/websocketjs/web_socket.js template/entry.js
 
 serve:
-	./node_modules/.bin/static .
+	./node_modules/.bin/http-server .
 
 test: test-all
 
