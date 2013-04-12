@@ -1,0 +1,4 @@
+# lets treat leap.js and leap.min.js as binary files, considering we don't care about them at all
+
+leap.js binary
+leap.min.js binary
