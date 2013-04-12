@@ -3499,28 +3499,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":11}],17:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":12,"ws":24}],22:[function(require,module,exports){
+},{"events":11}],22:[function(require,module,exports){
 var Motion = require("./motion").Motion
   , Pointable = require("./pointable").Pointable
   , _ = require("underscore");
@@ -3717,7 +3696,28 @@ Hand.Invalid = { valid: false };
 _.extend(Hand.Invalid, Motion);
 _.extend(Hand.prototype, Motion);
 
-},{"./motion":20,"./pointable":19,"underscore":18}],25:[function(require,module,exports){
+},{"./motion":20,"./pointable":19,"underscore":18}],17:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./frame":6,"./base_connection":12,"ws":24}],25:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
