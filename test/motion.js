@@ -18,9 +18,9 @@ describe('Motion', function(){
         var data2 = fakeFrame({rotation: new Leap.Matrix([[0,4,5], [1,3,7], [5,4,2]])})
         var frame2 = new Leap.Frame(data2);
         var result = frame1.rotationAxis(frame2);
-        assert.closeTo(-0.7427813, result[0], 0.0001)
-        assert.closeTo(-0.55708, result[1], 0.0001)
-        assert.closeTo(-0.37139, result[2], 0.0001)
+        assert.closeTo(-0.7427813, result.x, 0.0001)
+        assert.closeTo(-0.55708, result.y, 0.0001)
+        assert.closeTo(-0.37139, result.z, 0.0001)
       })
     })
 
@@ -55,9 +55,9 @@ describe('Motion', function(){
         var data2 = fakeFrame({handData: [fakeHand({rotation: new Leap.Matrix([[0,4,5], [1,3,7], [5,4,2]])})]})
         var frame2 = new Leap.Frame(data2);
         var result = frame1.hand(0).rotationAxis(frame2);
-        assert.closeTo(-0.74278, result[0], 0.0001)
-        assert.closeTo(-0.55708, result[1], 0.0001)
-        assert.closeTo(-0.37139, result[2], 0.0001)
+        assert.closeTo(-0.74278, result.x, 0.0001)
+        assert.closeTo(-0.55708, result.y, 0.0001)
+        assert.closeTo(-0.37139, result.z, 0.0001)
       })
     })
 
