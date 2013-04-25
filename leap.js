@@ -417,6 +417,8 @@ Leap = require("../lib/index").Leap
   , Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
+  , Connection = require("./connection").Connection
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
   , UI = require("./ui").UI
   , loopController = undefined;
 
@@ -470,7 +472,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./ui":12}],10:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
 var Vector = exports.Vector = function(data){
 	
 	if(data == null){
@@ -586,6 +588,25 @@ Vector.zAxis = function(){ return new Vector([0,0,1]); };
 Vector.zero = function(){ return new Vector([0,0,0]); };
 
 },{}],13:[function(require,module,exports){
+var CircularBuffer = exports.CircularBuffer = function(size) {
+  this.pos = 0;
+  this._buf = [];
+  this.size = size;
+}
+
+CircularBuffer.prototype.get = function(i) {
+  if (i == undefined) i = 0;
+  if (i >= this.size) return undefined;
+  if (i >= this._buf.length) return undefined;
+  return this._buf[(this.pos - i - 1) % this.size];
+}
+
+CircularBuffer.prototype.push = function(o) {
+  this._buf[this.pos % this.size] = o;
+  return this.pos++;
+}
+
+},{}],15:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -639,7 +660,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -825,7 +846,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":13}],7:[function(require,module,exports){
+},{"__browserify_process":15}],7:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1472,30 +1493,28 @@ Matrix.prototype = {
 Matrix.identity = function(){ return new Matrix(); };
 
 },{"./vector":10}],12:[function(require,module,exports){
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.onopen = function() { connection.handleOpen() };
+  socket.onmessage = function(message) { connection.handleData(message.data) };
+  socket.onclose = function() { connection.handleClose() };
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./base_connection":17}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/region":15,"./ui/cursor":16}],17:[function(require,module,exports){
-var CircularBuffer = exports.CircularBuffer = function(size) {
-  this.pos = 0;
-  this._buf = [];
-  this.size = size;
-}
-
-CircularBuffer.prototype.get = function(i) {
-  if (i == undefined) i = 0;
-  if (i >= this.size) return undefined;
-  if (i >= this._buf.length) return undefined;
-  return this._buf[(this.pos - i - 1) % this.size];
-}
-
-CircularBuffer.prototype.push = function(o) {
-  this._buf[this.pos % this.size] = o;
-  return this.pos++;
-}
-
-},{}],18:[function(require,module,exports){
+},{"./ui/region":18,"./ui/cursor":19}],20:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -1513,7 +1532,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1645,24 +1664,7 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":14,"./frame":6,"./circular_buffer":17,"./pipeline":18,"./connection":19,"./node_connection":20,"underscore":21}],19:[function(require,module,exports){
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.onopen = function() { connection.handleOpen() };
-  socket.onmessage = function(message) { connection.handleData(message.data) };
-  socket.onclose = function() { connection.handleClose() };
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./base_connection":22}],6:[function(require,module,exports){
+},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -2008,7 +2010,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":21}],8:[function(require,module,exports){
+},{"./gesture":7,"./pointable":9,"./hand":8,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2259,7 +2261,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":21}],21:[function(require,module,exports){
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3488,125 +3490,7 @@ Hand.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],20:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":22,"ws":23}],23:[function(require,module,exports){
-(function(global){/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-})(window)
-},{}],15:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , Vector = require('../vector').Vector
-  , _ = require('underscore')
-
-var Region = exports.Region = function(start, end) {
-  this.start = new Vector(start)
-  this.end = new Vector(end)
-  this.enteredFrame = null
-}
-
-Region.prototype.hasPointables = function(frame) {
-  for (var i = 0; i != frame.pointables.length; i++) {
-    var position = frame.pointables[i].tipPosition
-    if (position.x >= this.start.x && position.x <= this.end.x && position.y >= this.start.y && position.y <= this.end.y && position.z >= this.start.z && position.z <= this.end.z) {
-      return true
-    }
-  }
-  return false
-}
-
-Region.prototype.listener = function(opts) {
-  var region = this
-  if (opts && opts.nearThreshold) this.setupNearRegion(opts.nearThreshold)
-  return function(frame) {
-    return region.updatePosition(frame)
-  }
-}
-
-Region.prototype.clipper = function() {
-  var region = this
-  return function(frame) {
-    region.updatePosition(frame)
-    return region.enteredFrame ? frame : null
-  }
-}
-
-Region.prototype.setupNearRegion = function(distance) {
-  var nearRegion = this.nearRegion = new Region(
-    [this.start.x - distance, this.start.y - distance, this.start.z - distance],
-    [this.end.x + distance, this.end.y + distance, this.end.z + distance]
-  )
-  var region = this
-  nearRegion.on("enter", function(frame) {
-    region.emit("near", frame)
-  })
-  nearRegion.on("exit", function(frame) {
-    region.emit("far", frame)
-  })
-  region.on('exit', function(frame) {
-    region.emit("near", frame)
-  })
-}
-
-Region.prototype.updatePosition = function(frame) {
-  if (this.nearRegion) this.nearRegion.updatePosition(frame)
-  if (this.hasPointables(frame) && this.enteredFrame == null) {
-    this.enteredFrame = frame
-    this.emit("enter", this.enteredFrame)
-  } else if (!this.hasPointables(frame) && this.enteredFrame != null) {
-    this.enteredFrame = null
-    this.emit("exit", this.enteredFrame)
-  }
-  return frame
-}
-
-Region.prototype.normalize = function(position) {
-  return new Vector([
-    (position.x - this.start.x) / (this.end.x - this.start.x),
-    (position.y - this.start.y) / (this.end.y - this.start.y),
-    (position.z - this.start.z) / (this.end.z - this.start.z)
-  ])
-}
-
-Region.prototype.mapToXY = function(position, width, height) {
-  var normalized = this.normalize(position)
-  var x = normalized.x, y = normalized.y
-  if (x > 1) x = 1
-  else if (x < -1) x = -1
-  if (y > 1) y = 1
-  else if (y < -1) y = -1
-  return [
-    (x + 1) / 2 * width,
-    (1 - y) / 2 * height,
-    normalized.z
-  ]
-}
-
-_.extend(Region.prototype, EventEmitter.prototype)
-},{"events":14,"../vector":10,"underscore":21}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -3959,7 +3843,28 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":14}],25:[function(require,module,exports){
+},{"events":16}],21:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./frame":6,"./base_connection":17,"ws":24}],25:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -3981,7 +3886,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"util":24,"./frame":6}],22:[function(require,module,exports){
+},{"util":23,"./frame":6}],17:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -4047,5 +3952,102 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":14,"./protocol":25,"underscore":21}]},{},[1,2,3])
+},{"events":16,"./protocol":25,"underscore":22}],24:[function(require,module,exports){
+(function(global){/// shim for browser packaging
+
+module.exports = function() {
+  return global.WebSocket || global.MozWebSocket;
+}
+
+})(window)
+},{}],18:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , Vector = require('../vector').Vector
+  , _ = require('underscore')
+
+var Region = exports.Region = function(start, end) {
+  this.start = new Vector(start)
+  this.end = new Vector(end)
+  this.enteredFrame = null
+}
+
+Region.prototype.hasPointables = function(frame) {
+  for (var i = 0; i != frame.pointables.length; i++) {
+    var position = frame.pointables[i].tipPosition
+    if (position.x >= this.start.x && position.x <= this.end.x && position.y >= this.start.y && position.y <= this.end.y && position.z >= this.start.z && position.z <= this.end.z) {
+      return true
+    }
+  }
+  return false
+}
+
+Region.prototype.listener = function(opts) {
+  var region = this
+  if (opts && opts.nearThreshold) this.setupNearRegion(opts.nearThreshold)
+  return function(frame) {
+    return region.updatePosition(frame)
+  }
+}
+
+Region.prototype.clipper = function() {
+  var region = this
+  return function(frame) {
+    region.updatePosition(frame)
+    return region.enteredFrame ? frame : null
+  }
+}
+
+Region.prototype.setupNearRegion = function(distance) {
+  var nearRegion = this.nearRegion = new Region(
+    [this.start.x - distance, this.start.y - distance, this.start.z - distance],
+    [this.end.x + distance, this.end.y + distance, this.end.z + distance]
+  )
+  var region = this
+  nearRegion.on("enter", function(frame) {
+    region.emit("near", frame)
+  })
+  nearRegion.on("exit", function(frame) {
+    region.emit("far", frame)
+  })
+  region.on('exit', function(frame) {
+    region.emit("near", frame)
+  })
+}
+
+Region.prototype.updatePosition = function(frame) {
+  if (this.nearRegion) this.nearRegion.updatePosition(frame)
+  if (this.hasPointables(frame) && this.enteredFrame == null) {
+    this.enteredFrame = frame
+    this.emit("enter", this.enteredFrame)
+  } else if (!this.hasPointables(frame) && this.enteredFrame != null) {
+    this.enteredFrame = null
+    this.emit("exit", this.enteredFrame)
+  }
+  return frame
+}
+
+Region.prototype.normalize = function(position) {
+  return new Vector([
+    (position.x - this.start.x) / (this.end.x - this.start.x),
+    (position.y - this.start.y) / (this.end.y - this.start.y),
+    (position.z - this.start.z) / (this.end.z - this.start.z)
+  ])
+}
+
+Region.prototype.mapToXY = function(position, width, height) {
+  var normalized = this.normalize(position)
+  var x = normalized.x, y = normalized.y
+  if (x > 1) x = 1
+  else if (x < -1) x = -1
+  if (y > 1) y = 1
+  else if (y < -1) y = -1
+  return [
+    (x + 1) / 2 * width,
+    (1 - y) / 2 * height,
+    normalized.z
+  ]
+}
+
+_.extend(Region.prototype, EventEmitter.prototype)
+},{"events":16,"../vector":10,"underscore":22}]},{},[2,1,3])
 ;
