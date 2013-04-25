@@ -50,8 +50,8 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     timestamp: frameId,
     pointables: _(opts.fingers || 0).times(function() { return fakeFinger() }),
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
-    r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
-    t: opts.translation || [1, 2, 3],
+    r: opts.rotation || new Leap.Matrix([[0,1,2], [2,3,4], [2,3,4]]),
+    t: opts.translation || new Leap.Vector([1, 2, 3]),
   };
   if (opts.gestures) {
     frame.gestures = opts.gestures;
@@ -73,8 +73,8 @@ var fakeHand = exports.fakeHand = function(opts) {
     id: handId - 1,
     valid: true,
     palm: [],
-    r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
-    t: (opts && opts.translation) || [1, 2, 3]
+    r: (opts && opts.rotation) || new Leap.Matrix([[0,1,2], [2,3,4], [2,3,4]]),
+    t: (opts && opts.translation) || new Leap.Vector([1, 2, 3])
   }
 }
 
@@ -87,9 +87,9 @@ var fakeFinger = exports.fakeFinger = function() {
     width: 5,
 
     tip: {
-      direction: [10, 10, 10],
-      position: [10, 10, 10],
-      direction: [10, 10, 10]
+      direction: new Leap.Vector([10, 10, 10]),
+      position: new Leap.Vector([10, 10, 10]),
+      direction: new Leap.Vector([10, 10, 10])
     }
   }
 }
