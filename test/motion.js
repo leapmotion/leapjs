@@ -44,7 +44,7 @@ describe('Motion', function(){
         var frame1 = new Leap.Frame(data1);
         var data2 = fakeFrame({handData: [fakeHand({translation: new Leap.Vector([3, 1, 5])})]})
         var frame2 = new Leap.Frame(data2);
-        assert.deepEqual(new Leap.Vector([-2, 1, -2]), frame1.hand(0).translation(frame2.hand(0)))
+        assert.deepEqual(new Leap.Vector([-2, 1, -2]), frame1.hand(0).translation(frame2))
       })
     })
 
@@ -54,7 +54,7 @@ describe('Motion', function(){
         var frame1 = new Leap.Frame(data1);
         var data2 = fakeFrame({handData: [fakeHand({rotation: new Leap.Matrix([[0,4,5], [1,3,7], [5,4,2]])})]})
         var frame2 = new Leap.Frame(data2);
-        var result = frame1.hand(0).rotationAxis(frame2.hand(0));
+        var result = frame1.hand(0).rotationAxis(frame2);
         assert.closeTo(-0.74278, result[0], 0.0001)
         assert.closeTo(-0.55708, result[1], 0.0001)
         assert.closeTo(-0.37139, result[2], 0.0001)
@@ -67,7 +67,7 @@ describe('Motion', function(){
         var frame1 = new Leap.Frame(data1);
         var data2 = fakeFrame({handData: [fakeHand({rotation: new Leap.Matrix([[1,0,0], [0,1,0], [0.5,0,0.5]])})]})
         var frame2 = new Leap.Frame(data2);
-        var result = frame1.hand(0).rotationAngle(frame2.hand(0));
+        var result = frame1.hand(0).rotationAngle(frame2);
         assert.closeTo(0.72273, result, 0.0001)
       })
     })

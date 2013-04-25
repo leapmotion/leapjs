@@ -474,7 +474,26 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./connection":11,"./circular_buffer":12,"./matrix":13,"./ui":14}],10:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./matrix":10,"./connection":11,"./circular_buffer":12,"./ui":13,"./vector":14}],12:[function(require,module,exports){
+var CircularBuffer = exports.CircularBuffer = function(size) {
+  this.pos = 0;
+  this._buf = [];
+  this.size = size;
+}
+
+CircularBuffer.prototype.get = function(i) {
+  if (i == undefined) i = 0;
+  if (i >= this.size) return undefined;
+  if (i >= this._buf.length) return undefined;
+  return this._buf[(this.pos - i - 1) % this.size];
+}
+
+CircularBuffer.prototype.push = function(o) {
+  this._buf[this.pos % this.size] = o;
+  return this.pos++;
+}
+
+},{}],14:[function(require,module,exports){
 var Vector = exports.Vector = function(data){
 	
 	if(data == null){
@@ -588,25 +607,6 @@ Vector.xAxis = function(){ return new Vector([1,0,0]); };
 Vector.yAxis = function(){ return new Vector([0,1,0]); };
 Vector.zAxis = function(){ return new Vector([0,0,1]); };
 Vector.zero = function(){ return new Vector([0,0,0]); };
-
-},{}],12:[function(require,module,exports){
-var CircularBuffer = exports.CircularBuffer = function(size) {
-  this.pos = 0;
-  this._buf = [];
-  this.size = size;
-}
-
-CircularBuffer.prototype.get = function(i) {
-  if (i == undefined) i = 0;
-  if (i >= this.size) return undefined;
-  if (i >= this._buf.length) return undefined;
-  return this._buf[(this.pos - i - 1) % this.size];
-}
-
-CircularBuffer.prototype.push = function(o) {
-  this._buf[this.pos % this.size] = o;
-  return this.pos++;
-}
 
 },{}],15:[function(require,module,exports){
 // shim for using process in browser
@@ -1239,7 +1239,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"./vector":10}],9:[function(require,module,exports){
+},{"./vector":14}],9:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1370,24 +1370,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"./vector":10}],11:[function(require,module,exports){
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.onopen = function() { connection.handleOpen() };
-  socket.onmessage = function(message) { connection.handleData(message.data) };
-  socket.onclose = function() { connection.handleClose() };
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./base_connection":17}],13:[function(require,module,exports){
+},{"./vector":14}],10:[function(require,module,exports){
 var Vector = require("./vector").Vector;
 
 var Matrix = exports.Matrix = function(data){
@@ -1511,7 +1494,24 @@ Matrix.prototype = {
 
 Matrix.identity = function(){ return new Matrix(); };
 
-},{"./vector":10}],14:[function(require,module,exports){
+},{"./vector":14}],11:[function(require,module,exports){
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.onopen = function() { connection.handleOpen() };
+  socket.onmessage = function(message) { connection.handleData(message.data) };
+  socket.onclose = function() { connection.handleClose() };
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./base_connection":17}],13:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
@@ -1798,7 +1798,7 @@ Frame.prototype.rotationAxis = function(sinceFrame){
 	var y = this.rotation.xBasis.z - sinceFrame.rotation.zBasis.x;
 	var z = this.rotation.yBasis.x - sinceFrame.rotation.xBasis.y;
 	var vec = new Vector([x, y, z]);
-	return vec.normalize();
+	return vec.normalized();
 }
 
 Frame.prototype.rotationMatrix = function(sinceFrame){
@@ -1891,7 +1891,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./vector":10,"./gesture":7,"./matrix":13,"underscore":21}],8:[function(require,module,exports){
+},{"./hand":8,"./gesture":7,"./vector":14,"./matrix":10,"./pointable":9,"underscore":21}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2086,7 +2086,7 @@ Hand.prototype.rotationAxis = function(sinceFrame){
 	var y = this.rotation.xBasis.z - sinceHand.rotation.zBasis.x;
 	var z = this.rotation.yBasis.x - sinceHand.rotation.xBasis.y;
 	var vec = new Vector([x, y, z]);
-	return vec.normalize();
+	return vec.normalized();
 }
 
 Hand.prototype.rotationMatrix = function(sinceFrame){
@@ -2142,7 +2142,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":13,"underscore":21}],5:[function(require,module,exports){
+},{"./pointable":9,"./vector":14,"./matrix":10,"underscore":21}],5:[function(require,module,exports){
 var inNode = typeof(window) === 'undefined';
 
 var Frame = require('./frame').Frame
@@ -3845,28 +3845,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],22:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":17,"ws":24}],25:[function(require,module,exports){
+},{"events":16}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -3954,7 +3933,28 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":25,"underscore":21}],24:[function(require,module,exports){
+},{"events":16,"./protocol":24,"underscore":21}],22:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./frame":6,"./base_connection":17,"ws":25}],25:[function(require,module,exports){
 (function(global){/// shim for browser packaging
 
 module.exports = function() {
@@ -4051,5 +4051,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":21}]},{},[1,2,3])
+},{"events":16,"../vector":14,"underscore":21}]},{},[1,2,3])
 ;
