@@ -36,7 +36,7 @@
 
     var pointer = document.getElementById("pointer")
 
-    var box = new Leap.Box({size: 20})
+    var box = new Leap.UI.Box({size: 20})
     var cursor = new Leap.UI.Cursor();
 
     cursor.onCreate = function() {
@@ -50,9 +50,9 @@
 
     cursor.onMove = function(e) {
       var point = box.translate(e)
-      pointer.style.top = point[1];
-      pointer.style.left = point[0];
-      log(point[2])
+      pointer.style.top = point.y;
+      pointer.style.left = point.x;
+      log(point.z)
     }
 
     Leap.loop(function(frame) {

@@ -65,14 +65,15 @@
       if (frame.cursorPosition) {
         var position = region.mapToXY(frame.cursorPosition, canvas.width, canvas.height)
         context.beginPath();
-        context.arc(position[0], position[1], 10, 0, 2 * Math.PI, false);
+        context.arc(position.x, position.y, 10, 0, 2 * Math.PI, false);
         context.fillStyle = 'green';
         context.fill();
         context.lineWidth = 5;
         context.strokeStyle = '#003300';
         context.stroke();
       }
-      context.fillText("there are "+frame.pointables.length+" things", 80, 80);
+	  var numThings = frame.pointables.length;
+      context.fillText("there " + (numThings>1?"are":"is") + " " + numThings + " thing" + (numThings>1?"s":""), 80, 80);
       done()
     })
   </script>

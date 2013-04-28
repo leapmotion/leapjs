@@ -19,7 +19,7 @@
       canvas { width: 100%; height: 100%; background-color: black; }
     </style>
     <script src="scripts/three.js"></script>
-    <script src="scripts/leap.js"></script>
+    <script src="../../leap.js"></script>
   </head>
   <body>
     <script>
@@ -67,7 +67,7 @@
           color: 0xFFFFFF,
           size: 10,
           map: THREE.ImageUtils.loadTexture(
-            "media/particle.png"
+            "./media/particle.png"
           ),
           transparent: true,
           blending: THREE.CustomBlending,
@@ -75,13 +75,13 @@
           blendDst: THREE.OneMinusSrcColorFactor,
           blendEquation: THREE.AddEquation
       });
-      var particleCount = 1800;
+      var particleCount = 3600;
       var particles = new THREE.Geometry(), pMaterial
       for(var p = 0; p < particleCount; p++) {
-        var pX = Math.random() * 1000 - 500,
-            pY = Math.random() * 1000 - 500,
-            pZ = Math.random() * 1000 - 500,
-            particle = new THREE.Vector3(pX, pY, pZ)
+        var a1 = Math.random() * Math.PI * 2,
+            a2 = Math.random() * Math.PI * 2,
+            d = Math.random() * 500 + 500,
+            particle = new THREE.Vector3(d*Math.sin(a1)*Math.cos(a2), d*Math.sin(a1)*Math.sin(a2), d*Math.cos(a1));
         particles.vertices.push(particle);
       }
       scene.add(particles)
@@ -94,7 +94,7 @@
       window.clouds = new THREE.Mesh(
         new THREE.SphereGeometry( 50 + 1, 32, 32 ),
         new THREE.MeshLambertMaterial({ 
-          map: THREE.ImageUtils.loadTexture( 'media/clouds.jpg' ),
+          map: THREE.ImageUtils.loadTexture( './media/clouds.jpg' ),
           transparent: true,
           blending: THREE.CustomBlending,
           blendSrc: THREE.SrcAlphaFactor,
@@ -109,9 +109,9 @@
 
 
       //earth object
-      var earthBumpImage = THREE.ImageUtils.loadTexture( "media/earthBumpMap.jpg" );
+      var earthBumpImage = THREE.ImageUtils.loadTexture( "./media/earthBumpMap.jpg" );
       var geometry = new THREE.SphereGeometry(50, 40, 40)
-      var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( 'media/earthSatTexture.jpg' ), ambient: 0x050505, color: 0xFFFFFF, specular: 0x555555, bumpMap: earthBumpImage, bumpScale: 19, metal: true } );
+      var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture( './media/earthSatTexture.jpg' ), ambient: 0x050505, color: 0xFFFFFF, specular: 0x555555, bumpMap: earthBumpImage, bumpScale: 19, metal: true } );
       window.earth = new THREE.Mesh( geometry, material );
       scene.add(earth);
 
@@ -147,13 +147,13 @@
           var t = firstValidFrame.translation(frame)
 
           //limit y-axis between 0 and 180 degrees
-          curY = map(t[1], -300, 300, 0, 179)
+          curY = map(t.y, -300, 300, 0, 179)
 
           //assign rotation coordinates
-          rotateX = t[0]
+          rotateX = t.x
           rotateY = -curY
 
-          zoom = Math.max(0, t[2]);
+          zoom = Math.max(0, t.z + 200);
           zoomFactor = 1/(1 + (zoom / 150));
 
           //adjust 3D spherical coordinates of the camera
