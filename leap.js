@@ -474,26 +474,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./matrix":10,"./connection":11,"./circular_buffer":12,"./ui":13,"./vector":14}],12:[function(require,module,exports){
-var CircularBuffer = exports.CircularBuffer = function(size) {
-  this.pos = 0;
-  this._buf = [];
-  this.size = size;
-}
-
-CircularBuffer.prototype.get = function(i) {
-  if (i == undefined) i = 0;
-  if (i >= this.size) return undefined;
-  if (i >= this._buf.length) return undefined;
-  return this._buf[(this.pos - i - 1) % this.size];
-}
-
-CircularBuffer.prototype.push = function(o) {
-  this._buf[this.pos % this.size] = o;
-  return this.pos++;
-}
-
-},{}],14:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
 var Vector = exports.Vector = function(data){
 	
 	if(data == null){
@@ -607,6 +588,25 @@ Vector.xAxis = function(){ return new Vector([1,0,0]); };
 Vector.yAxis = function(){ return new Vector([0,1,0]); };
 Vector.zAxis = function(){ return new Vector([0,0,1]); };
 Vector.zero = function(){ return new Vector([0,0,0]); };
+
+},{}],13:[function(require,module,exports){
+var CircularBuffer = exports.CircularBuffer = function(size) {
+  this.pos = 0;
+  this._buf = [];
+  this.size = size;
+}
+
+CircularBuffer.prototype.get = function(i) {
+  if (i == undefined) i = 0;
+  if (i >= this.size) return undefined;
+  if (i >= this._buf.length) return undefined;
+  return this._buf[(this.pos - i - 1) % this.size];
+}
+
+CircularBuffer.prototype.push = function(o) {
+  this._buf[this.pos % this.size] = o;
+  return this.pos++;
+}
 
 },{}],15:[function(require,module,exports){
 // shim for using process in browser
@@ -1031,7 +1031,7 @@ var CircleGesture = function(data) {
   * The center point of the circle within the Leap frame of reference.
   *
   * @member CircleGesture.prototype.center
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.center = new Vector(data.center);
  /**
@@ -1054,7 +1054,7 @@ var CircleGesture = function(data) {
   *
   *
   * @member CircleGesture.prototype.normal
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.normal = new Vector(data.normal);
  /**
@@ -1108,7 +1108,7 @@ var SwipeGesture = function(data) {
   * reference, in mm.
   *
   * @member SwipeGesture.prototype.startPosition
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.startPosition = new Vector(data.startPosition);
  /**
@@ -1116,7 +1116,7 @@ var SwipeGesture = function(data) {
   * reference, in mm.
   *
   * @member SwipeGesture.prototype.position
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.position = new Vector(data.position);
  /**
@@ -1128,7 +1128,7 @@ var SwipeGesture = function(data) {
   * determine if the swipe is primarily horizontal or vertical.
   *
   * @member SwipeGesture.prototype.direction
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.direction = new Vector(data.direction);
  /**
@@ -1171,14 +1171,14 @@ var ScreenTapGesture = function(data) {
   * The position where the screen tap is registered.
   *
   * @member ScreenTapGesture.prototype.position
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.position = new Vector(data.position);
  /**
   * The direction of finger tip motion.
   *
   * @member ScreenTapGesture.prototype.direction
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
   this.direction = new Vector(data.direction);
  /**
@@ -1220,14 +1220,14 @@ var KeyTapGesture = function(data) {
      * The position where the key tap is registered.
      *
      * @member KeyTapGesture.prototype.position
-     * @type {Array: [x,y,z]}
+     * @type {Vector}
      */
     this.position = new Vector(data.position);
     /**
      * The direction of finger tip motion.
      *
      * @member KeyTapGesture.prototype.direction
-     * @type {Array: [x,y,z]}
+     * @type {Vector}
      */
     this.direction = new Vector(data.direction);
     /**
@@ -1239,7 +1239,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"./vector":14}],9:[function(require,module,exports){
+},{"./vector":10}],9:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1325,19 +1325,19 @@ var Pointable = exports.Pointable = function(data) {
    * direction as the tip.
    *
    * <img src="images/Leap_Finger_Model.png"/>
-   * @member Pointable.prototype.direction {Array: [x,y,z]}
+   * @member Pointable.prototype.direction {Vector}
    */
   this.direction = new Vector(data.direction);
   /**
    * The tip position in millimeters from the Leap origin.
    *
-   * @member Pointable.prototype.tipPosition {Array: [x,y,z]}
+   * @member Pointable.prototype.tipPosition {Vector}
    */
   this.tipPosition = new Vector(data.tipPosition);
   /**
    * The rate of change of the tip position in millimeters/second.
    *
-   * @member Pointable.prototype.tipVelocity {Array: [Vx,Vy,Vz]}
+   * @member Pointable.prototype.tipVelocity {Vector}
    */
   this.tipVelocity = new Vector(data.tipVelocity);
 }
@@ -1370,7 +1370,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"./vector":14}],10:[function(require,module,exports){
+},{"./vector":10}],11:[function(require,module,exports){
 var Vector = require("./vector").Vector;
 
 var Matrix = exports.Matrix = function(data){
@@ -1494,7 +1494,7 @@ Matrix.prototype = {
 
 Matrix.identity = function(){ return new Matrix(); };
 
-},{"./vector":14}],11:[function(require,module,exports){
+},{"./vector":10}],12:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
@@ -1511,7 +1511,7 @@ Connection.prototype.teardownSocket = function() {
   delete this.socket;
   delete this.protocol;
 }
-},{"./base_connection":17}],13:[function(require,module,exports){
+},{"./base_connection":17}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
@@ -1545,7 +1545,128 @@ var Cursor = exports.Cursor = function() {
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+var inNode = typeof(window) === 'undefined';
+
+var Frame = require('./frame').Frame
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
+  , Pipeline = require("./pipeline").Pipeline
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Controller = exports.Controller = function(opts) {
+  this.opts = _.defaults(opts || {}, {frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'});
+  this.history = new CircularBuffer(200);
+  var controller = this;
+  this.lastFrame = Frame.Invalid;
+  this.lastValidFrame = Frame.Invalid;
+  this.lastConnectionFrame = Frame.Invalid;
+  var connectionType = this.connectionType();
+  this.connection = new connectionType(this.opts);
+  this.accumulatedGestures = [];
+  this.connection.on('frame', function(frame) {
+    if (frame.gestures) {
+      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
+    }
+    controller.processFrame(frame);
+  });
+  this.on(this.opts.frameEventName, function(frame) {
+    controller.processFinishedFrame(frame);
+  });
+
+  // Delegate connection events
+  this.connection.on('ready', function() { controller.emit('ready') });
+  this.connection.on('connect', function() { controller.emit('connect') });
+  this.connection.on('disconnect', function() { controller.emit('disconnect') });
+}
+
+Controller.prototype.inBrowser = function() {
+  return !inNode;
+}
+
+Controller.prototype.useAnimationLoop = function() {
+  return this.inBrowser() && typeof(chrome) === "undefined";
+}
+
+Controller.prototype.connectionType = function() {
+  return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
+}
+
+Controller.prototype.connect = function() {
+  var controller = this;
+  if (this.connection.connect() && this.inBrowser()) {
+    var callback = function() {
+      controller.emit('animationFrame', controller.lastConnectionFrame);
+      if (controller.opts.supressAnimationLoop !== true) window.requestAnimFrame(callback);
+    }
+    if (controller.opts.supressAnimationLoop !== true) {
+      window.requestAnimFrame(callback);
+    };
+  }
+}
+
+Controller.prototype.disconnect = function() {
+  this.connection.disconnect();
+}
+
+Controller.prototype.frame = function(num) {
+  return this.history.get(num) || Frame.Invalid;
+}
+
+Controller.prototype.loop = function(callback) {
+  switch (callback.length) {
+    case 1:
+      this.on(this.opts.frameEventName, callback);
+      break;
+    case 2:
+      var controller = this;
+      var scheduler = null;
+      var immediateRunnerCallback = function(frame) {
+        callback(frame, function() {
+          if (controller.lastFrame != frame) {
+            immediateRunnerCallback(controller.lastFrame);
+          } else {
+            controller.once(controller.opts.frameEventName, immediateRunnerCallback);
+          }
+        });
+      }
+      this.once(this.opts.frameEventName, immediateRunnerCallback);
+      break;
+  }
+  this.connect();
+}
+
+Controller.prototype.addStep = function(step) {
+  if (!this.pipeline) this.pipeline = new Pipeline(this);
+  this.pipeline.addStep(step);
+}
+
+Controller.prototype.processFrame = function(frame) {
+  if (this.pipeline) {
+    frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
+  }
+  this.lastConnectionFrame = frame;
+  this.emit('connectionFrame', frame);
+}
+
+Controller.prototype.processFinishedFrame = function(frame) {
+  this.lastFrame = frame;
+  if (frame.valid) {
+    this.lastValidFrame = frame;
+  }
+  if (frame.gestures) {
+    frame.gestures = this.accumulatedGestures;
+    this.accumulatedGestures = [];
+  }
+  frame.controller = this;
+  frame.historyIdx = this.history.push(frame);
+  this.emit('frame', frame);
+}
+
+_.extend(Controller.prototype, EventEmitter.prototype);
+
+},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -1569,12 +1690,6 @@ var Hand = require("./hand").Hand
  * their positions, orientations and motions in frames at the Leap frame rate.
  *
  * Access Frame objects using the {@link Controller#frame}() function.
- *
- * @borrows Motion#translation as #translation
- * @borrows Motion#rotationAxis as #rotationAxis
- * @borrows Motion#rotationAngle as #rotationAngle
- * @borrows Motion#rotationMatrix as #rotationMatrix
- * @borrows Motion#scaleFactor as #scaleFactor
  */
 var Frame = exports.Frame = function(data) {
   /**
@@ -1783,6 +1898,25 @@ Frame.prototype.hand = function(id) {
   return this.handsMap[id] || Hand.Invalid;
 }
 
+/**
+ * The angle of rotation around the rotation axis derived from the overall 
+ * rotational motion between the current frame and the specified frame.
+ * 
+ * The returned angle is expressed in radians measured clockwise around 
+ * the rotation axis (using the right-hand rule) between the start and end frames. 
+ * The value is always between 0 and pi radians (0 and 180 degrees).
+ * 
+ * The Leap derives frame rotation from the relative change in position and 
+ * orientation of all objects detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then the 
+ * angle of rotation is zero.
+ * 
+ * @method Frame.prototype.rotationAngle
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Number} A positive value containing the heuristically determined 
+ * rotational change between the current frame and that specified in the sinceFrame parameter.
+ */
 Frame.prototype.rotationAngle = function(sinceFrame, axis){
 	// TODO: implement axis parameter
 	if (!this.valid || !sinceFrame.valid) return 0.0;
@@ -1792,6 +1926,23 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
 	return isNaN(angle) ? 0.0 : angle;
 }
 
+/**
+ * The axis of rotation derived from the overall rotational motion between 
+ * the current frame and the specified frame.
+ * 
+ * The returned direction vector is normalized.
+ * 
+ * The Leap derives frame rotation from the relative change in position and 
+ * orientation of all objects detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, or if no 
+ * rotation is detected between the two frames, a zero vector is returned.
+ * 
+ * @method Frame.prototype.rotationAxis
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * rotational change between the current frame and that specified in the sinceFrame parameter.
+ */
 Frame.prototype.rotationAxis = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
 	var x = this.rotation.zBasis.y - sinceFrame.rotation.yBasis.z;
@@ -1801,6 +1952,21 @@ Frame.prototype.rotationAxis = function(sinceFrame){
 	return vec.normalized();
 }
 
+/**
+ * The transform matrix expressing the rotation derived from the overall 
+ * rotational motion between the current frame and the specified frame.
+ * 
+ * The Leap derives frame rotation from the relative change in position and 
+ * orientation of all objects detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then 
+ * this method returns an identity matrix.
+ * 
+ * @method Frame.prototype.rotationMatrix
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Matrix} A transformation Matrix containing the heuristically determined 
+ * rotational change between the current frame and that specified in the sinceFrame parameter.
+ */
 Frame.prototype.rotationMatrix = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
 	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
@@ -1810,11 +1976,45 @@ Frame.prototype.rotationMatrix = function(sinceFrame){
 	return sinceFrame.rotation.times(transpose);
 }
 
+/**
+ * The scale factor derived from the overall motion between the current frame and the specified frame.
+ * 
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
+ * 
+ * The Leap derives scaling from the relative inward or outward motion of all 
+ * objects detected in the field of view (independent of translation and rotation).
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then this method returns 1.0.
+ * 
+ * @method Frame.prototype.scaleFactor
+ * @param {Frame} sinceFrame The starting frame for computing the relative scaling.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * scaling change ratio between the current frame and that specified in the sinceFrame parameter.
+ */
 Frame.prototype.scaleFactor = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return 1.0;
 	return Math.exp(this._scaleFactor - sinceFrame._scaleFactor);
 }
 
+/**
+ * The change of position derived from the overall linear motion between the 
+ * current frame and the specified frame.
+ * 
+ * The returned translation vector provides the magnitude and direction of the 
+ * movement in millimeters.
+ * 
+ * The Leap derives frame translation from the linear motion of all objects 
+ * detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then this 
+ * method returns a zero vector.
+ * 
+ * @method Frame.prototype.translation
+ * @param {Frame} sinceFrame The starting frame for computing the relative translation.
+ * @returns {Vector} A Vector representing the heuristically determined change in 
+ * position of all objects between the current frame and that specified in the sinceFrame parameter.
+ */
 Frame.prototype.translation = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
 	var x = this._translation.x - sinceFrame._translation.x;
@@ -1891,7 +2091,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./gesture":7,"./vector":14,"./matrix":10,"./pointable":9,"underscore":21}],8:[function(require,module,exports){
+},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -1917,12 +2117,6 @@ var Pointable = require("./pointable").Pointable
  * earlier frame when no Hand objects with that ID exist in the current frame.
  * A Hand object created from the Hand constructor is also invalid.
  * Test for validity with the {@link Hand#valid} property.
- *
- * @borrows Motion#translation as #translation
- * @borrows Motion#rotationAxis as #rotationAxis
- * @borrows Motion#rotationAngle as #rotationAngle
- * @borrows Motion#rotationMatrix as #rotationMatrix
- * @borrows Motion#scaleFactor as #scaleFactor
  */
 var Hand = exports.Hand = function(data) {
   /**
@@ -1942,7 +2136,7 @@ var Hand = exports.Hand = function(data) {
   /**
    * The center position of the palm in millimeters from the Leap origin.
    * @member Hand.prototype.palmPosition
-   * @type {Array: [x,y,z]}
+   * @type {Vector}
    */
   this.palmPosition = new Vector(data.palmPosition);
   /**
@@ -1952,14 +2146,14 @@ var Hand = exports.Hand = function(data) {
    * direction as the directed line from the palm position to the fingers.
    *
    * @member Hand.prototype.direction
-   * @type {Array: [x,y,z]}
+   * @type {Vector}
    */
   this.direction = new Vector(data.direction);
   /**
    * The rate of change of the palm position in millimeters/second.
    *
    * @member Hand.prototype.palmVeclocity
-   * @type {Array: [Vx,Vy,Vz]}
+   * @type {Vector}
    */
   this.palmVelocity = new Vector(data.palmVelocity);
   /**
@@ -1971,7 +2165,7 @@ var Hand = exports.Hand = function(data) {
    * The direction is expressed as a unit vector pointing in the same
    * direction as the palm normal (that is, a vector orthogonal to the palm).
    * @member Hand.prototype.palmNormal
-   * @type {Array: [x,y,z]}
+   * @type {Vector}
    */
   this.palmNormal = new Vector(data.palmNormal);
   /**
@@ -1981,7 +2175,7 @@ var Hand = exports.Hand = function(data) {
    *
    * <img src="images/Leap_Hand_Ball.png"/>
    * @member Hand.prototype.sphereCenter
-   * @type {Array: [x,y,z]}
+   * @type {Vector}
    */
   this.sphereCenter = new Vector(data.sphereCenter);
   /**
@@ -2065,6 +2259,24 @@ Hand.prototype.finger = function(id) {
   return (finger && finger.handId == this.id) ? finger : Pointable.Invalid;
 }
 
+/**
+ * The angle of rotation around the rotation axis derived from the change in 
+ * orientation of this hand, and any associated fingers and tools, between the 
+ * current frame and the specified frame.
+ * 
+ * The returned angle is expressed in radians measured clockwise around the 
+ * rotation axis (using the right-hand rule) between the start and end frames. 
+ * The value is always between 0 and pi radians (0 and 180 degrees).
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then the angle of rotation is zero.
+ * 
+ * @method Hand.prototype.rotationAngle
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in 
+ * the sinceFrame parameter.
+ */
 Hand.prototype.rotationAngle = function(sinceFrame, axis){
 	// TODO: implement axis parameter
 	if (!this.valid || !sinceFrame.valid) return 0.0;
@@ -2077,6 +2289,20 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis){
 	return isNaN(angle) ? 0.0 : angle;
 }
 
+/**
+ * The axis of rotation derived from the change in orientation of this hand, and 
+ * any associated fingers and tools, between the current frame and the specified frame.
+ * 
+ * The returned direction vector is normalized.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then this method returns a zero vector.
+ * 
+ * @method Hand.prototype.rotationAxis
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
 Hand.prototype.rotationAxis = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
 	var sinceHand = sinceFrame.hand(this.id);
@@ -2089,6 +2315,20 @@ Hand.prototype.rotationAxis = function(sinceFrame){
 	return vec.normalized();
 }
 
+/**
+ * The transform matrix expressing the rotation derived from the change in 
+ * orientation of this hand, and any associated fingers and tools, between 
+ * the current frame and the specified frame.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then this method returns 
+ * an identity matrix.
+ * 
+ * @method Hand.prototype.rotationMatrix
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Matrix} A transformation Matrix containing the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
 Hand.prototype.rotationMatrix = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
 	var sinceHand = sinceFrame.hand(this.id);
@@ -2101,6 +2341,23 @@ Hand.prototype.rotationMatrix = function(sinceFrame){
 	return sinceHand.rotation.times(transpose);
 }
 
+/**
+ * The scale factor derived from the hand's motion between the current frame and the specified frame.
+ * 
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
+ * 
+ * The Leap derives scaling from the relative inward or outward motion of a hand 
+ * and its associated fingers and tools (independent of translation and rotation).
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame 
+ * are invalid Frame objects, then this method returns 1.0.
+ * 
+ * @method Hand.prototype.scaleFactor
+ * @param {Frame} sinceFrame The starting frame for computing the relative scaling.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
 Hand.prototype.scaleFactor = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return 1.0;
 	var sinceHand = sinceFrame.hand(this.id);
@@ -2109,6 +2366,20 @@ Hand.prototype.scaleFactor = function(sinceFrame){
 	return Math.exp(this._scaleFactor - sinceHand._scaleFactor);
 }
 
+/**
+ * The change of position of this hand between the current frame and the specified frame
+ * 
+ * The returned translation vector provides the magnitude and direction of the 
+ * movement in millimeters.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or 
+ * sinceFrame are invalid Frame objects, then this method returns a zero vector.
+ * 
+ * @method Hand.prototype.translation
+ * @param {Frame} sinceFrame The starting frame for computing the relative translation.
+ * @returns {Vector} A Vector representing the heuristically determined change in hand 
+ * position between the current frame and that specified in the sinceFrame parameter.
+ */
 Hand.prototype.translation = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
 	var sinceHand = sinceFrame.hand(this.id);
@@ -2142,128 +2413,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":14,"./matrix":10,"underscore":21}],5:[function(require,module,exports){
-var inNode = typeof(window) === 'undefined';
-
-var Frame = require('./frame').Frame
-  , CircularBuffer = require("./circular_buffer").CircularBuffer
-  , Pipeline = require("./pipeline").Pipeline
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Controller = exports.Controller = function(opts) {
-  this.opts = _.defaults(opts || {}, {frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'});
-  this.history = new CircularBuffer(200);
-  var controller = this;
-  this.lastFrame = Frame.Invalid;
-  this.lastValidFrame = Frame.Invalid;
-  this.lastConnectionFrame = Frame.Invalid;
-  var connectionType = this.connectionType();
-  this.connection = new connectionType(this.opts);
-  this.accumulatedGestures = [];
-  this.connection.on('frame', function(frame) {
-    if (frame.gestures) {
-      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
-    }
-    controller.processFrame(frame);
-  });
-  this.on(this.opts.frameEventName, function(frame) {
-    controller.processFinishedFrame(frame);
-  });
-
-  // Delegate connection events
-  this.connection.on('ready', function() { controller.emit('ready') });
-  this.connection.on('connect', function() { controller.emit('connect') });
-  this.connection.on('disconnect', function() { controller.emit('disconnect') });
-}
-
-Controller.prototype.inBrowser = function() {
-  return !inNode;
-}
-
-Controller.prototype.useAnimationLoop = function() {
-  return this.inBrowser() && typeof(chrome) === "undefined";
-}
-
-Controller.prototype.connectionType = function() {
-  return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
-}
-
-Controller.prototype.connect = function() {
-  var controller = this;
-  if (this.connection.connect() && this.inBrowser()) {
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastConnectionFrame);
-      if (controller.opts.supressAnimationLoop !== true) window.requestAnimFrame(callback);
-    }
-    if (controller.opts.supressAnimationLoop !== true) {
-      window.requestAnimFrame(callback);
-    };
-  }
-}
-
-Controller.prototype.disconnect = function() {
-  this.connection.disconnect();
-}
-
-Controller.prototype.frame = function(num) {
-  return this.history.get(num) || Frame.Invalid;
-}
-
-Controller.prototype.loop = function(callback) {
-  switch (callback.length) {
-    case 1:
-      this.on(this.opts.frameEventName, callback);
-      break;
-    case 2:
-      var controller = this;
-      var scheduler = null;
-      var immediateRunnerCallback = function(frame) {
-        callback(frame, function() {
-          if (controller.lastFrame != frame) {
-            immediateRunnerCallback(controller.lastFrame);
-          } else {
-            controller.once(controller.opts.frameEventName, immediateRunnerCallback);
-          }
-        });
-      }
-      this.once(this.opts.frameEventName, immediateRunnerCallback);
-      break;
-  }
-  this.connect();
-}
-
-Controller.prototype.addStep = function(step) {
-  if (!this.pipeline) this.pipeline = new Pipeline(this);
-  this.pipeline.addStep(step);
-}
-
-Controller.prototype.processFrame = function(frame) {
-  if (this.pipeline) {
-    frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
-  }
-  this.lastConnectionFrame = frame;
-  this.emit('connectionFrame', frame);
-}
-
-Controller.prototype.processFinishedFrame = function(frame) {
-  this.lastFrame = frame;
-  if (frame.valid) {
-    this.lastValidFrame = frame;
-  }
-  if (frame.gestures) {
-    frame.gestures = this.accumulatedGestures;
-    this.accumulatedGestures = [];
-  }
-  frame.controller = this;
-  frame.historyIdx = this.history.push(frame);
-  this.emit('frame', frame);
-}
-
-_.extend(Controller.prototype, EventEmitter.prototype);
-
-},{"events":16,"./frame":6,"./circular_buffer":12,"./pipeline":20,"./connection":11,"./node_connection":22,"underscore":21}],21:[function(require,module,exports){
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3933,7 +4083,7 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":24,"underscore":21}],22:[function(require,module,exports){
+},{"events":16,"./protocol":24,"underscore":22}],21:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , WebSocket = require('ws')
 
@@ -4051,5 +4201,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":14,"underscore":21}]},{},[1,2,3])
+},{"events":16,"../vector":10,"underscore":22}]},{},[1,2,3])
 ;
