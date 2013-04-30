@@ -47,9 +47,9 @@
             }
           } else if (state == 'moving') {
             var t = startFrame.translation(frame);
-            camera.position.x = t[0] * 10 + startX;
-            camera.position.y = t[1] * 10 + startY;
-            camera.position.z = t[2] * 10 + startZ;
+            camera.position.x = t.x * 10 + startX;
+            camera.position.y = t.y * 10 + startY;
+            camera.position.z = t.z * 10 + startZ;
             if (frame.hands.length == 1 || frame.pointables.legnth > 1) {
               state = null;
             }

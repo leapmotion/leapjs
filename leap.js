@@ -1,4 +1,4 @@
-;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0](function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 /*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
 	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
 */
@@ -412,8 +412,13 @@ Leap = require("../lib/index").Leap
 },{"../lib/index":4}],4:[function(require,module,exports){
 (function(){var Controller = require("./controller").Controller
   , Frame = require("./frame").Frame
-  , CircularBuffer = require("./circular_buffer").CircularBuffer
+  , Gesture = require("./gesture").Gesture
+  , Hand = require("./hand").Hand
+  , Pointable = require("./pointable").Pointable
+  , Vector = require("./vector").Vector
+  , Matrix = require("./matrix").Matrix
   , Connection = require("./connection").Connection
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
   , UI = require("./ui").UI
   , loopController = undefined;
 
@@ -457,14 +462,134 @@ exports.Leap = {
     loopController.loop(callback);
   },
   Controller: Controller,
-  Connection: Connection,
   Frame: Frame,
+  Gesture: Gesture,
+  Hand: Hand,
+  Pointable: Pointable,
+  Vector: Vector,
+  Matrix: Matrix,
+  Connection: Connection,
   CircularBuffer: CircularBuffer,
   UI: UI
 }
 
 })()
-},{"./controller":5,"./frame":6,"./circular_buffer":7,"./connection":8,"./ui":9}],7:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
+var Vector = exports.Vector = function(data){
+	
+	if(data == null){
+		this.x = 0;
+		this.y = 0;
+		this.z = 0;
+	}
+	else if("x" in data){
+		this.x = data.x;
+		this.y = data.y;
+		this.z = data.z;
+	}
+	else if("0" in data){
+		this.x = (typeof(data[0]) == "number")?data[0]:0;
+		this.y = (typeof(data[1]) == "number")?data[1]:0;
+		this.z = (typeof(data[2]) == "number")?data[2]:0;
+	}
+};
+
+Vector.prototype = {
+	
+	angleTo : function(other){
+		var denom = this.magnitude()*other.magnitude();
+		if(denom > 0) return Math.acos(this.dot(other)/denom);
+		else return 0;
+	},
+	
+	cross : function(other){
+		var x = this.y*other.z - other.y*this.z;
+		var y = this.x*other.z - other.x*this.z;
+		var z = this.x*other.y - other.x*this.y;
+		return new Vector([x,y,z]);
+	},
+	
+	distanceTo : function(other){
+		return this.minus(other).magnitude();
+	},
+	
+	dot : function(other){
+		return this.x*other.x + this.y*other.y + this.z*other.z;
+	},
+	
+	plus : function(other){
+		return new Vector([this.x + other.x,this.y + other.y,this.z + other.z]);
+	},
+	
+	minus : function(other){
+		return new Vector([this.x - other.x,this.y - other.y,this.z - other.z]);
+	},
+	
+	multiply : function(scalar){
+		return new Vector([this.x*scalar,this.y*scalar,this.z*scalar]);
+	},
+	
+	dividedBy : function(scalar){
+		return new Vector([this.x/scalar,this.y/scalar,this.z/scalar]);
+	},
+	
+	magnitude : function(){
+		return Math.sqrt(this.magnitudeSquared());
+	},
+	
+	magnitudeSquared : function(){
+		return Math.pow(this.x,2) + Math.pow(this.y,2) + Math.pow(this.z,2);
+	},
+	
+	normalized : function(){
+		var magnitude = this.magnitude();
+		if(magnitude > 0) return this.dividedBy(magnitude);
+		else return new Vector();
+	},
+	
+	pitch : function(){
+		return Math.atan2(this.y, -this.z);
+	},
+	
+	roll : function(){
+		return Math.atan2(this.x, -this.y);
+	},
+	
+	yaw : function(){
+		return Math.atan2(this.x, -this.z);
+	},
+	
+	toArray : function(){
+		return [this.x, this.y, this.z];
+	},
+	
+	toString : function(){
+		return "{x:"+this.x+",y:"+this.y+",z:"+this.z+"}";
+	},
+	
+	compare : function(other){
+		return this.x==other.x && this.y==other.y && this.z==other.z;
+	},
+	
+	isValid : function(){
+		return (this.x != NaN && this.x > -Infinity && this.x < Infinity) &&
+			   (this.y != NaN && this.y > -Infinity && this.y < Infinity) &&
+			   (this.z != NaN && this.z > -Infinity && this.z < Infinity);
+	}
+};
+
+Vector.backward = function(){ return new Vector([0,0,1]); };
+Vector.down = function(){ return new Vector([0,-1,0]); };
+Vector.forward = function(){ return new Vector([0,0,-1]); };
+Vector.left = function(){ return new Vector([-1,0,0]); };
+Vector.right = function(){ return new Vector([1,0,0]); };
+Vector.up = function(){ return new Vector([0,1,0]); };
+Vector.xAxis = function(){ return new Vector([1,0,0]); };
+Vector.yAxis = function(){ return new Vector([0,1,0]); };
+Vector.zAxis = function(){ return new Vector([0,0,1]); };
+Vector.zero = function(){ return new Vector([0,0,0]); };
+
+},{}],13:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -483,7 +608,7 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -537,7 +662,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],11:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -723,47 +848,9 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":10}],8:[function(require,module,exports){
-var Connection = exports.Connection = require('./base_connection').Connection
+},{"__browserify_process":15}],7:[function(require,module,exports){
+var Vector = require("./vector").Vector
 
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.onopen = function() { connection.handleOpen() };
-  socket.onmessage = function(message) { connection.handleData(message.data) };
-  socket.onclose = function() { connection.handleClose() };
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./base_connection":12}],9:[function(require,module,exports){
-exports.UI = {
-  Region: require("./ui/region").Region,
-  Cursor: require("./ui/cursor").Cursor
-};
-},{"./ui/region":13,"./ui/cursor":14}],15:[function(require,module,exports){
-var Pipeline = exports.Pipeline = function() {
-  this.steps = [];
-}
-
-Pipeline.prototype.addStep = function(step) {
-  this.steps.push(step);
-}
-
-Pipeline.prototype.run = function(frame) {
-  var stepsLength = this.steps.length;
-  for (var i = 0; i != stepsLength; i++) {
-    if (!frame) break;
-    frame = this.steps[i](frame);
-  }
-  return frame;
-}
-
-},{}],16:[function(require,module,exports){
 /**
  * Constructs a new Gesture object.
  *
@@ -944,9 +1031,9 @@ var CircleGesture = function(data) {
   * The center point of the circle within the Leap frame of reference.
   *
   * @member CircleGesture.prototype.center
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.center = data.center;
+  this.center = new Vector(data.center);
  /**
   * The normal vector for the circle being traced.
   *
@@ -967,9 +1054,9 @@ var CircleGesture = function(data) {
   *
   *
   * @member CircleGesture.prototype.normal
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.normal = data.normal;
+  this.normal = new Vector(data.normal);
  /**
   * The number of times the finger tip has traversed the circle.
   *
@@ -1021,17 +1108,17 @@ var SwipeGesture = function(data) {
   * reference, in mm.
   *
   * @member SwipeGesture.prototype.startPosition
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.startPosition = data.startPosition;
+  this.startPosition = new Vector(data.startPosition);
  /**
   * The current swipe position within the Leap frame of
   * reference, in mm.
   *
   * @member SwipeGesture.prototype.position
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.position = data.position;
+  this.position = new Vector(data.position);
  /**
   * The unit direction vector parallel to the swipe motion.
   *
@@ -1041,9 +1128,9 @@ var SwipeGesture = function(data) {
   * determine if the swipe is primarily horizontal or vertical.
   *
   * @member SwipeGesture.prototype.direction
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.direction = data.direction;
+  this.direction = new Vector(data.direction);
  /**
   * The speed of the finger performing the swipe gesture in
   * millimeters per second.
@@ -1084,16 +1171,16 @@ var ScreenTapGesture = function(data) {
   * The position where the screen tap is registered.
   *
   * @member ScreenTapGesture.prototype.position
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.position = data.position;
+  this.position = new Vector(data.position);
  /**
   * The direction of finger tip motion.
   *
   * @member ScreenTapGesture.prototype.direction
-  * @type {Array: [x,y,z]}
+  * @type {Vector}
   */
-  this.direction = data.direction;
+  this.direction = new Vector(data.direction);
  /**
   * The progess value is always 1.0 for a screen tap gesture.
   *
@@ -1133,16 +1220,16 @@ var KeyTapGesture = function(data) {
      * The position where the key tap is registered.
      *
      * @member KeyTapGesture.prototype.position
-     * @type {Array: [x,y,z]}
+     * @type {Vector}
      */
-    this.position = data.position;
+    this.position = new Vector(data.position);
     /**
      * The direction of finger tip motion.
      *
      * @member KeyTapGesture.prototype.direction
-     * @type {Array: [x,y,z]}
+     * @type {Vector}
      */
-    this.direction = data.direction;
+    this.direction = new Vector(data.direction);
     /**
      * The progess value is always 1.0 for a key tap gesture.
      *
@@ -1152,10 +1239,305 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{}],14:[function(require,module,exports){
+},{"./vector":10}],9:[function(require,module,exports){
+var Vector = require("./vector").Vector
+
+/**
+ * Constructs a Pointable object.
+ *
+ * An uninitialized pointable is considered invalid.
+ * Get valid Pointable objects from a Frame or a Hand object.
+ *
+ * @class Pointable
+ * @classdesc
+ * The Pointable class reports the physical characteristics of a detected
+ * finger or tool.
+ *
+ * Both fingers and tools are classified as Pointable objects. Use the
+ * Pointable.tool property to determine whether a Pointable object represents a
+ * tool or finger. The Leap classifies a detected entity as a tool when it is
+ * thinner, straighter, and longer than a typical finger.
+ *
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
+ * exist in the current frame. A Pointable object created from the Pointable
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
+ */
+var Pointable = exports.Pointable = function(data) {
+  /**
+   * Indicates whether this is a valid Pointable object.
+   *
+   * @member Pointable.prototype.valid {Boolean}
+   */
+  this.valid = true;
+  /**
+   * A unique ID assigned to this Pointable object, whose value remains the
+   * same across consecutive frames while the tracked finger or tool remains
+   * visible. If tracking is lost (for example, when a finger is occluded by
+   * another finger or when it is withdrawn from the Leap field of view), the
+   * Leap may assign a new ID when it detects the entity in a future frame.
+   *
+   * Use the ID value with the pointable() functions defined for the
+   * {@link Frame} and {@link Frame.Hand} classes to find this
+   * Pointable object in future frames.
+   *
+   * @member Pointable.prototype.id {String}
+   */
+  this.id = data.id;
+  this.handId = data.handId;
+  /**
+   * The estimated length of the finger or tool in millimeters.
+   *
+   * The reported length is the visible length of the finger or tool from the
+   * hand to tip. If the length isn't known, then a value of 0 is returned.
+   *
+   * @member Pointable.prototype.length {Number}
+   */
+  this.length = data.length;
+  /**
+   * Whether or not the Pointable is believed to be a tool.
+   * Tools are generally longer, thinner, and straighter than fingers.
+   *
+   * If tool is false, then this Pointable must be a finger.
+   *
+   * @member Pointable.prototype.tool {Boolean}
+   */
+  this.tool = data.tool;
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member Pointable.prototype.width {Number}
+   */
+  this.width = data.width;
+  /**
+   * The direction in which this finger or tool is pointing.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the tip.
+   *
+   * <img src="images/Leap_Finger_Model.png"/>
+   * @member Pointable.prototype.direction {Vector}
+   */
+  this.direction = new Vector(data.direction);
+  /**
+   * The tip position in millimeters from the Leap origin.
+   *
+   * @member Pointable.prototype.tipPosition {Vector}
+   */
+  this.tipPosition = new Vector(data.tipPosition);
+  /**
+   * The rate of change of the tip position in millimeters/second.
+   *
+   * @member Pointable.prototype.tipVelocity {Vector}
+   */
+  this.tipVelocity = new Vector(data.tipVelocity);
+}
+
+/**
+ * A string containing a brief, human readable description of the Pointable
+ * object.
+ *
+ * @method Pointable.prototype.toString
+ * @returns {String} A description of the Pointable object as a string.
+ */
+Pointable.prototype.toString = function() {
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
+}
+
+/**
+ * An invalid Pointable object.
+ *
+ * You can use this Pointable instance in comparisons testing
+ * whether a given Pointable instance is valid or invalid. (You can also use the
+ * Pointable.valid property.)
+
+ * @constant
+ * @type {Pointable}
+ * @name Pointable.Invalid
+ */
+Pointable.Invalid = { valid: false };
+
+},{"./vector":10}],11:[function(require,module,exports){
+var Vector = require("./vector").Vector;
+
+var Matrix = exports.Matrix = function(data){
+	
+	if(data instanceof Matrix){
+		this.xBasis = new Vector(data.xBasis);
+		this.yBasis = new Vector(data.yBasis);
+		this.zBasis = new Vector(data.zBasis);
+		this.origin = new Vector(data.origin);
+	}
+	else if(data instanceof Array){
+		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
+			this.setRotation(data[0],data[1]);
+			this.origin = new Vector(data[2]);
+		}
+		else{
+			this.xBasis = new Vector(data[0]);
+			this.yBasis = new Vector(data[1]);
+			this.zBasis = new Vector(data[2]);
+			this.origin = new Vector(data[3]);
+		}
+	}
+	else{
+		this.xBasis = new Vector([1,0,0]);
+		this.yBasis = new Vector([0,1,0]);
+		this.zBasis = new Vector([0,0,1]);
+		this.origin = new Vector([0,0,0]);
+	}
+};
+
+Matrix.prototype = {
+	
+	setRotation : function(_axis, angle){
+		var axis = _axis.normalized();
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
+		var C = 1-c;
+		
+		this.xBasis = new Vector([axis.x*axis.x*C + c, axis.x*axis.y*C - axis.z*s, axis.x*axis.z*C + axis.y*s]);
+		this.yBasis = new Vector([axis.y*axis.x*C + axis.z*s, axis.y*axis.y*C + c, axis.y*axis.z*C - axis.x*s]);
+		this.zBasis = new Vector([axis.z*axis.x*C - axis.y*s, axis.z*axis.y*C + axis.x*s, axis.z*axis.z*C + c]);
+	},
+	
+	transformPoint : function(data){
+		return this.origin.plus(this.transformDirection(data));
+	},
+
+	transformDirection : function(data){
+		var x = this.xBasis.multiply(data.x);
+		var y = this.yBasis.multiply(data.y);
+		var z = this.zBasis.multiply(data.z);
+		return x.plus(y).plus(z);
+	},
+	
+	times : function(other){
+		var x = this.transformDirection(other.xBasis);
+		var y = this.transformDirection(other.yBasis);
+		var z = this.transformDirection(other.zBasis);
+		var o = this.transformPoint(other.origin);
+		return new Matrix([x,y,z,o]);
+	},
+	
+	rigidInverse : function(){
+		var x = new Vector([this.xBasis.x, this.yBasis.x, this.zBasis.x]);
+		var y = new Vector([this.xBasis.y, this.yBasis.y, this.zBasis.y]);
+		var z = new Vector([this.xBasis.z, this.yBasis.z, this.zBasis.z]);
+		var rotInverse = new Matrix([x,y,z]);
+		rotInverse.origin = rotInverse.transformDirection(Vector.zero().minus(this.origin));
+		return rotInverse;
+	},
+	
+	toArray3x3 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this.xBasis.x;
+		output[1] = this.xBasis.y;
+		output[2] = this.xBasis.z;
+		output[3] = this.yBasis.x;
+		output[4] = this.yBasis.y;
+		output[5] = this.yBasis.z;
+		output[6] = this.zBasis.x;
+		output[7] = this.zBasis.y;
+		output[8] = this.zBasis.z;
+		return output;
+	},
+	
+	toArray4x4 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this.xBasis.x;
+		output[1] = this.xBasis.y;
+		output[2] = this.xBasis.z;
+		output[3] = 0;
+		output[4] = this.yBasis.x;
+		output[5] = this.yBasis.y;
+		output[6] = this.yBasis.z;
+		output[7] = 0;
+		output[8] = this.zBasis.x;
+		output[9] = this.zBasis.y;
+		output[10] = this.zBasis.z;
+		output[11] = 0;
+		output[12] = this.origin.x;
+		output[13] = this.origin.y;
+		output[14] = this.origin.z;
+		output[15] = 1;
+		return output;
+	},
+	
+	toString : function(){
+		return "{xBasis:"+this.xBasis+",yBasis:"+this.yBasis+
+		",zBasis:"+this.zBasis+",origin:"+this.origin+"}";
+	},
+	
+	compare : function(other){
+		return this.xBasis.compare(other.xBasis) && 
+		this.yBasis.compare(other.yBasis) && 
+		this.zBasis.compare(other.zBasis) && 
+		this.origin.compare(other.origin);
+	}
+};
+
+Matrix.identity = function(){ return new Matrix(); };
+
+},{"./vector":10}],12:[function(require,module,exports){
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.onopen = function() { connection.handleOpen() };
+  socket.onmessage = function(message) { connection.handleData(message.data) };
+  socket.onclose = function() { connection.handleClose() };
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./base_connection":17}],14:[function(require,module,exports){
+exports.UI = {
+  Region: require("./ui/region").Region,
+  Cursor: require("./ui/cursor").Cursor
+};
+},{"./ui/region":18,"./ui/cursor":19}],20:[function(require,module,exports){
+var Pipeline = exports.Pipeline = function() {
+  this.steps = [];
+}
+
+Pipeline.prototype.addStep = function(step) {
+  this.steps.push(step);
+}
+
+Pipeline.prototype.run = function(frame) {
+  var stepsLength = this.steps.length;
+  for (var i = 0; i != stepsLength; i++) {
+    if (!frame) break;
+    frame = this.steps[i](frame);
+  }
+  return frame;
+}
+
+},{}],19:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
-    var pointable = frame.pointables.sort(function(a, b) { return a[2] - b[2] })[0]
+    var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
     if (pointable && pointable.valid) {
       frame.cursorPosition = pointable.tipPosition
     }
@@ -1284,277 +1666,12 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":11,"./frame":6,"./circular_buffer":7,"./pipeline":15,"./connection":8,"./node_connection":17,"underscore":18}],19:[function(require,module,exports){
-var Motion = require("./motion").Motion
-
-/**
- * Constructs a Pointable object.
- *
- * An uninitialized pointable is considered invalid.
- * Get valid Pointable objects from a Frame or a Hand object.
- *
- * @class Pointable
- * @classdesc
- * The Pointable class reports the physical characteristics of a detected
- * finger or tool.
- *
- * Both fingers and tools are classified as Pointable objects. Use the
- * Pointable.tool property to determine whether a Pointable object represents a
- * tool or finger. The Leap classifies a detected entity as a tool when it is
- * thinner, straighter, and longer than a typical finger.
- *
- * Note that Pointable objects can be invalid, which means that they do not
- * contain valid tracking data and do not correspond to a physical entity.
- * Invalid Pointable objects can be the result of asking for a Pointable object
- * using an ID from an earlier frame when no Pointable objects with that ID
- * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid
- * property.
- */
-var Pointable = exports.Pointable = function(data) {
-  /**
-   * Indicates whether this is a valid Pointable object.
-   *
-   * @member Pointable.prototype.valid {Boolean}
-   */
-  this.valid = true;
-  /**
-   * A unique ID assigned to this Pointable object, whose value remains the
-   * same across consecutive frames while the tracked finger or tool remains
-   * visible. If tracking is lost (for example, when a finger is occluded by
-   * another finger or when it is withdrawn from the Leap field of view), the
-   * Leap may assign a new ID when it detects the entity in a future frame.
-   *
-   * Use the ID value with the pointable() functions defined for the
-   * {@link Frame} and {@link Frame.Hand} classes to find this
-   * Pointable object in future frames.
-   *
-   * @member Pointable.prototype.id {String}
-   */
-  this.id = data.id;
-  this.handId = data.handId;
-  /**
-   * The estimated length of the finger or tool in millimeters.
-   *
-   * The reported length is the visible length of the finger or tool from the
-   * hand to tip. If the length isn't known, then a value of 0 is returned.
-   *
-   * @member Pointable.prototype.length {Number}
-   */
-  this.length = data.length;
-  /**
-   * Whether or not the Pointable is believed to be a tool.
-   * Tools are generally longer, thinner, and straighter than fingers.
-   *
-   * If tool is false, then this Pointable must be a finger.
-   *
-   * @member Pointable.prototype.tool {Boolean}
-   */
-  this.tool = data.tool;
-  /**
-   * The estimated width of the tool in millimeters.
-   *
-   * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
-   * then a value of 0 is returned.
-   *
-   * Pointable objects representing fingers do not have a width property.
-   *
-   * @member Pointable.prototype.width {Number}
-   */
-  this.width = data.width;
-  /**
-   * The direction in which this finger or tool is pointing.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the tip.
-   *
-   * <img src="images/Leap_Finger_Model.png"/>
-   * @member Pointable.prototype.direction {Array: [x,y,z]}
-   */
-  this.direction = data.direction;
-  /**
-   * The tip position in millimeters from the Leap origin.
-   *
-   * @member Pointable.prototype.tipPosition {Array: [x,y,z]}
-   */
-  this.tipPosition = data.tipPosition;
-  /**
-   * The rate of change of the tip position in millimeters/second.
-   *
-   * @member Pointable.prototype.tipVelocity {Array: [Vx,Vy,Vz]}
-   */
-  this.tipVelocity = data.tipVelocity;
-  this._translation = data.tipPosition;
-}
-
-/**
- * A string containing a brief, human readable description of the Pointable
- * object.
- *
- * @method Pointable.prototype.toString
- * @returns {String} A description of the Pointable object as a string.
- */
-Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
-}
-
-Pointable.prototype.translation = Motion.translation;
-
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @constant
- * @type {Pointable}
- * @name Pointable.Invalid
- */
-Pointable.Invalid = { valid: false };
-
-},{"./motion":20}],20:[function(require,module,exports){
-//var $M = require("./sylvester").$M
-var transposeMultiply = require('./util').transposeMultiply
-  , normalizeVector = require('./util').normalizeVector;
-
-var Motion = exports.Motion = {
-  matrix: function() {
-    return this.rotation;
-  },
-
-  /**
-   * The change of position derived from the linear motion between
-   * the current frame and the specified frame.
-   *
-   * The returned translation vector provides the magnitude and direction of
-   * the movement in millimeters.
-   *
-   * The Leap derives frame translation from the linear motion of
-   * all objects detected in the field of view. It derives hand translation
-   * from the linear motion of the hand and any associated fingers and tools.
-   *
-   * If either this frame or fromFrame is an invalid Frame object, then this
-   * method returns a zero vector.
-   *
-   * @method Motion.prototype.translation
-   * @param {Frame} fromFrame The starting frame for computing the
-   * relative translation.
-   * @returns {Array: [x,y,z]} A vector representing the heuristically
-   * determined change in position of all objects between the current frame
-   * and that specified in the fromFrame parameter.
-   */
-  translation: function(fromFrame) {
-    if (!this.valid || !fromFrame.valid) {
-      return [0, 0, 0];
-    }
-    return [ this._translation[0] - fromFrame._translation[0],
-             this._translation[1] - fromFrame._translation[1],
-             this._translation[2] - fromFrame._translation[2] ];
-  },
-  /**
-   * The axis around which the rotation takes place.
-   * @method Motion.prototype.rotationAxis
-   * @param {Frame} fromFrame A different frame description.
-   * @returns {Array: [x,y,z]} rotationAxis Return description.
-   */
-  rotationAxis: function(fromFrame) {
-    if (!this.valid || !fromFrame.valid) return [0, 0, 0];
-    var vec = [ this.rotation[2][1] - fromFrame.rotation[1][2],
-                this.rotation[0][2] - fromFrame.rotation[2][0],
-                this.rotation[1][0] - fromFrame.rotation[0][1] ];
-    return normalizeVector(vec);
-  },
-  /**
-   * The angle of rotation around the rotation axis derived from the overall
-   * rotational motion between the current frame and the specified frame.
-   *
-   * The returned angle is expressed in radians measured clockwise around the
-   * rotation axis (using the right-hand rule) between the start and end frames.
-   * The value is always between 0 and pi radians (0 and 180 degrees).
-   *
-   * The Leap derives frame rotation from the relative change in position and
-   * orientation of all objects detected in the field of view. It derives
-   * hand rotation from the rotation of the hand and any associated fingers
-   * and tools.
-   *
-   * If either this frame or fromFrame is an invalid Frame object, then the
-   * angle of rotation is zero.
-   *
-   * @method Motion.prototype.rotationAngle
-   * @param {Frame} fromFrame The starting frame for computing the
-   * relative rotation.
-   * @returns {Number} A positive value containing the heuristically
-   * determined rotational change between the current frame and that specified
-   * in the fromFrame parameter.
-   */
-  rotationAngle: function(fromFrame) {
-    if (!this.valid || !fromFrame.valid) return 0.0;
-    var rot = fromFrame.rotation;
-    var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5;
-    var angle = Math.acos(cs);
-    return angle === NaN ? 0.0 : angle;
-  },
-  /**
-   * The transform matrix expressing the rotation derived from the overall
-   * rotational motion between the current frame and the specified frame.
-   *
-   * The Leap derives frame rotation from the relative change in position and
-   * orientation of all objects detected in the field of view. It derives hand
-   * rotation from the rotation of a hand and any associated fingers and tools.
-   *
-   * If either this frame or fromFrame is an invalid Frame object, then this
-   * method returns an identity matrix.
-   *
-   * @method Motion.prototype.rotationMatrix
-   * @param {Frame} fromFrame The starting frame for computing the
-   * relative rotation.
-   * @returns {Sylvester.Matrix} A transformation matrix containing the
-   * heuristically determined rotational change between the current frame and
-   * that specified in the fromFrame parameter.
-   */
-  rotationMatrix: function(fromFrame) {
-    return (!this.valid || !fromFrame.valid) ? [[1,0,0], [0,1,0], [0,0,1]] : transposeMultiply(this, fromFrame);
-  },
-  /**
-   * The scale factor derived from the motion between the current frame
-   * and the specified frame.
-   *
-   * The scale factor is always positive. A value of 1.0 indicates no
-   * scaling took place. Values between 0.0 and 1.0 indicate contraction
-   * and values greater than 1.0 indicate expansion.
-   *
-   * The Leap derives scaling for a frame from the relative inward or outward
-   * motion of all objects detected in the field of view (independent of
-   * translation and rotation). It derives scaling for a hand from the spread
-   * of the associated hands and fingers.
-   *
-   * If either this frame or fromFrame is an invalid Frame object, then this
-   * method returns 1.0.
-   *
-   * @method Motion.prototype.scaleFactor
-   * @param {Frame} fromFrame The starting frame for computing the
-   * relative scaling.
-   * @returns {Number} scaleFactor A positive value representing the
-   * heuristically determined scaling change ratio between the current frame
-   * and that specified in the fromFrame parameter.
-   */
-  scaleFactor: function(fromFrame) {
-    if (!this.valid || !fromFrame.valid) 1.0;
-    return Math.exp(this._scaleFactor - fromFrame._scaleFactor);
-  }
-}
-
-},{"./util":21}],6:[function(require,module,exports){
+},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
-  , Motion = require("./motion").Motion
   , Gesture = require("./gesture").Gesture
+  , Vector = require("./vector").Vector
+  , Matrix = require("./matrix").Matrix
   , _ = require("underscore");
 
 /**
@@ -1573,12 +1690,6 @@ var Hand = require("./hand").Hand
  * their positions, orientations and motions in frames at the Leap frame rate.
  *
  * Access Frame objects using the {@link Controller#frame}() function.
- *
- * @borrows Motion#translation as #translation
- * @borrows Motion#rotationAxis as #rotationAxis
- * @borrows Motion#rotationAngle as #rotationAngle
- * @borrows Motion#rotationMatrix as #rotationMatrix
- * @borrows Motion#scaleFactor as #scaleFactor
  */
 var Frame = exports.Frame = function(data) {
   /**
@@ -1652,8 +1763,8 @@ var Frame = exports.Frame = function(data) {
   this.fingers = [];
   this.gestures = [];
   this.pointablesMap = {};
-  this._translation = data.t;
-  this.rotation = data.r;
+  this._translation = new Vector(data.t);
+  this.rotation = new Matrix(data.r);
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
@@ -1788,6 +1899,131 @@ Frame.prototype.hand = function(id) {
 }
 
 /**
+ * The angle of rotation around the rotation axis derived from the overall 
+ * rotational motion between the current frame and the specified frame.
+ * 
+ * The returned angle is expressed in radians measured clockwise around 
+ * the rotation axis (using the right-hand rule) between the start and end frames. 
+ * The value is always between 0 and pi radians (0 and 180 degrees).
+ * 
+ * The Leap derives frame rotation from the relative change in position and 
+ * orientation of all objects detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then the 
+ * angle of rotation is zero.
+ * 
+ * @method Frame.prototype.rotationAngle
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Number} A positive value containing the heuristically determined 
+ * rotational change between the current frame and that specified in the sinceFrame parameter.
+ */
+Frame.prototype.rotationAngle = function(sinceFrame, axis){
+	// TODO: implement axis parameter
+	if (!this.valid || !sinceFrame.valid) return 0.0;
+	var rot = this.rotationMatrix(sinceFrame);
+	var cs = (rot.xBasis.x + rot.yBasis.y + rot.zBasis.z - 1.0)*0.5
+	var angle = Math.acos(cs);
+	return isNaN(angle) ? 0.0 : angle;
+}
+
+/**
+ * The axis of rotation derived from the overall rotational motion between 
+ * the current frame and the specified frame.
+ * 
+ * The returned direction vector is normalized.
+ * 
+ * The Leap derives frame rotation from the relative change in position and 
+ * orientation of all objects detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, or if no 
+ * rotation is detected between the two frames, a zero vector is returned.
+ * 
+ * @method Frame.prototype.rotationAxis
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * rotational change between the current frame and that specified in the sinceFrame parameter.
+ */
+Frame.prototype.rotationAxis = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Vector.zero();
+	var x = this.rotation.zBasis.y - sinceFrame.rotation.yBasis.z;
+	var y = this.rotation.xBasis.z - sinceFrame.rotation.zBasis.x;
+	var z = this.rotation.yBasis.x - sinceFrame.rotation.xBasis.y;
+	var vec = new Vector([x, y, z]);
+	return vec.normalized();
+}
+
+/**
+ * The transform matrix expressing the rotation derived from the overall 
+ * rotational motion between the current frame and the specified frame.
+ * 
+ * The Leap derives frame rotation from the relative change in position and 
+ * orientation of all objects detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then 
+ * this method returns an identity matrix.
+ * 
+ * @method Frame.prototype.rotationMatrix
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Matrix} A transformation Matrix containing the heuristically determined 
+ * rotational change between the current frame and that specified in the sinceFrame parameter.
+ */
+Frame.prototype.rotationMatrix = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
+	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
+	var yBasis = new Vector([this.rotation.xBasis.y, this.rotation.yBasis.y, this.rotation.zBasis.y]);
+	var zBasis = new Vector([this.rotation.xBasis.z, this.rotation.yBasis.z, this.rotation.zBasis.z]);
+	var transpose = new Matrix([xBasis, yBasis, zBasis]);
+	return sinceFrame.rotation.times(transpose);
+}
+
+/**
+ * The scale factor derived from the overall motion between the current frame and the specified frame.
+ * 
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
+ * 
+ * The Leap derives scaling from the relative inward or outward motion of all 
+ * objects detected in the field of view (independent of translation and rotation).
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then this method returns 1.0.
+ * 
+ * @method Frame.prototype.scaleFactor
+ * @param {Frame} sinceFrame The starting frame for computing the relative scaling.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * scaling change ratio between the current frame and that specified in the sinceFrame parameter.
+ */
+Frame.prototype.scaleFactor = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return 1.0;
+	return Math.exp(this._scaleFactor - sinceFrame._scaleFactor);
+}
+
+/**
+ * The change of position derived from the overall linear motion between the 
+ * current frame and the specified frame.
+ * 
+ * The returned translation vector provides the magnitude and direction of the 
+ * movement in millimeters.
+ * 
+ * The Leap derives frame translation from the linear motion of all objects 
+ * detected in the field of view.
+ * 
+ * If either this frame or sinceFrame is an invalid Frame object, then this 
+ * method returns a zero vector.
+ * 
+ * @method Frame.prototype.translation
+ * @param {Frame} sinceFrame The starting frame for computing the relative translation.
+ * @returns {Vector} A Vector representing the heuristically determined change in 
+ * position of all objects between the current frame and that specified in the sinceFrame parameter.
+ */
+Frame.prototype.translation = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Vector.zero();
+	var x = this._translation.x - sinceFrame._translation.x;
+	var y = this._translation.y - sinceFrame._translation.y;
+	var z = this._translation.z - sinceFrame._translation.z;
+	return new Vector([x, y, z]);
+}
+
+/**
  * A string containing a brief, human readable description of the Frame object.
  *
  * @method Frame.prototype.toString
@@ -1855,10 +2091,329 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-_.extend(Frame.prototype, Motion);
-_.extend(Frame.Invalid, Motion);
+},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
+var Pointable = require("./pointable").Pointable
+  , Vector = require("./vector").Vector
+  , Matrix = require("./matrix").Matrix
+  , _ = require("underscore");
 
-},{"./hand":22,"./pointable":19,"./motion":20,"./gesture":16,"underscore":18}],18:[function(require,module,exports){
+/**
+ * Constructs a Hand object.
+ *
+ * An uninitialized hand is considered invalid.
+ * Get valid Hand objects from a Frame object.
+ * @class Hand
+ *
+ * @classdesc
+ * The Hand class reports the physical characteristics of a detected hand.
+ *
+ * Hand tracking data includes a palm position and velocity; vectors for
+ * the palm normal and direction to the fingers; properties of a sphere fit
+ * to the hand; and lists of the attached fingers and tools.
+ *
+ * Note that Hand objects can be invalid, which means that they do not contain
+ * valid tracking data and do not correspond to a physical entity. Invalid Hand
+ * objects can be the result of asking for a Hand object using an ID from an
+ * earlier frame when no Hand objects with that ID exist in the current frame.
+ * A Hand object created from the Hand constructor is also invalid.
+ * Test for validity with the {@link Hand#valid} property.
+ */
+var Hand = exports.Hand = function(data) {
+  /**
+   * A unique ID assigned to this Hand object, whose value remains the same
+   * across consecutive frames while the tracked hand remains visible. If
+   * tracking is lost (for example, when a hand is occluded by another hand
+   * or when it is withdrawn from or reaches the edge of the Leap field of view),
+   * the Leap may assign a new ID when it detects the hand in a future frame.
+   *
+   * Use the ID value with the {@link Frame.hand}() function to find this
+   * Hand object in future frames.
+   *
+   * @member Hand.prototype.id
+   * @type {String}
+   */
+  this.id = data.id;
+  /**
+   * The center position of the palm in millimeters from the Leap origin.
+   * @member Hand.prototype.palmPosition
+   * @type {Vector}
+   */
+  this.palmPosition = new Vector(data.palmPosition);
+  /**
+   * The direction from the palm position toward the fingers.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the directed line from the palm position to the fingers.
+   *
+   * @member Hand.prototype.direction
+   * @type {Vector}
+   */
+  this.direction = new Vector(data.direction);
+  /**
+   * The rate of change of the palm position in millimeters/second.
+   *
+   * @member Hand.prototype.palmVeclocity
+   * @type {Vector}
+   */
+  this.palmVelocity = new Vector(data.palmVelocity);
+  /**
+   * The normal vector to the palm. If your hand is flat, this vector will
+   * point downward, or "out" of the front surface of your palm.
+   *
+   * <img src="images/Leap_Palm_Vectors.png"/>
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the palm normal (that is, a vector orthogonal to the palm).
+   * @member Hand.prototype.palmNormal
+   * @type {Vector}
+   */
+  this.palmNormal = new Vector(data.palmNormal);
+  /**
+   * The center of a sphere fit to the curvature of this hand.
+   *
+   * This sphere is placed roughly as if the hand were holding a ball.
+   *
+   * <img src="images/Leap_Hand_Ball.png"/>
+   * @member Hand.prototype.sphereCenter
+   * @type {Vector}
+   */
+  this.sphereCenter = new Vector(data.sphereCenter);
+  /**
+   * The radius of a sphere fit to the curvature of this hand, in millimeters.
+   *
+   * This sphere is placed roughly as if the hand were holding a ball. Thus the
+   * size of the sphere decreases as the fingers are curled into a fist.
+   *
+   * @member Hand.prototype.sphereRadius
+   * @type {Number}
+   */
+  this.sphereRadius = data.sphereRadius;
+  /**
+   * Reports whether this is a valid Hand object.
+   *
+   * @member Hand.prototype.valid
+   * @type {Boolean}
+   */
+  this.valid = true;
+  /**
+   * The list of Pointable objects (fingers and tools) detected in this frame
+   * that are associated with this hand, given in arbitrary order. The list
+   * can be empty if no fingers or tools associated with this hand are detected.
+   *
+   * Use the {@link Pointable} tool property to determine
+   * whether or not an item in the list represents a tool or finger.
+   * You can also get only the tools using the Hand.tools[] list or
+   * only the fingers using the Hand.fingers[] list.
+   *
+   * @member Hand.prototype.pointables[]
+   * @type {Pointable}
+   */
+  this.pointables = [];
+  /**
+   * The list of fingers detected in this frame that are attached to
+   * this hand, given in arbitrary order.
+   *
+   * The list can be empty if no fingers attached to this hand are detected.
+   *
+   * @member Frame.prototype.fingers[]
+   * @type {Pointable}
+   */
+  this.fingers = [];
+  /**
+   * The list of tools detected in this frame that are held by this
+   * hand, given in arbitrary order.
+   *
+   * The list can be empty if no tools held by this hand are detected.
+   *
+   * @member Hand.prototype.tools[]
+   * @type {Pointable}
+   */
+  this.tools = [];
+  this._translation = new Vector(data.t);
+  this.rotation = new Matrix(data.r);
+  this._scaleFactor = data.s;
+}
+
+/**
+ * The finger with the specified ID attached to this hand.
+ *
+ * Use this function to retrieve a Pointable object representing a finger
+ * attached to this hand using an ID value obtained from a previous frame.
+ * This function always returns a Pointable object, but if no finger
+ * with the specified ID is present, an invalid Pointable object is returned.
+ *
+ * Note that the ID values assigned to fingers persist across frames, but only
+ * until tracking of a particular finger is lost. If tracking of a finger is
+ * lost and subsequently regained, the new Finger object representing that
+ * finger may have a different ID than that representing the finger in an
+ * earlier frame.
+ *
+ * @method Hand.prototype.finger
+ * @param {String} id The ID value of a finger from a previous frame.
+ * @returns {Pointable | Pointable.Invalid} The Finger object with
+ * the matching ID if one exists for this hand in this frame; otherwise, an
+ * invalid Finger object is returned.
+ */
+Hand.prototype.finger = function(id) {
+  var finger = this.frame.finger(id);
+  return (finger && finger.handId == this.id) ? finger : Pointable.Invalid;
+}
+
+/**
+ * The angle of rotation around the rotation axis derived from the change in 
+ * orientation of this hand, and any associated fingers and tools, between the 
+ * current frame and the specified frame.
+ * 
+ * The returned angle is expressed in radians measured clockwise around the 
+ * rotation axis (using the right-hand rule) between the start and end frames. 
+ * The value is always between 0 and pi radians (0 and 180 degrees).
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then the angle of rotation is zero.
+ * 
+ * @method Hand.prototype.rotationAngle
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in 
+ * the sinceFrame parameter.
+ */
+Hand.prototype.rotationAngle = function(sinceFrame, axis){
+	// TODO: implement axis parameter
+	if (!this.valid || !sinceFrame.valid) return 0.0;
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return 0.0;
+	
+	var rot = this.rotationMatrix(sinceFrame);
+	var cs = (rot.xBasis.x + rot.yBasis.y + rot.zBasis.z - 1.0)*0.5
+	var angle = Math.acos(cs);
+	return isNaN(angle) ? 0.0 : angle;
+}
+
+/**
+ * The axis of rotation derived from the change in orientation of this hand, and 
+ * any associated fingers and tools, between the current frame and the specified frame.
+ * 
+ * The returned direction vector is normalized.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then this method returns a zero vector.
+ * 
+ * @method Hand.prototype.rotationAxis
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.rotationAxis = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Vector.zero();
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return Vector.zero();
+	
+	var x = this.rotation.zBasis.y - sinceHand.rotation.yBasis.z;
+	var y = this.rotation.xBasis.z - sinceHand.rotation.zBasis.x;
+	var z = this.rotation.yBasis.x - sinceHand.rotation.xBasis.y;
+	var vec = new Vector([x, y, z]);
+	return vec.normalized();
+}
+
+/**
+ * The transform matrix expressing the rotation derived from the change in 
+ * orientation of this hand, and any associated fingers and tools, between 
+ * the current frame and the specified frame.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then this method returns 
+ * an identity matrix.
+ * 
+ * @method Hand.prototype.rotationMatrix
+ * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Matrix} A transformation Matrix containing the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.rotationMatrix = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return Matrix.identity();
+	
+	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
+	var yBasis = new Vector([this.rotation.xBasis.y, this.rotation.yBasis.y, this.rotation.zBasis.y]);
+	var zBasis = new Vector([this.rotation.xBasis.z, this.rotation.yBasis.z, this.rotation.zBasis.z]);
+	var transpose = new Matrix([xBasis, yBasis, zBasis]);
+	return sinceHand.rotation.times(transpose);
+}
+
+/**
+ * The scale factor derived from the hand's motion between the current frame and the specified frame.
+ * 
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
+ * 
+ * The Leap derives scaling from the relative inward or outward motion of a hand 
+ * and its associated fingers and tools (independent of translation and rotation).
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame 
+ * are invalid Frame objects, then this method returns 1.0.
+ * 
+ * @method Hand.prototype.scaleFactor
+ * @param {Frame} sinceFrame The starting frame for computing the relative scaling.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.scaleFactor = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return 1.0;
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return 1.0;
+	
+	return Math.exp(this._scaleFactor - sinceHand._scaleFactor);
+}
+
+/**
+ * The change of position of this hand between the current frame and the specified frame
+ * 
+ * The returned translation vector provides the magnitude and direction of the 
+ * movement in millimeters.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or 
+ * sinceFrame are invalid Frame objects, then this method returns a zero vector.
+ * 
+ * @method Hand.prototype.translation
+ * @param {Frame} sinceFrame The starting frame for computing the relative translation.
+ * @returns {Vector} A Vector representing the heuristically determined change in hand 
+ * position between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.translation = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Vector.zero();
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return Vector.zero();
+	
+	var x = this._translation.x - sinceHand._translation.x;
+	var y = this._translation.y - sinceHand._translation.y;
+	var z = this._translation.z - sinceHand._translation.z;
+	return new Vector([x, y, z]);
+}
+
+/**
+ * A string containing a brief, human readable description of the Hand object.
+ * @method Hand.prototype.toString
+ * @returns {String} A description of the Hand as a string.
+ */
+Hand.prototype.toString = function() {
+  return "Hand [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
+}
+
+/**
+ * An invalid Hand object.
+ *
+ * You can use an invalid Hand object in comparisons testing
+ * whether a given Hand instance is valid or invalid. (You can also use the
+ * Hand valid property.)
+ *
+ * @constant
+ * @type {Hand}
+ * @name Hand.Invalid
+ */
+Hand.Invalid = { valid: false };
+
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3087,65 +3642,6 @@ _.extend(Frame.Invalid, Motion);
 }).call(this);
 
 })()
-},{}],21:[function(require,module,exports){
-var transposeMultiply = exports.transposeMultiply = function(m1, m2) {
-  return multiply(transpose(m1), m2);
-}
-
-var transpose = exports.transposeMultiply = function(m) {
-  return [[m[0][0], m[1][0], m[2][0]], [m[0][1], m[1][1], m[2][1]], [m[0][2], m[1][2], m[2][2]]];
-}
-
-var multiply = exports.multiply = function(m1, m2) {
-  return [
-    [
-      m1[0][0] * m2[0][0] + m1[0][1] * m2[1][0] + m1[0][2] * m2[2][0],
-      m1[0][0] * m2[0][1] + m1[0][1] * m2[1][1] + m1[0][2] * m2[2][1],
-      m1[0][0] * m2[0][2] + m1[0][1] * m2[1][2] + m1[0][2] * m2[2][2]
-    ], [
-      m1[1][0] * m2[0][0] + m1[1][1] * m2[1][0] + m1[1][2] * m2[2][0],
-      m1[1][0] * m2[0][1] + m1[1][1] * m2[1][1] + m1[1][2] * m2[2][1],
-      m1[1][0] * m2[0][2] + m1[1][1] * m2[1][2] + m1[1][2] * m2[2][2]
-    ], [
-      m1[2][0] * m2[0][0] + m1[2][1] * m2[1][0] + m1[2][2] * m2[2][0],
-      m1[2][0] * m2[0][1] + m1[2][1] * m2[1][1] + m1[2][2] * m2[2][1],
-      m1[2][0] * m2[0][2] + m1[2][1] * m2[1][2] + m1[2][2] * m2[2][2]
-    ]
-  ];
-}
-
-/**
- * A utility function to multiply a vector represented by a 3-element array
- * by a scalar.
- *
- * @method Leap.multiply
- * @param {Array: [x,y,z]} vec An array containing three elements representing
- * coordinates in 3-dimensional space.
- * @param {Number} c A scalar value.
- * @returns {Array: [c*x, c*y, c*z]} The product of a 3-d vector and a scalar.
- */
-var multiplyVector = exports.multiplyVector = function(vec, c) {
-  return [vec[0] * c, vec[1] * c, vec[2] * c];
-};
-
-/**
- * A utility function to normalize a vector represented by a 3-element array.
- *
- * A normalized vector has the same direction as the original, but a length
- * of 1.0.
- *
- * @method Leap.normalize
- * @param {Array: [x,y,z]} vec An array containing three elements representing
- * coordinates in 3-dimensional space.
- * @returns {Array: [x,y,z]} The normalized vector.
- */
-var normalizeVector = exports.normalizeVector = function(vec) {
-  var denom = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
-  if (denom <= 0) return [0,0,0];
-  var c = 1.0 / Math.sqrt(denom);
-  return multiplyVector(vec, c);
-}
-
 },{}],23:[function(require,module,exports){
 var events = require('events');
 
@@ -3499,225 +3995,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":11}],22:[function(require,module,exports){
-var Motion = require("./motion").Motion
-  , Pointable = require("./pointable").Pointable
-  , _ = require("underscore");
-
-/**
- * Constructs a Hand object.
- *
- * An uninitialized hand is considered invalid.
- * Get valid Hand objects from a Frame object.
- * @class Hand
- *
- * @classdesc
- * The Hand class reports the physical characteristics of a detected hand.
- *
- * Hand tracking data includes a palm position and velocity; vectors for
- * the palm normal and direction to the fingers; properties of a sphere fit
- * to the hand; and lists of the attached fingers and tools.
- *
- * Note that Hand objects can be invalid, which means that they do not contain
- * valid tracking data and do not correspond to a physical entity. Invalid Hand
- * objects can be the result of asking for a Hand object using an ID from an
- * earlier frame when no Hand objects with that ID exist in the current frame.
- * A Hand object created from the Hand constructor is also invalid.
- * Test for validity with the {@link Hand#valid} property.
- *
- * @borrows Motion#translation as #translation
- * @borrows Motion#rotationAxis as #rotationAxis
- * @borrows Motion#rotationAngle as #rotationAngle
- * @borrows Motion#rotationMatrix as #rotationMatrix
- * @borrows Motion#scaleFactor as #scaleFactor
- */
-var Hand = exports.Hand = function(data) {
-  /**
-   * A unique ID assigned to this Hand object, whose value remains the same
-   * across consecutive frames while the tracked hand remains visible. If
-   * tracking is lost (for example, when a hand is occluded by another hand
-   * or when it is withdrawn from or reaches the edge of the Leap field of view),
-   * the Leap may assign a new ID when it detects the hand in a future frame.
-   *
-   * Use the ID value with the {@link Frame.hand}() function to find this
-   * Hand object in future frames.
-   *
-   * @member Hand.prototype.id
-   * @type {String}
-   */
-  this.id = data.id;
-  /**
-   * The center position of the palm in millimeters from the Leap origin.
-   * @member Hand.prototype.palmPosition
-   * @type {Array: [x,y,z]}
-   */
-  this.palmPosition = data.palmPosition;
-  /**
-   * The direction from the palm position toward the fingers.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the directed line from the palm position to the fingers.
-   *
-   * @member Hand.prototype.direction
-   * @type {Array: [x,y,z]}
-   */
-  this.direction = data.direction;
-  /**
-   * The rate of change of the palm position in millimeters/second.
-   *
-   * @member Hand.prototype.palmVeclocity
-   * @type {Array: [Vx,Vy,Vz]}
-   */
-  this.palmVelocity = data.palmVelocity;
-  /**
-   * The normal vector to the palm. If your hand is flat, this vector will
-   * point downward, or "out" of the front surface of your palm.
-   *
-   * <img src="images/Leap_Palm_Vectors.png"/>
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the palm normal (that is, a vector orthogonal to the palm).
-   * @member Hand.prototype.palmNormal
-   * @type {Array: [x,y,z]}
-   */
-  this.palmNormal = data.palmNormal;
-  /**
-   * The center of a sphere fit to the curvature of this hand.
-   *
-   * This sphere is placed roughly as if the hand were holding a ball.
-   *
-   * <img src="images/Leap_Hand_Ball.png"/>
-   * @member Hand.prototype.sphereCenter
-   * @type {Array: [x,y,z]}
-   */
-  this.sphereCenter = data.sphereCenter
-  /**
-   * The radius of a sphere fit to the curvature of this hand, in millimeters.
-   *
-   * This sphere is placed roughly as if the hand were holding a ball. Thus the
-   * size of the sphere decreases as the fingers are curled into a fist.
-   *
-   * @member Hand.prototype.sphereRadius
-   * @type {Number}
-   */
-  this.sphereRadius = data.sphereRadius;
-  /**
-   * Reports whether this is a valid Hand object.
-   *
-   * @member Hand.prototype.valid
-   * @type {Boolean}
-   */
-  this.valid = true;
-  /**
-   * The list of Pointable objects (fingers and tools) detected in this frame
-   * that are associated with this hand, given in arbitrary order. The list
-   * can be empty if no fingers or tools associated with this hand are detected.
-   *
-   * Use the {@link Pointable} tool property to determine
-   * whether or not an item in the list represents a tool or finger.
-   * You can also get only the tools using the Hand.tools[] list or
-   * only the fingers using the Hand.fingers[] list.
-   *
-   * @member Hand.prototype.pointables[]
-   * @type {Pointable}
-   */
-  this.pointables = [];
-  /**
-   * The list of fingers detected in this frame that are attached to
-   * this hand, given in arbitrary order.
-   *
-   * The list can be empty if no fingers attached to this hand are detected.
-   *
-   * @member Frame.prototype.fingers[]
-   * @type {Pointable}
-   */
-  this.fingers = [];
-  /**
-   * The list of tools detected in this frame that are held by this
-   * hand, given in arbitrary order.
-   *
-   * The list can be empty if no tools held by this hand are detected.
-   *
-   * @member Hand.prototype.tools[]
-   * @type {Pointable}
-   */
-  this.tools = [];
-  this._translation = data.t;
-  this.rotation = data.r;
-  this._scaleFactor = data.s;
-}
-
-/**
- * The finger with the specified ID attached to this hand.
- *
- * Use this function to retrieve a Pointable object representing a finger
- * attached to this hand using an ID value obtained from a previous frame.
- * This function always returns a Pointable object, but if no finger
- * with the specified ID is present, an invalid Pointable object is returned.
- *
- * Note that the ID values assigned to fingers persist across frames, but only
- * until tracking of a particular finger is lost. If tracking of a finger is
- * lost and subsequently regained, the new Finger object representing that
- * finger may have a different ID than that representing the finger in an
- * earlier frame.
- *
- * @method Hand.prototype.finger
- * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Pointable | Pointable.Invalid} The Finger object with
- * the matching ID if one exists for this hand in this frame; otherwise, an
- * invalid Finger object is returned.
- */
-Hand.prototype.finger = function(id) {
-  var finger = this.frame.finger(id);
-  return (finger && finger.handId == this.id) ? finger : Pointable.Invalid;
-}
-
-/**
- * A string containing a brief, human readable description of the Hand object.
- * @method Hand.prototype.toString
- * @returns {String} A description of the Hand as a string.
- */
-Hand.prototype.toString = function() {
-  return "Hand [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
-}
-
-/**
- * An invalid Hand object.
- *
- * You can use an invalid Hand object in comparisons testing
- * whether a given Hand instance is valid or invalid. (You can also use the
- * Hand valid property.)
- *
- * @constant
- * @type {Hand}
- * @name Hand.Invalid
- */
-Hand.Invalid = { valid: false };
-_.extend(Hand.Invalid, Motion);
-_.extend(Hand.prototype, Motion);
-
-},{"./motion":20,"./pointable":19,"underscore":18}],17:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":12,"ws":24}],25:[function(require,module,exports){
+},{"events":16}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -3739,7 +4017,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"util":23,"./frame":6}],12:[function(require,module,exports){
+},{"util":23,"./frame":6}],17:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -3754,7 +4032,6 @@ var Connection = exports.Connection = function(opts) {
 }
 
 Connection.prototype.handleOpen = function() {
-  this.stopReconnection();
   this.emit('connect');
 }
 
@@ -3770,15 +4047,7 @@ Connection.prototype.handleClose = function() {
 
 Connection.prototype.startReconnection = function() {
   var connection = this;
-  if (!this.openTimer) this.openTimer = setInterval(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.stopReconnection = function() {
-  var connection = this;
-  if (this.openTimer) {
-    clearTimeout(this.openTimer);
-    this.openTimer = undefined;
-  }
+  setTimeout(function() { connection.connect() }, 1000);
 }
 
 Connection.prototype.disconnect = function() {
@@ -3814,7 +4083,28 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":11,"./protocol":25,"underscore":18}],24:[function(require,module,exports){
+},{"events":16,"./protocol":24,"underscore":22}],21:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./frame":6,"./base_connection":17,"ws":25}],25:[function(require,module,exports){
 (function(global){/// shim for browser packaging
 
 module.exports = function() {
@@ -3822,20 +4112,21 @@ module.exports = function() {
 }
 
 })(window)
-},{}],13:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
+  , Vector = require('../vector').Vector
   , _ = require('underscore')
 
 var Region = exports.Region = function(start, end) {
-  this.start = start
-  this.end = end
+  this.start = new Vector(start)
+  this.end = new Vector(end)
   this.enteredFrame = null
 }
 
 Region.prototype.hasPointables = function(frame) {
   for (var i = 0; i != frame.pointables.length; i++) {
     var position = frame.pointables[i].tipPosition
-    if (position[0] >= this.start[0] && position[0] <= this.end[0] && position[1] >= this.start[1] && position[1] <= this.end[1] && position[2] >= this.start[2] && position[2] <= this.end[2]) {
+    if (position.x >= this.start.x && position.x <= this.end.x && position.y >= this.start.y && position.y <= this.end.y && position.z >= this.start.z && position.z <= this.end.z) {
       return true
     }
   }
@@ -3860,8 +4151,8 @@ Region.prototype.clipper = function() {
 
 Region.prototype.setupNearRegion = function(distance) {
   var nearRegion = this.nearRegion = new Region(
-    [this.start[0] - distance, this.start[1] - distance, this.start[2] - distance],
-    [this.end[0] + distance, this.end[1] + distance, this.end[2] + distance]
+    [this.start.x - distance, this.start.y - distance, this.start.z - distance],
+    [this.end.x + distance, this.end.y + distance, this.end.z + distance]
   )
   var region = this
   nearRegion.on("enter", function(frame) {
@@ -3888,16 +4179,16 @@ Region.prototype.updatePosition = function(frame) {
 }
 
 Region.prototype.normalize = function(position) {
-  return [
-    (position[0] - this.start[0]) / (this.end[0] - this.start[0]),
-    (position[1] - this.start[1]) / (this.end[1] - this.start[1]),
-    (position[2] - this.start[2]) / (this.end[2] - this.start[2])
-  ]
+  return new Vector([
+    (position.x - this.start.x) / (this.end.x - this.start.x),
+    (position.y - this.start.y) / (this.end.y - this.start.y),
+    (position.z - this.start.z) / (this.end.z - this.start.z)
+  ])
 }
 
 Region.prototype.mapToXY = function(position, width, height) {
   var normalized = this.normalize(position)
-  var x = normalized[0], y = normalized[1]
+  var x = normalized.x, y = normalized.y
   if (x > 1) x = 1
   else if (x < -1) x = -1
   if (y > 1) y = 1
@@ -3905,10 +4196,10 @@ Region.prototype.mapToXY = function(position, width, height) {
   return [
     (x + 1) / 2 * width,
     (1 - y) / 2 * height,
-    normalized[2]
+    normalized.z
   ]
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":11,"underscore":18}]},{},[1,2,3])
+},{"events":16,"../vector":10,"underscore":22}]},{},[1,2,3])
 ;
