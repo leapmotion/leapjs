@@ -474,122 +474,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
-var Vector = exports.Vector = function(data){
-	
-	if(data == null){
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-	}
-	else if("x" in data){
-		this.x = data.x;
-		this.y = data.y;
-		this.z = data.z;
-	}
-	else if("0" in data){
-		this.x = (typeof(data[0]) == "number")?data[0]:0;
-		this.y = (typeof(data[1]) == "number")?data[1]:0;
-		this.z = (typeof(data[2]) == "number")?data[2]:0;
-	}
-};
-
-Vector.prototype = {
-	
-	angleTo : function(other){
-		var denom = this.magnitude()*other.magnitude();
-		if(denom > 0) return Math.acos(this.dot(other)/denom);
-		else return 0;
-	},
-	
-	cross : function(other){
-		var x = this.y*other.z - other.y*this.z;
-		var y = this.x*other.z - other.x*this.z;
-		var z = this.x*other.y - other.x*this.y;
-		return new Vector([x,y,z]);
-	},
-	
-	distanceTo : function(other){
-		return this.minus(other).magnitude();
-	},
-	
-	dot : function(other){
-		return this.x*other.x + this.y*other.y + this.z*other.z;
-	},
-	
-	plus : function(other){
-		return new Vector([this.x + other.x,this.y + other.y,this.z + other.z]);
-	},
-	
-	minus : function(other){
-		return new Vector([this.x - other.x,this.y - other.y,this.z - other.z]);
-	},
-	
-	multiply : function(scalar){
-		return new Vector([this.x*scalar,this.y*scalar,this.z*scalar]);
-	},
-	
-	dividedBy : function(scalar){
-		return new Vector([this.x/scalar,this.y/scalar,this.z/scalar]);
-	},
-	
-	magnitude : function(){
-		return Math.sqrt(this.magnitudeSquared());
-	},
-	
-	magnitudeSquared : function(){
-		return Math.pow(this.x,2) + Math.pow(this.y,2) + Math.pow(this.z,2);
-	},
-	
-	normalized : function(){
-		var magnitude = this.magnitude();
-		if(magnitude > 0) return this.dividedBy(magnitude);
-		else return new Vector();
-	},
-	
-	pitch : function(){
-		return Math.atan2(this.y, -this.z);
-	},
-	
-	roll : function(){
-		return Math.atan2(this.x, -this.y);
-	},
-	
-	yaw : function(){
-		return Math.atan2(this.x, -this.z);
-	},
-	
-	toArray : function(){
-		return [this.x, this.y, this.z];
-	},
-	
-	toString : function(){
-		return "{x:"+this.x+",y:"+this.y+",z:"+this.z+"}";
-	},
-	
-	compare : function(other){
-		return this.x==other.x && this.y==other.y && this.z==other.z;
-	},
-	
-	isValid : function(){
-		return (this.x != NaN && this.x > -Infinity && this.x < Infinity) &&
-			   (this.y != NaN && this.y > -Infinity && this.y < Infinity) &&
-			   (this.z != NaN && this.z > -Infinity && this.z < Infinity);
-	}
-};
-
-Vector.backward = function(){ return new Vector([0,0,1]); };
-Vector.down = function(){ return new Vector([0,-1,0]); };
-Vector.forward = function(){ return new Vector([0,0,-1]); };
-Vector.left = function(){ return new Vector([-1,0,0]); };
-Vector.right = function(){ return new Vector([1,0,0]); };
-Vector.up = function(){ return new Vector([0,1,0]); };
-Vector.xAxis = function(){ return new Vector([1,0,0]); };
-Vector.yAxis = function(){ return new Vector([0,1,0]); };
-Vector.zAxis = function(){ return new Vector([0,0,1]); };
-Vector.zero = function(){ return new Vector([0,0,0]); };
-
-},{}],13:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],13:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -1561,7 +1446,7 @@ var Controller = exports.Controller = function(opts) {
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
   this.lastConnectionFrame = Frame.Invalid;
-  var connectionType = this.connectionType();
+  var connectionType = opts.connectionType || this.connectionType();
   this.connection = new connectionType(this.opts);
   this.accumulatedGestures = [];
   this.connection.on('frame', function(frame) {
@@ -2413,7 +2298,133 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
+var _ = require('underscore');
+
+var Vector = exports.Vector = function(data){
+	
+	if(data == null){
+		this.x = 0;
+		this.y = 0;
+		this.z = 0;
+	}
+	else if("x" in data){
+		this.x = data.x;
+		this.y = data.y;
+		this.z = data.z;
+	}
+	else if("0" in data){
+		this.x = (typeof(data[0]) == "number")?data[0]:0;
+		this.y = (typeof(data[1]) == "number")?data[1]:0;
+		this.z = (typeof(data[2]) == "number")?data[2]:0;
+	}
+	
+	this[0] = this.x;
+	this[1] = this.y;
+	this[2] = this.z;
+};
+
+var VectorPrototype = {
+	
+	angleTo : function(other){
+		var denom = this.magnitude()*other.magnitude();
+		if(denom > 0) return Math.acos(this.dot(other)/denom);
+		else return 0;
+	},
+	
+	cross : function(other){
+		var x = this.y*other.z - other.y*this.z;
+		var y = this.x*other.z - other.x*this.z;
+		var z = this.x*other.y - other.x*this.y;
+		return new Vector([x,y,z]);
+	},
+	
+	distanceTo : function(other){
+		return this.minus(other).magnitude();
+	},
+	
+	dot : function(other){
+		return this.x*other.x + this.y*other.y + this.z*other.z;
+	},
+	
+	plus : function(other){
+		return new Vector([this.x + other.x,this.y + other.y,this.z + other.z]);
+	},
+	
+	minus : function(other){
+		return new Vector([this.x - other.x,this.y - other.y,this.z - other.z]);
+	},
+	
+	multiply : function(scalar){
+		return new Vector([this.x*scalar,this.y*scalar,this.z*scalar]);
+	},
+	
+	dividedBy : function(scalar){
+		return new Vector([this.x/scalar,this.y/scalar,this.z/scalar]);
+	},
+	
+	magnitude : function(){
+		return Math.sqrt(this.magnitudeSquared());
+	},
+	
+	magnitudeSquared : function(){
+		return Math.pow(this.x,2) + Math.pow(this.y,2) + Math.pow(this.z,2);
+	},
+	
+	normalized : function(){
+		var magnitude = this.magnitude();
+		if(magnitude > 0) return this.dividedBy(magnitude);
+		else return new Vector();
+	},
+	
+	pitch : function(){
+		return Math.atan2(this.y, -this.z);
+	},
+	
+	roll : function(){
+		return Math.atan2(this.x, -this.y);
+	},
+	
+	yaw : function(){
+		return Math.atan2(this.x, -this.z);
+	},
+	
+	toArray : function(){
+		return [this.x, this.y, this.z];
+	},
+	
+	toString : function(){
+		return "{x:"+this.x+",y:"+this.y+",z:"+this.z+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	compare : function(other){
+		return this.x==other.x && this.y==other.y && this.z==other.z;
+	},
+	
+	isValid : function(){
+		return (this.x != NaN && this.x > -Infinity && this.x < Infinity) &&
+			   (this.y != NaN && this.y > -Infinity && this.y < Infinity) &&
+			   (this.z != NaN && this.z > -Infinity && this.z < Infinity);
+	}
+};
+
+Vector.prototype = Array.prototype;
+_.extend(Vector.prototype, VectorPrototype);
+
+Vector.backward = function(){ return new Vector([0,0,1]); };
+Vector.down = function(){ return new Vector([0,-1,0]); };
+Vector.forward = function(){ return new Vector([0,0,-1]); };
+Vector.left = function(){ return new Vector([-1,0,0]); };
+Vector.right = function(){ return new Vector([1,0,0]); };
+Vector.up = function(){ return new Vector([0,1,0]); };
+Vector.xAxis = function(){ return new Vector([1,0,0]); };
+Vector.yAxis = function(){ return new Vector([0,1,0]); };
+Vector.zAxis = function(){ return new Vector([0,0,1]); };
+Vector.zero = function(){ return new Vector([0,0,0]); };
+
+},{"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3995,7 +4006,28 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],24:[function(require,module,exports){
+},{"events":16}],21:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./frame":6,"./base_connection":17,"ws":24}],25:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4083,28 +4115,7 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":24,"underscore":22}],21:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":17,"ws":25}],25:[function(require,module,exports){
+},{"events":16,"./protocol":25,"underscore":22}],24:[function(require,module,exports){
 (function(global){/// shim for browser packaging
 
 module.exports = function() {
