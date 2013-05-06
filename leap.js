@@ -1,4 +1,9 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
+	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
+*/
+var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
+},{}],2:[function(require,module,exports){
 (function(){// Copyright: Hiroshi Ichikawa <http://gimite.net/en/>
 // License: New BSD License
 // Reference: http://dev.w3.org/html5/websockets/
@@ -392,11 +397,6 @@
 })();
 
 })()
-},{}],2:[function(require,module,exports){
-/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
-	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
-*/
-var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
 },{}],3:[function(require,module,exports){
 window.requestAnimFrame = (function() {
   return  window.requestAnimationFrame ||
@@ -474,7 +474,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./gesture":6,"./frame":7,"./pointable":8,"./vector":9,"./hand":10,"./connection":11,"./matrix":12,"./circular_buffer":13,"./ui":14}],13:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./pointable":8,"./hand":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],13:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -733,7 +733,138 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":15}],6:[function(require,module,exports){
+},{"__browserify_process":15}],8:[function(require,module,exports){
+var Vector = require("./vector").Vector
+
+/**
+ * Constructs a Pointable object.
+ *
+ * An uninitialized pointable is considered invalid.
+ * Get valid Pointable objects from a Frame or a Hand object.
+ *
+ * @class Pointable
+ * @classdesc
+ * The Pointable class reports the physical characteristics of a detected
+ * finger or tool.
+ *
+ * Both fingers and tools are classified as Pointable objects. Use the
+ * Pointable.tool property to determine whether a Pointable object represents a
+ * tool or finger. The Leap classifies a detected entity as a tool when it is
+ * thinner, straighter, and longer than a typical finger.
+ *
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
+ * exist in the current frame. A Pointable object created from the Pointable
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
+ */
+var Pointable = exports.Pointable = function(data) {
+  /**
+   * Indicates whether this is a valid Pointable object.
+   *
+   * @member Pointable.prototype.valid {Boolean}
+   */
+  this.valid = true;
+  /**
+   * A unique ID assigned to this Pointable object, whose value remains the
+   * same across consecutive frames while the tracked finger or tool remains
+   * visible. If tracking is lost (for example, when a finger is occluded by
+   * another finger or when it is withdrawn from the Leap field of view), the
+   * Leap may assign a new ID when it detects the entity in a future frame.
+   *
+   * Use the ID value with the pointable() functions defined for the
+   * {@link Frame} and {@link Frame.Hand} classes to find this
+   * Pointable object in future frames.
+   *
+   * @member Pointable.prototype.id {String}
+   */
+  this.id = data.id;
+  this.handId = data.handId;
+  /**
+   * The estimated length of the finger or tool in millimeters.
+   *
+   * The reported length is the visible length of the finger or tool from the
+   * hand to tip. If the length isn't known, then a value of 0 is returned.
+   *
+   * @member Pointable.prototype.length {Number}
+   */
+  this.length = data.length;
+  /**
+   * Whether or not the Pointable is believed to be a tool.
+   * Tools are generally longer, thinner, and straighter than fingers.
+   *
+   * If tool is false, then this Pointable must be a finger.
+   *
+   * @member Pointable.prototype.tool {Boolean}
+   */
+  this.tool = data.tool;
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member Pointable.prototype.width {Number}
+   */
+  this.width = data.width;
+  /**
+   * The direction in which this finger or tool is pointing.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the tip.
+   *
+   * <img src="images/Leap_Finger_Model.png"/>
+   * @member Pointable.prototype.direction {Vector}
+   */
+  this.direction = new Vector(data.direction);
+  /**
+   * The tip position in millimeters from the Leap origin.
+   *
+   * @member Pointable.prototype.tipPosition {Vector}
+   */
+  this.tipPosition = new Vector(data.tipPosition);
+  /**
+   * The rate of change of the tip position in millimeters/second.
+   *
+   * @member Pointable.prototype.tipVelocity {Vector}
+   */
+  this.tipVelocity = new Vector(data.tipVelocity);
+}
+
+/**
+ * A string containing a brief, human readable description of the Pointable
+ * object.
+ *
+ * @method Pointable.prototype.toString
+ * @returns {String} A description of the Pointable object as a string.
+ */
+Pointable.prototype.toString = function() {
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
+}
+
+/**
+ * An invalid Pointable object.
+ *
+ * You can use this Pointable instance in comparisons testing
+ * whether a given Pointable instance is valid or invalid. (You can also use the
+ * Pointable.valid property.)
+
+ * @constant
+ * @type {Pointable}
+ * @name Pointable.Invalid
+ */
+Pointable.Invalid = { valid: false };
+
+},{"./vector":10}],7:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1124,138 +1255,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"./vector":9}],8:[function(require,module,exports){
-var Vector = require("./vector").Vector
-
-/**
- * Constructs a Pointable object.
- *
- * An uninitialized pointable is considered invalid.
- * Get valid Pointable objects from a Frame or a Hand object.
- *
- * @class Pointable
- * @classdesc
- * The Pointable class reports the physical characteristics of a detected
- * finger or tool.
- *
- * Both fingers and tools are classified as Pointable objects. Use the
- * Pointable.tool property to determine whether a Pointable object represents a
- * tool or finger. The Leap classifies a detected entity as a tool when it is
- * thinner, straighter, and longer than a typical finger.
- *
- * Note that Pointable objects can be invalid, which means that they do not
- * contain valid tracking data and do not correspond to a physical entity.
- * Invalid Pointable objects can be the result of asking for a Pointable object
- * using an ID from an earlier frame when no Pointable objects with that ID
- * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid
- * property.
- */
-var Pointable = exports.Pointable = function(data) {
-  /**
-   * Indicates whether this is a valid Pointable object.
-   *
-   * @member Pointable.prototype.valid {Boolean}
-   */
-  this.valid = true;
-  /**
-   * A unique ID assigned to this Pointable object, whose value remains the
-   * same across consecutive frames while the tracked finger or tool remains
-   * visible. If tracking is lost (for example, when a finger is occluded by
-   * another finger or when it is withdrawn from the Leap field of view), the
-   * Leap may assign a new ID when it detects the entity in a future frame.
-   *
-   * Use the ID value with the pointable() functions defined for the
-   * {@link Frame} and {@link Frame.Hand} classes to find this
-   * Pointable object in future frames.
-   *
-   * @member Pointable.prototype.id {String}
-   */
-  this.id = data.id;
-  this.handId = data.handId;
-  /**
-   * The estimated length of the finger or tool in millimeters.
-   *
-   * The reported length is the visible length of the finger or tool from the
-   * hand to tip. If the length isn't known, then a value of 0 is returned.
-   *
-   * @member Pointable.prototype.length {Number}
-   */
-  this.length = data.length;
-  /**
-   * Whether or not the Pointable is believed to be a tool.
-   * Tools are generally longer, thinner, and straighter than fingers.
-   *
-   * If tool is false, then this Pointable must be a finger.
-   *
-   * @member Pointable.prototype.tool {Boolean}
-   */
-  this.tool = data.tool;
-  /**
-   * The estimated width of the tool in millimeters.
-   *
-   * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
-   * then a value of 0 is returned.
-   *
-   * Pointable objects representing fingers do not have a width property.
-   *
-   * @member Pointable.prototype.width {Number}
-   */
-  this.width = data.width;
-  /**
-   * The direction in which this finger or tool is pointing.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the tip.
-   *
-   * <img src="images/Leap_Finger_Model.png"/>
-   * @member Pointable.prototype.direction {Vector}
-   */
-  this.direction = new Vector(data.direction);
-  /**
-   * The tip position in millimeters from the Leap origin.
-   *
-   * @member Pointable.prototype.tipPosition {Vector}
-   */
-  this.tipPosition = new Vector(data.tipPosition);
-  /**
-   * The rate of change of the tip position in millimeters/second.
-   *
-   * @member Pointable.prototype.tipVelocity {Vector}
-   */
-  this.tipVelocity = new Vector(data.tipVelocity);
-}
-
-/**
- * A string containing a brief, human readable description of the Pointable
- * object.
- *
- * @method Pointable.prototype.toString
- * @returns {String} A description of the Pointable object as a string.
- */
-Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
-}
-
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @constant
- * @type {Pointable}
- * @name Pointable.Invalid
- */
-Pointable.Invalid = { valid: false };
-
-},{"./vector":9}],11:[function(require,module,exports){
+},{"./vector":10}],12:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
@@ -1427,7 +1427,7 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":16,"./frame":7,"./circular_buffer":13,"./pipeline":20,"./connection":11,"./node_connection":21,"underscore":22}],7:[function(require,module,exports){
+},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -1682,7 +1682,7 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
 	// TODO: implement axis parameter
 	if (!this.valid || !sinceFrame.valid) return 0.0;
 	var rot = this.rotationMatrix(sinceFrame);
-	var cs = (rot.xBasis.x + rot.yBasis.y + rot.zBasis.z - 1.0)*0.5
+	var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5
 	var angle = Math.acos(cs);
 	return isNaN(angle) ? 0.0 : angle;
 }
@@ -1706,9 +1706,9 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
  */
 Frame.prototype.rotationAxis = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
-	var x = this.rotation.zBasis.y - sinceFrame.rotation.yBasis.z;
-	var y = this.rotation.xBasis.z - sinceFrame.rotation.zBasis.x;
-	var z = this.rotation.yBasis.x - sinceFrame.rotation.xBasis.y;
+	var x = this.rotation[2][1] - sinceFrame.rotation[1][2];
+	var y = this.rotation[0][2] - sinceFrame.rotation[2][0];
+	var z = this.rotation[1][0] - sinceFrame.rotation[0][1];
 	var vec = new Vector([x, y, z]);
 	return vec.normalized();
 }
@@ -1730,9 +1730,9 @@ Frame.prototype.rotationAxis = function(sinceFrame){
  */
 Frame.prototype.rotationMatrix = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
-	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
-	var yBasis = new Vector([this.rotation.xBasis.y, this.rotation.yBasis.y, this.rotation.zBasis.y]);
-	var zBasis = new Vector([this.rotation.xBasis.z, this.rotation.yBasis.z, this.rotation.zBasis.z]);
+	var xBasis = new Vector([this.rotation[0][0], this.rotation[1][0], this.rotation[2][0]]);
+	var yBasis = new Vector([this.rotation[0][1], this.rotation[1][1], this.rotation[2][1]]);
+	var zBasis = new Vector([this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]]);
 	var transpose = new Matrix([xBasis, yBasis, zBasis]);
 	return sinceFrame.rotation.times(transpose);
 }
@@ -1778,9 +1778,9 @@ Frame.prototype.scaleFactor = function(sinceFrame){
  */
 Frame.prototype.translation = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
-	var x = this._translation.x - sinceFrame._translation.x;
-	var y = this._translation.y - sinceFrame._translation.y;
-	var z = this._translation.z - sinceFrame._translation.z;
+	var x = this._translation[0] - sinceFrame._translation[0];
+	var y = this._translation[1] - sinceFrame._translation[1];
+	var z = this._translation[2] - sinceFrame._translation[2];
 	return new Vector([x, y, z]);
 }
 
@@ -1852,270 +1852,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":10,"./pointable":8,"./gesture":6,"./vector":9,"./matrix":12,"underscore":22}],9:[function(require,module,exports){
-var _ = require('underscore');
-
-var Vector = exports.Vector = function(data){
-	
-	if(data == null){
-		this[0] = 0;
-		this[1] = 0;
-		this[2] = 0;
-	}
-	else if("x" in data){
-		this[0] = data[0];
-		this[1] = data[1];
-		this[2] = data[2];
-	}
-	else if("0" in data){
-		this[0] = (typeof(data[0]) == "number")?data[0]:0;
-		this[1] = (typeof(data[1]) == "number")?data[1]:0;
-		this[2] = (typeof(data[2]) == "number")?data[2]:0;
-	}
-	
-	this.length = 3;
-	this.x = this[0];
-	this.y = this[1];
-	this.z = this[2];
-};
-
-var VectorPrototype = {
-	
-	angleTo : function(other){
-		var denom = this.magnitude()*other.magnitude();
-		if(denom > 0) return Math.acos(this.dot(other)/denom);
-		else return 0;
-	},
-	
-	cross : function(other){
-		var x = this[1]*other[2] - other[1]*this[2];
-		var y = this[0]*other[2] - other[0]*this[2];
-		var z = this[0]*other[1] - other[0]*this[1];
-		return new Vector([x,y,z]);
-	},
-	
-	distanceTo : function(other){
-		return this.minus(other).magnitude();
-	},
-	
-	dot : function(other){
-		return this[0]*other[0] + this[1]*other[1] + this[2]*other[2];
-	},
-	
-	plus : function(other){
-		return new Vector([this[0] + other[0],this[1] + other[1],this[2] + other[2]]);
-	},
-	
-	minus : function(other){
-		return new Vector([this[0] - other[0],this[1] - other[1],this[2] - other[2]]);
-	},
-	
-	multiply : function(scalar){
-		return new Vector([this[0]*scalar,this[1]*scalar,this[2]*scalar]);
-	},
-	
-	dividedBy : function(scalar){
-		return new Vector([this[0]/scalar,this[1]/scalar,this[2]/scalar]);
-	},
-	
-	magnitude : function(){
-		return Math.sqrt(this.magnitudeSquared());
-	},
-	
-	magnitudeSquared : function(){
-		return Math.pow(this[0],2) + Math.pow(this[1],2) + Math.pow(this[2],2);
-	},
-	
-	normalized : function(){
-		var magnitude = this.magnitude();
-		if(magnitude > 0) return this.dividedBy(magnitude);
-		else return new Vector();
-	},
-	
-	pitch : function(){
-		return Math.atan2(this[1], -this[2]);
-	},
-	
-	roll : function(){
-		return Math.atan2(this[0], -this[1]);
-	},
-	
-	yaw : function(){
-		return Math.atan2(this[0], -this[2]);
-	},
-	
-	toArray : function(){
-		return [this[0], this[1], this[2]];
-	},
-	
-	toString : function(){
-		return "{x:"+this[0]+",y:"+this[1]+",z:"+this[2]+"}";
-	},
-	
-	toSource : function(){ this.toString(); },
-	
-	compare : function(other){
-		return this[0]==other[0] && this[1]==other[1] && this[2]==other[2];
-	},
-	
-	isValid : function(){
-		return (this[0] != NaN && this[0] > -Infinity && this[0] < Infinity) &&
-			   (this[1] != NaN && this[1] > -Infinity && this[1] < Infinity) &&
-			   (this[2] != NaN && this[2] > -Infinity && this[2] < Infinity);
-	}
-};
-
-Vector.prototype = new Array;
-_.extend(Vector.prototype, VectorPrototype);
-
-Vector.backward = function(){ return new Vector([0,0,1]); };
-Vector.down = function(){ return new Vector([0,-1,0]); };
-Vector.forward = function(){ return new Vector([0,0,-1]); };
-Vector.left = function(){ return new Vector([-1,0,0]); };
-Vector.right = function(){ return new Vector([1,0,0]); };
-Vector.up = function(){ return new Vector([0,1,0]); };
-Vector.xAxis = function(){ return new Vector([1,0,0]); };
-Vector.yAxis = function(){ return new Vector([0,1,0]); };
-Vector.zAxis = function(){ return new Vector([0,0,1]); };
-Vector.zero = function(){ return new Vector([0,0,0]); };
-
-},{"underscore":22}],12:[function(require,module,exports){
-var Vector = require("./vector").Vector,
-    _ = require('underscore');
-
-var Matrix = exports.Matrix = function(data){
-	
-	if(data instanceof Matrix){
-		this[0] = new Vector(data.xBasis);
-		this[1] = new Vector(data.yBasis);
-		this[2] = new Vector(data.zBasis);
-		this[3] = new Vector(data.origin);
-	}
-	else if(data instanceof Array){
-		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
-			this.setRotation(data[0],data[1]);
-			this[3] = new Vector(data[2]);
-		}
-		else{
-			this[0] = new Vector(data[0]);
-			this[1] = new Vector(data[1]);
-			this[2] = new Vector(data[2]);
-			this[3] = new Vector(data[3]);
-		}
-	}
-	else{
-		this[0] = new Vector([1,0,0]);
-		this[1] = new Vector([0,1,0]);
-		this[2] = new Vector([0,0,1]);
-		this[3] = new Vector([0,0,0]);
-	}
-	
-	this.length = 4;
-	this.xBasis = this[0];
-	this.yBasis = this[1];
-	this.zBasis = this[2];
-	this.origin = this[3];
-};
-
-var MatrixPrototype = {
-	
-	setRotation : function(_axis, angle){
-		var axis = _axis.normalized();
-		var s = Math.sin(angle);
-		var c = Math.cos(angle);
-		var C = 1-c;
-		
-		this[0] = new Vector([axis[0]*axis[0]*C + c, axis[0]*axis[1]*C - axis[2]*s, axis[0]*axis[2]*C + axis[1]*s]);
-		this[1] = new Vector([axis[1]*axis[0]*C + axis[2]*s, axis[1]*axis[1]*C + c, axis[1]*axis[2]*C - axis[0]*s]);
-		this[2] = new Vector([axis[2]*axis[0]*C - axis[1]*s, axis[2]*axis[1]*C + axis[0]*s, axis[2]*axis[2]*C + c]);
-	},
-	
-	transformPoint : function(data){
-		return this[3].plus(this.transformDirection(data));
-	},
-
-	transformDirection : function(data){
-		var x = this[0].multiply(data[0]);
-		var y = this[1].multiply(data[1]);
-		var z = this[2].multiply(data[2]);
-		return x.plus(y).plus(z);
-	},
-	
-	times : function(other){
-		var x = this.transformDirection(other[0]);
-		var y = this.transformDirection(other[1]);
-		var z = this.transformDirection(other[2]);
-		var o = this.transformPoint(other[3]);
-		return new Matrix([x,y,z,o]);
-	},
-	
-	rigidInverse : function(){
-		var x = new Vector([this[0][0], this[1][0], this[2][0]]);
-		var y = new Vector([this[0][1], this[1][1], this[2][1]]);
-		var z = new Vector([this[0][2], this[1][2], this[2][2]]);
-		var rotInverse = new Matrix([x,y,z]);
-		rotInverse[3] = rotInverse.transformDirection(Vector.zero().minus(this[3]));
-		return rotInverse;
-	},
-	
-	toArray3x3 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this[0][0];
-		output[1] = this[0][1];
-		output[2] = this[0][2];
-		output[3] = this[1][0];
-		output[4] = this[1][1];
-		output[5] = this[1][2];
-		output[6] = this[2][0];
-		output[7] = this[2][1];
-		output[8] = this[2][2];
-		return output;
-	},
-	
-	toArray4x4 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this[0][0];
-		output[1] = this[0][1];
-		output[2] = this[0][2];
-		output[3] = 0;
-		output[4] = this[1][0];
-		output[5] = this[1][1];
-		output[6] = this[1][2];
-		output[7] = 0;
-		output[8] = this[2][0];
-		output[9] = this[2][1];
-		output[10] = this[2][2];
-		output[11] = 0;
-		output[12] = this[3][0];
-		output[13] = this[3][1];
-		output[14] = this[3][2];
-		output[15] = 1;
-		return output;
-	},
-	
-	toString : function(){
-		return "{xBasis:"+this[0]+",yBasis:"+this[1]+
-		",zBasis:"+this[2]+",origin:"+this[3]+"}";
-	},
-	
-	toSource : function(){ this.toString(); },
-	
-	compare : function(other){
-		return this[0].compare(other[0]) && 
-		this[1].compare(other[1]) && 
-		this[2].compare(other[2]) && 
-		this[3].compare(other[3]);
-	}
-};
-
-Matrix.prototype = new Array;
-_.extend(Matrix.prototype, MatrixPrototype);
-
-Matrix.identity = function(){ return new Matrix(); };
-
-},{"./vector":9,"underscore":22}],10:[function(require,module,exports){
+},{"./hand":9,"./pointable":8,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],9:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2308,7 +2045,7 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis){
 	if(!sinceHand.valid) return 0.0;
 	
 	var rot = this.rotationMatrix(sinceFrame);
-	var cs = (rot.xBasis.x + rot.yBasis.y + rot.zBasis.z - 1.0)*0.5
+	var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5
 	var angle = Math.acos(cs);
 	return isNaN(angle) ? 0.0 : angle;
 }
@@ -2332,9 +2069,9 @@ Hand.prototype.rotationAxis = function(sinceFrame){
 	var sinceHand = sinceFrame.hand(this.id);
 	if(!sinceHand.valid) return Vector.zero();
 	
-	var x = this.rotation.zBasis.y - sinceHand.rotation.yBasis.z;
-	var y = this.rotation.xBasis.z - sinceHand.rotation.zBasis.x;
-	var z = this.rotation.yBasis.x - sinceHand.rotation.xBasis.y;
+	var x = this.rotation[2][1] - sinceHand.rotation[1][2];
+	var y = this.rotation[0][2] - sinceHand.rotation[2][0];
+	var z = this.rotation[1][0] - sinceHand.rotation[0][1];
 	var vec = new Vector([x, y, z]);
 	return vec.normalized();
 }
@@ -2358,9 +2095,9 @@ Hand.prototype.rotationMatrix = function(sinceFrame){
 	var sinceHand = sinceFrame.hand(this.id);
 	if(!sinceHand.valid) return Matrix.identity();
 	
-	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
-	var yBasis = new Vector([this.rotation.xBasis.y, this.rotation.yBasis.y, this.rotation.zBasis.y]);
-	var zBasis = new Vector([this.rotation.xBasis.z, this.rotation.yBasis.z, this.rotation.zBasis.z]);
+	var xBasis = new Vector([this.rotation[0][0], this.rotation[1][0], this.rotation[2][0]]);
+	var yBasis = new Vector([this.rotation[0][1], this.rotation[1][1], this.rotation[2][1]]);
+	var zBasis = new Vector([this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]]);
 	var transpose = new Matrix([xBasis, yBasis, zBasis]);
 	return sinceHand.rotation.times(transpose);
 }
@@ -2409,9 +2146,9 @@ Hand.prototype.translation = function(sinceFrame){
 	var sinceHand = sinceFrame.hand(this.id);
 	if(!sinceHand.valid) return Vector.zero();
 	
-	var x = this._translation.x - sinceHand._translation.x;
-	var y = this._translation.y - sinceHand._translation.y;
-	var z = this._translation.z - sinceHand._translation.z;
+	var x = this._translation[0] - sinceHand._translation[0];
+	var y = this._translation[1] - sinceHand._translation[1];
+	var z = this._translation[2] - sinceHand._translation[2];
 	return new Vector([x, y, z]);
 }
 
@@ -2437,7 +2174,270 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":8,"./vector":9,"./matrix":12,"underscore":22}],22:[function(require,module,exports){
+},{"./pointable":8,"./vector":10,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
+var _ = require('underscore');
+
+var Vector = exports.Vector = function(data){
+	
+	if(data == null){
+		this[0] = 0;
+		this[1] = 0;
+		this[2] = 0;
+	}
+	else if("x" in data){
+		this[0] = data[0];
+		this[1] = data[1];
+		this[2] = data[2];
+	}
+	else if("0" in data){
+		this[0] = (typeof(data[0]) == "number")?data[0]:0;
+		this[1] = (typeof(data[1]) == "number")?data[1]:0;
+		this[2] = (typeof(data[2]) == "number")?data[2]:0;
+	}
+	
+	this.length = 3;
+	this.x = this[0];
+	this.y = this[1];
+	this.z = this[2];
+};
+
+var VectorPrototype = {
+	
+	angleTo : function(other){
+		var denom = this.magnitude()*other.magnitude();
+		if(denom > 0) return Math.acos(this.dot(other)/denom);
+		else return 0;
+	},
+	
+	cross : function(other){
+		var x = this[1]*other[2] - other[1]*this[2];
+		var y = this[0]*other[2] - other[0]*this[2];
+		var z = this[0]*other[1] - other[0]*this[1];
+		return new Vector([x,y,z]);
+	},
+	
+	distanceTo : function(other){
+		return this.minus(other).magnitude();
+	},
+	
+	dot : function(other){
+		return this[0]*other[0] + this[1]*other[1] + this[2]*other[2];
+	},
+	
+	plus : function(other){
+		return new Vector([this[0] + other[0],this[1] + other[1],this[2] + other[2]]);
+	},
+	
+	minus : function(other){
+		return new Vector([this[0] - other[0],this[1] - other[1],this[2] - other[2]]);
+	},
+	
+	multiply : function(scalar){
+		return new Vector([this[0]*scalar,this[1]*scalar,this[2]*scalar]);
+	},
+	
+	dividedBy : function(scalar){
+		return new Vector([this[0]/scalar,this[1]/scalar,this[2]/scalar]);
+	},
+	
+	magnitude : function(){
+		return Math.sqrt(this.magnitudeSquared());
+	},
+	
+	magnitudeSquared : function(){
+		return Math.pow(this[0],2) + Math.pow(this[1],2) + Math.pow(this[2],2);
+	},
+	
+	normalized : function(){
+		var magnitude = this.magnitude();
+		if(magnitude > 0) return this.dividedBy(magnitude);
+		else return new Vector();
+	},
+	
+	pitch : function(){
+		return Math.atan2(this[1], -this[2]);
+	},
+	
+	roll : function(){
+		return Math.atan2(this[0], -this[1]);
+	},
+	
+	yaw : function(){
+		return Math.atan2(this[0], -this[2]);
+	},
+	
+	toArray : function(){
+		return [this[0], this[1], this[2]];
+	},
+	
+	toString : function(){
+		return "{x:"+this[0]+",y:"+this[1]+",z:"+this[2]+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	compare : function(other){
+		return this[0]==other[0] && this[1]==other[1] && this[2]==other[2];
+	},
+	
+	isValid : function(){
+		return (this[0] != NaN && this[0] > -Infinity && this[0] < Infinity) &&
+			   (this[1] != NaN && this[1] > -Infinity && this[1] < Infinity) &&
+			   (this[2] != NaN && this[2] > -Infinity && this[2] < Infinity);
+	}
+};
+
+Vector.prototype = new Array;
+_.extend(Vector.prototype, VectorPrototype);
+
+Vector.backward = function(){ return new Vector([0,0,1]); };
+Vector.down = function(){ return new Vector([0,-1,0]); };
+Vector.forward = function(){ return new Vector([0,0,-1]); };
+Vector.left = function(){ return new Vector([-1,0,0]); };
+Vector.right = function(){ return new Vector([1,0,0]); };
+Vector.up = function(){ return new Vector([0,1,0]); };
+Vector.xAxis = function(){ return new Vector([1,0,0]); };
+Vector.yAxis = function(){ return new Vector([0,1,0]); };
+Vector.zAxis = function(){ return new Vector([0,0,1]); };
+Vector.zero = function(){ return new Vector([0,0,0]); };
+
+},{"underscore":22}],11:[function(require,module,exports){
+var Vector = require("./vector").Vector,
+    _ = require('underscore');
+
+var Matrix = exports.Matrix = function(data){
+	
+	if(data instanceof Matrix){
+		this[0] = new Vector(data.xBasis);
+		this[1] = new Vector(data.yBasis);
+		this[2] = new Vector(data.zBasis);
+		this[3] = new Vector(data.origin);
+	}
+	else if(data instanceof Array){
+		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
+			this.setRotation(data[0],data[1]);
+			this[3] = new Vector(data[2]);
+		}
+		else{
+			this[0] = new Vector(data[0]);
+			this[1] = new Vector(data[1]);
+			this[2] = new Vector(data[2]);
+			this[3] = new Vector(data[3]);
+		}
+	}
+	else{
+		this[0] = new Vector([1,0,0]);
+		this[1] = new Vector([0,1,0]);
+		this[2] = new Vector([0,0,1]);
+		this[3] = new Vector([0,0,0]);
+	}
+	
+	this.length = 4;
+	this.xBasis = this[0];
+	this.yBasis = this[1];
+	this.zBasis = this[2];
+	this.origin = this[3];
+};
+
+var MatrixPrototype = {
+	
+	setRotation : function(_axis, angle){
+		var axis = _axis.normalized();
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
+		var C = 1-c;
+		
+		this[0] = new Vector([axis[0]*axis[0]*C + c, axis[0]*axis[1]*C - axis[2]*s, axis[0]*axis[2]*C + axis[1]*s]);
+		this[1] = new Vector([axis[1]*axis[0]*C + axis[2]*s, axis[1]*axis[1]*C + c, axis[1]*axis[2]*C - axis[0]*s]);
+		this[2] = new Vector([axis[2]*axis[0]*C - axis[1]*s, axis[2]*axis[1]*C + axis[0]*s, axis[2]*axis[2]*C + c]);
+	},
+	
+	transformPoint : function(data){
+		return this[3].plus(this.transformDirection(data));
+	},
+
+	transformDirection : function(data){
+		var x = this[0].multiply(data[0]);
+		var y = this[1].multiply(data[1]);
+		var z = this[2].multiply(data[2]);
+		return x.plus(y).plus(z);
+	},
+	
+	times : function(other){
+		var x = this.transformDirection(other[0]);
+		var y = this.transformDirection(other[1]);
+		var z = this.transformDirection(other[2]);
+		var o = this.transformPoint(other[3]);
+		return new Matrix([x,y,z,o]);
+	},
+	
+	rigidInverse : function(){
+		var x = new Vector([this[0][0], this[1][0], this[2][0]]);
+		var y = new Vector([this[0][1], this[1][1], this[2][1]]);
+		var z = new Vector([this[0][2], this[1][2], this[2][2]]);
+		var rotInverse = new Matrix([x,y,z]);
+		rotInverse[3] = rotInverse.transformDirection(Vector.zero().minus(this[3]));
+		return rotInverse;
+	},
+	
+	toArray3x3 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this[0][0];
+		output[1] = this[0][1];
+		output[2] = this[0][2];
+		output[3] = this[1][0];
+		output[4] = this[1][1];
+		output[5] = this[1][2];
+		output[6] = this[2][0];
+		output[7] = this[2][1];
+		output[8] = this[2][2];
+		return output;
+	},
+	
+	toArray4x4 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this[0][0];
+		output[1] = this[0][1];
+		output[2] = this[0][2];
+		output[3] = 0;
+		output[4] = this[1][0];
+		output[5] = this[1][1];
+		output[6] = this[1][2];
+		output[7] = 0;
+		output[8] = this[2][0];
+		output[9] = this[2][1];
+		output[10] = this[2][2];
+		output[11] = 0;
+		output[12] = this[3][0];
+		output[13] = this[3][1];
+		output[14] = this[3][2];
+		output[15] = 1;
+		return output;
+	},
+	
+	toString : function(){
+		return "{xBasis:"+this[0]+",yBasis:"+this[1]+
+		",zBasis:"+this[2]+",origin:"+this[3]+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	compare : function(other){
+		return this[0].compare(other[0]) && 
+		this[1].compare(other[1]) && 
+		this[2].compare(other[2]) && 
+		this[3].compare(other[3]);
+	}
+};
+
+Matrix.prototype = new Array;
+_.extend(Matrix.prototype, MatrixPrototype);
+
+Matrix.identity = function(){ return new Matrix(); };
+
+},{"./vector":10,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -4040,29 +4040,7 @@ Connection.prototype.teardownSocket = function() {
   delete this.socket;
   delete this.protocol;
 }
-},{"./frame":7,"./base_connection":17,"ws":24}],25:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  switch(header.version) {
-    case 1:
-      var protocol = function(data) {
-        return new Frame(data);
-      }
-      protocol.encode = function(message) {
-        return util.format("%j", message);
-      }
-      protocol.version = 1;
-      protocol.versionLong = 'Version 1';
-      protocol.type = 'version';
-      return protocol;
-    default:
-      throw "unrecognized version";
-  }
-}
-
-},{"util":23,"./frame":7}],17:[function(require,module,exports){
+},{"./frame":6,"./base_connection":17,"ws":24}],17:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -4128,7 +4106,29 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":25,"underscore":22}],24:[function(require,module,exports){
+},{"events":16,"./protocol":25,"underscore":22}],25:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , util = require('util');
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  switch(header.version) {
+    case 1:
+      var protocol = function(data) {
+        return new Frame(data);
+      }
+      protocol.encode = function(message) {
+        return util.format("%j", message);
+      }
+      protocol.version = 1;
+      protocol.versionLong = 'Version 1';
+      protocol.type = 'version';
+      return protocol;
+    default:
+      throw "unrecognized version";
+  }
+}
+
+},{"util":23,"./frame":6}],24:[function(require,module,exports){
 (function(global){/// shim for browser packaging
 
 module.exports = function() {
@@ -4225,5 +4225,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":9,"underscore":22}]},{},[2,1,3])
+},{"events":16,"../vector":10,"underscore":22}]},{},[1,3,2])
 ;
