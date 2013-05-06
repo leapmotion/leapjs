@@ -26,10 +26,16 @@ compile:
 
 watch-test: watch
 
-docs:
-	rm -rf docs-repo
+docs: docs-clone docs-build docs-commit
+
+docs-clone:
+	if test -d docs-repo; then rm -rf docs-repo; fi
 	git clone -b gh-pages git@github.com:leapmotion/leapjs.git docs-repo
+
+docs-build:
 	./node_modules/jsdoc/jsdoc -c jsdoc_conf.json lib README.md -d docs-repo
+
+docs-commit:
 	cd docs-repo
 	git commit -a -m"regenerate docs"
 	git push origin gh-pages
