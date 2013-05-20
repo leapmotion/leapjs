@@ -1,9 +1,4 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
-/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
-	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
-*/
-var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
-},{}],2:[function(require,module,exports){
 (function(){// Copyright: Hiroshi Ichikawa <http://gimite.net/en/>
 // License: New BSD License
 // Reference: http://dev.w3.org/html5/websockets/
@@ -397,6 +392,11 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 })();
 
 })()
+},{}],2:[function(require,module,exports){
+/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
+	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
+*/
+var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
 },{}],3:[function(require,module,exports){
 window.requestAnimFrame = (function() {
   return  window.requestAnimationFrame ||
@@ -423,36 +423,42 @@ Leap = require("../lib/index").Leap
   , loopController = undefined;
 
 /**
- * The Leap.loop() function passes a frame of Leap data to your
- * callback function and then calls window.requestAnimationFrame() after
- * executing your callback function.
- *
- * Leap.loop() sets up the Leap controller and WebSocket connection for you.
- * You do not need to create your own controller when using this method.
- *
- * Your callback function is called on an interval determined by the client
- * browser. Typically, this is on an interval of 60 frames/second. The most
- * recent frame of Leap data is passed to your callback function. If the Leap
- * is producing frames at a slower rate than the browser frame rate, the same
- * frame of Leap data can be passed to your function in successive animation
- * updates.
- *
- * As an alternative, you can create your own Controller object and use a
- * {@link Controller#onFrame onFrame} callback to process the data at
- * the frame rate of the Leap device. See {@link Controller} for an
- * example.
- *
- * @method Leap.loop
- * @param {function} callback A function called when the browser is ready to
- * draw to the screen. The most recent {@link Frame} object is passed to
- * your callback function.
- * @example
- *    Leap.loop( function( frame ) {
- *        // ... your code here
- *    })
+ * Leap is the global namespace of the Leap API.
+ * @namespace Leap
  */
-
 exports.Leap = {
+
+  /**
+   * The Leap.loop() function passes a frame of Leap data to your
+   * callback function and then calls window.requestAnimationFrame() after
+   * executing your callback function.
+   *
+   * Leap.loop() sets up the Leap controller and WebSocket connection for you.
+   * You do not need to create your own controller when using this method.
+   *
+   * Your callback function is called on an interval determined by the client
+   * browser. Typically, this is on an interval of 60 frames/second. The most
+   * recent frame of Leap data is passed to your callback function. If the Leap
+   * is producing frames at a slower rate than the browser frame rate, the same
+   * frame of Leap data can be passed to your function in successive animation
+   * updates.
+   *
+   * As an alternative, you can create your own Controller object and use a
+   * {@link Controller#onFrame onFrame} callback to process the data at
+   * the frame rate of the Leap device. See {@link Controller} for an
+   * example.
+   *
+   * @method Leap.loop
+   * @param {function} callback A function called when the browser is ready to
+   * draw to the screen. The most recent {@link Frame} object is passed to
+   * your callback function.
+   * 
+   * ```javascript
+   *    Leap.loop( function( frame ) {
+   *        // ... your code here
+   *    })
+   * ```
+   */
   loop: function(opts, callback) {
     if (callback === undefined) {
       callback = opts;
@@ -474,122 +480,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
-var Vector = exports.Vector = function(data){
-	
-	if(data == null){
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-	}
-	else if("x" in data){
-		this.x = data.x;
-		this.y = data.y;
-		this.z = data.z;
-	}
-	else if("0" in data){
-		this.x = (typeof(data[0]) == "number")?data[0]:0;
-		this.y = (typeof(data[1]) == "number")?data[1]:0;
-		this.z = (typeof(data[2]) == "number")?data[2]:0;
-	}
-};
-
-Vector.prototype = {
-	
-	angleTo : function(other){
-		var denom = this.magnitude()*other.magnitude();
-		if(denom > 0) return Math.acos(this.dot(other)/denom);
-		else return 0;
-	},
-	
-	cross : function(other){
-		var x = this.y*other.z - other.y*this.z;
-		var y = this.x*other.z - other.x*this.z;
-		var z = this.x*other.y - other.x*this.y;
-		return new Vector([x,y,z]);
-	},
-	
-	distanceTo : function(other){
-		return this.minus(other).magnitude();
-	},
-	
-	dot : function(other){
-		return this.x*other.x + this.y*other.y + this.z*other.z;
-	},
-	
-	plus : function(other){
-		return new Vector([this.x + other.x,this.y + other.y,this.z + other.z]);
-	},
-	
-	minus : function(other){
-		return new Vector([this.x - other.x,this.y - other.y,this.z - other.z]);
-	},
-	
-	multiply : function(scalar){
-		return new Vector([this.x*scalar,this.y*scalar,this.z*scalar]);
-	},
-	
-	dividedBy : function(scalar){
-		return new Vector([this.x/scalar,this.y/scalar,this.z/scalar]);
-	},
-	
-	magnitude : function(){
-		return Math.sqrt(this.magnitudeSquared());
-	},
-	
-	magnitudeSquared : function(){
-		return Math.pow(this.x,2) + Math.pow(this.y,2) + Math.pow(this.z,2);
-	},
-	
-	normalized : function(){
-		var magnitude = this.magnitude();
-		if(magnitude > 0) return this.dividedBy(magnitude);
-		else return new Vector();
-	},
-	
-	pitch : function(){
-		return Math.atan2(this.y, -this.z);
-	},
-	
-	roll : function(){
-		return Math.atan2(this.x, -this.y);
-	},
-	
-	yaw : function(){
-		return Math.atan2(this.x, -this.z);
-	},
-	
-	toArray : function(){
-		return [this.x, this.y, this.z];
-	},
-	
-	toString : function(){
-		return "{x:"+this.x+",y:"+this.y+",z:"+this.z+"}";
-	},
-	
-	compare : function(other){
-		return this.x==other.x && this.y==other.y && this.z==other.z;
-	},
-	
-	isValid : function(){
-		return (this.x != NaN && this.x > -Infinity && this.x < Infinity) &&
-			   (this.y != NaN && this.y > -Infinity && this.y < Infinity) &&
-			   (this.z != NaN && this.z > -Infinity && this.z < Infinity);
-	}
-};
-
-Vector.backward = function(){ return new Vector([0,0,1]); };
-Vector.down = function(){ return new Vector([0,-1,0]); };
-Vector.forward = function(){ return new Vector([0,0,-1]); };
-Vector.left = function(){ return new Vector([-1,0,0]); };
-Vector.right = function(){ return new Vector([1,0,0]); };
-Vector.up = function(){ return new Vector([0,1,0]); };
-Vector.xAxis = function(){ return new Vector([1,0,0]); };
-Vector.yAxis = function(){ return new Vector([0,1,0]); };
-Vector.zAxis = function(){ return new Vector([0,0,1]); };
-Vector.zero = function(){ return new Vector([0,0,0]); };
-
-},{}],13:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./ui":13,"./circular_buffer":14}],14:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -859,6 +750,8 @@ var Vector = require("./vector").Vector
  * Frame object.
  *
  * @class Gesture
+ * @abstract
+ * @memberof Leap
  * @classdesc
  * The Gesture class represents a recognized movement by the user.
  *
@@ -928,7 +821,8 @@ var Gesture = exports.Gesture = function(data) {
   * same ID value. Use the ID value with the Frame::gesture() method to
   * find updates related to this Gesture object in subsequent frames.
   *
-  * @member Gesture.prototype.id
+  * @member id
+  * @memberof Leap.Gesture.prototype
   * @type {Number}
   */
   gesture.id = data.id;
@@ -937,7 +831,8 @@ var Gesture = exports.Gesture = function(data) {
   *
   * If no hands are related to this gesture, the list is empty.
   *
-  * @member Gesture.prototype.handIds
+  * @member handIds
+  * @memberof Leap.Gesture.prototype
   * @type {Array}
   */
   gesture.handIds = data.handIds;
@@ -946,7 +841,8 @@ var Gesture = exports.Gesture = function(data) {
   *
   * If no Pointable objects are related to this gesture, the list is empty.
   *
-  * @member Gesture.prototype.pointableIds
+  * @member pointableIds
+  * @memberof Leap.Gesture.prototype
   * @type {Array}
   */
   gesture.pointableIds = data.pointableIds;
@@ -959,7 +855,8 @@ var Gesture = exports.Gesture = function(data) {
   * the movement must progress far enough for the Leap to recognize it as
   * an intentional gesture.
   *
-  * @member Gesture.prototype.duration
+  * @member duration
+  * @memberof Leap.Gesture.prototype
   * @type {Number}
   */
   gesture.duration = data.duration;
@@ -976,7 +873,8 @@ var Gesture = exports.Gesture = function(data) {
   * * update
   * * stop
   *
-  * @member Gesture.prototype.state
+  * @member state
+  * @memberof Leap.Gesture.prototype
   * @type {String}
   */
   gesture.state = data.state;
@@ -990,7 +888,8 @@ var Gesture = exports.Gesture = function(data) {
   * * screentap
   * * keyTap
   *
-  * @member Gesture.prototype.type
+  * @member type
+  * @memberof Leap.Gesture.prototype
   * @type {String}
   */
   gesture.type = data.type;
@@ -1004,19 +903,15 @@ var Gesture = exports.Gesture = function(data) {
  * of the CircleGesture class from a Frame object.
  *
  * @class CircleGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
  * @classdesc
  * The CircleGesture classes represents a circular finger movement.
  *
  * A circle movement is recognized when the tip of a finger draws a circle
  * within the Leap field of view.
  *
- * <img src="images/Leap_Gesture_Circle.png"/>
- *
- * **Important:** To use circle gestures in your application, you must enable
- * recognition of the circle gesture. You can enable recognition when you create
- * the Leap Controller or start the Leap.loop().
- *
- *    TODO
+ * ![CircleGesture](images/Leap_Gesture_Circle.png)
  *
  * Circle gestures are continuous. The CircleGesture objects for the gesture have
  * three possible states:
@@ -1030,8 +925,9 @@ var CircleGesture = function(data) {
  /**
   * The center point of the circle within the Leap frame of reference.
   *
-  * @member CircleGesture.prototype.center
-  * @type {Vector}
+  * @member center
+  * @memberof Leap.CircleGesture.prototype
+  * @type {Leap.Vector}
   */
   this.center = new Vector(data.center);
  /**
@@ -1043,6 +939,7 @@ var CircleGesture = function(data) {
   * pointable. If the angle between the normal and the pointable object
   * drawing the circle is less than 90 degrees, then the circle is clockwise.
   *
+  * ```javascript
   *    var clockwiseness;
   *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
   *        clockwiseness = "clockwise";
@@ -1051,10 +948,11 @@ var CircleGesture = function(data) {
   *    {
   *        clockwiseness = "counterclockwise";
   *    }
+  * ```
   *
-  *
-  * @member CircleGesture.prototype.normal
-  * @type {Vector}
+  * @member normal
+  * @memberof Leap.CircleGesture.prototype
+  * @type {Leap.Vector}
   */
   this.normal = new Vector(data.normal);
  /**
@@ -1070,14 +968,16 @@ var CircleGesture = function(data) {
   * will be greater than zero when a circle gesture first appears in the
   * frame.
   *
-  * @member CircleGesture.prototype.progress
+  * @member progress
+  * @memberof Leap.CircleGesture.prototype
   * @type {Number}
   */
   this.progress = data.progress;
  /**
   * The radius of the circle in mm.
   *
-  * @member CircleGesture.prototype.radius
+  * @member radius
+  * @memberof Leap.CircleGesture.prototype
   * @type {Number}
   */
   this.radius = data.radius;
@@ -1090,15 +990,12 @@ var CircleGesture = function(data) {
  * of the SwipeGesture class from a Frame object.
  *
  * @class SwipeGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
  * @classdesc
  * The SwipeGesture class represents a swiping motion of a finger or tool.
  *
- * <img src="images/Leap_Gesture_Swipe.png"/>
- *
- * **Important:** To use swipe gestures in your application, you must enable
- * recognition of the swipe gesture. You can enable recognition with:
- *
- *     TODO
+ * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
  *
  * Swipe gestures are continuous.
  */
@@ -1107,16 +1004,18 @@ var SwipeGesture = function(data) {
   * The starting position within the Leap frame of
   * reference, in mm.
   *
-  * @member SwipeGesture.prototype.startPosition
-  * @type {Vector}
+  * @member startPosition
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {Leap.Vector}
   */
   this.startPosition = new Vector(data.startPosition);
  /**
   * The current swipe position within the Leap frame of
   * reference, in mm.
   *
-  * @member SwipeGesture.prototype.position
-  * @type {Vector}
+  * @member position
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {Leap.Vector}
   */
   this.position = new Vector(data.position);
  /**
@@ -1127,15 +1026,17 @@ var SwipeGesture = function(data) {
   * for two dimensional scrolling, you can compare the x and y values to
   * determine if the swipe is primarily horizontal or vertical.
   *
-  * @member SwipeGesture.prototype.direction
-  * @type {Vector}
+  * @member direction
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {Leap.Vector}
   */
   this.direction = new Vector(data.direction);
  /**
   * The speed of the finger performing the swipe gesture in
   * millimeters per second.
   *
-  * @member SwipeGesture.prototype.speed
+  * @member speed
+  * @memberof Leap.SwipeGesture.prototype
   * @type {Number}
   */
   this.speed = data.speed;
@@ -1148,6 +1049,8 @@ var SwipeGesture = function(data) {
  * of the ScreenTapGesture class from a Frame object.
  *
  * @class ScreenTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
  * @classdesc
  * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
  *
@@ -1155,12 +1058,7 @@ var SwipeGesture = function(data) {
  * and then springs back to approximately the original postion, as if
  * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
  *
- * <img src="images/Leap_Gesture_Tap2.png"/>
- *
- * **Important:** To use screen tap gestures in your application, you must enable
- * recognition of the screen tap gesture. You can enable recognition with:
- *
- *     TODO
+ * ![ScreenTap](images/Leap_Gesture_Tap2.png)
  *
  * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
  * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
@@ -1170,21 +1068,24 @@ var ScreenTapGesture = function(data) {
  /**
   * The position where the screen tap is registered.
   *
-  * @member ScreenTapGesture.prototype.position
-  * @type {Vector}
+  * @member position
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {Leap.Vector}
   */
   this.position = new Vector(data.position);
  /**
   * The direction of finger tip motion.
   *
-  * @member ScreenTapGesture.prototype.direction
-  * @type {Vector}
+  * @member direction
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {Leap.Vector}
   */
   this.direction = new Vector(data.direction);
  /**
   * The progess value is always 1.0 for a screen tap gesture.
   *
-  * @member ScreenTapGesture.prototype.progress
+  * @member progress
+  * @memberof Leap.ScreenTapGesture.prototype
   * @type {Number}
   */
   this.progress = data.progress;
@@ -1197,6 +1098,8 @@ var ScreenTapGesture = function(data) {
  * of the KeyTapGesture class from a Frame object.
  *
  * @class KeyTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
  * @classdesc
  * The KeyTapGesture class represents a tapping gesture by a finger or tool.
  *
@@ -1204,12 +1107,7 @@ var ScreenTapGesture = function(data) {
  * palm and then springs back to approximately the original postion, as if
  * tapping. The tapping finger must pause briefly before beginning the tap.
  *
- * <img src="images/Leap_Gesture_Tap.png"/>
- *
- * **Important:** To use key tap gestures in your application, you must enable
- * recognition of the key tap gesture. You can enable recognition with:
- *
- *     TODO
+ * ![KeyTap](images/Leap_Gesture_Tap.png)
  *
  * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
  * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
@@ -1219,21 +1117,24 @@ var KeyTapGesture = function(data) {
     /**
      * The position where the key tap is registered.
      *
-     * @member KeyTapGesture.prototype.position
-     * @type {Vector}
+     * @member position
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {Leap.Vector}
      */
     this.position = new Vector(data.position);
     /**
      * The direction of finger tip motion.
      *
-     * @member KeyTapGesture.prototype.direction
-     * @type {Vector}
+     * @member direction
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {Leap.Vector}
      */
     this.direction = new Vector(data.direction);
     /**
      * The progess value is always 1.0 for a key tap gesture.
      *
-     * @member KeyTapGesture.prototype.progress
+     * @member progress
+     * @memberof Leap.KeyTapGesture.prototype
      * @type {Number}
      */
     this.progress = data.progress;
@@ -1249,6 +1150,7 @@ var Vector = require("./vector").Vector
  * Get valid Pointable objects from a Frame or a Hand object.
  *
  * @class Pointable
+ * @memberof Leap
  * @classdesc
  * The Pointable class reports the physical characteristics of a detected
  * finger or tool.
@@ -1270,7 +1172,9 @@ var Pointable = exports.Pointable = function(data) {
   /**
    * Indicates whether this is a valid Pointable object.
    *
-   * @member Pointable.prototype.valid {Boolean}
+   * @member valid
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
    */
   this.valid = true;
   /**
@@ -1284,7 +1188,9 @@ var Pointable = exports.Pointable = function(data) {
    * {@link Frame} and {@link Frame.Hand} classes to find this
    * Pointable object in future frames.
    *
-   * @member Pointable.prototype.id {String}
+   * @member id
+   * @type {String}
+   * @memberof Leap.Pointable.prototype
    */
   this.id = data.id;
   this.handId = data.handId;
@@ -1294,7 +1200,9 @@ var Pointable = exports.Pointable = function(data) {
    * The reported length is the visible length of the finger or tool from the
    * hand to tip. If the length isn't known, then a value of 0 is returned.
    *
-   * @member Pointable.prototype.length {Number}
+   * @member length
+   * @type {Number}
+   * @memberof Leap.Pointable.prototype
    */
   this.length = data.length;
   /**
@@ -1303,7 +1211,9 @@ var Pointable = exports.Pointable = function(data) {
    *
    * If tool is false, then this Pointable must be a finger.
    *
-   * @member Pointable.prototype.tool {Boolean}
+   * @member tool
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
    */
   this.tool = data.tool;
   /**
@@ -1315,7 +1225,9 @@ var Pointable = exports.Pointable = function(data) {
    *
    * Pointable objects representing fingers do not have a width property.
    *
-   * @member Pointable.prototype.width {Number}
+   * @member width
+   * @type {Number}
+   * @memberof Leap.Pointable.prototype
    */
   this.width = data.width;
   /**
@@ -1324,20 +1236,26 @@ var Pointable = exports.Pointable = function(data) {
    * The direction is expressed as a unit vector pointing in the same
    * direction as the tip.
    *
-   * <img src="images/Leap_Finger_Model.png"/>
-   * @member Pointable.prototype.direction {Vector}
+   * ![Finger](images/Leap_Finger_Model.png)
+   * @member direction
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
    */
   this.direction = new Vector(data.direction);
   /**
    * The tip position in millimeters from the Leap origin.
    *
-   * @member Pointable.prototype.tipPosition {Vector}
+   * @member tipPosition
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
    */
   this.tipPosition = new Vector(data.tipPosition);
   /**
    * The rate of change of the tip position in millimeters/second.
    *
-   * @member Pointable.prototype.tipVelocity {Vector}
+   * @member tipVelocity
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
    */
   this.tipVelocity = new Vector(data.tipVelocity);
 }
@@ -1346,7 +1264,8 @@ var Pointable = exports.Pointable = function(data) {
  * A string containing a brief, human readable description of the Pointable
  * object.
  *
- * @method Pointable.prototype.toString
+ * @method toString
+ * @memberof Leap.Pointable.prototype
  * @returns {String} A description of the Pointable object as a string.
  */
 Pointable.prototype.toString = function() {
@@ -1364,135 +1283,12 @@ Pointable.prototype.toString = function() {
  * whether a given Pointable instance is valid or invalid. (You can also use the
  * Pointable.valid property.)
 
- * @constant
- * @type {Pointable}
- * @name Pointable.Invalid
+ * @static
+ * @type {Leap.Pointable}
+ * @name Invalid
+ * @memberof Leap.Pointable
  */
 Pointable.Invalid = { valid: false };
-
-},{"./vector":10}],11:[function(require,module,exports){
-var Vector = require("./vector").Vector;
-
-var Matrix = exports.Matrix = function(data){
-	
-	if(data instanceof Matrix){
-		this.xBasis = new Vector(data.xBasis);
-		this.yBasis = new Vector(data.yBasis);
-		this.zBasis = new Vector(data.zBasis);
-		this.origin = new Vector(data.origin);
-	}
-	else if(data instanceof Array){
-		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
-			this.setRotation(data[0],data[1]);
-			this.origin = new Vector(data[2]);
-		}
-		else{
-			this.xBasis = new Vector(data[0]);
-			this.yBasis = new Vector(data[1]);
-			this.zBasis = new Vector(data[2]);
-			this.origin = new Vector(data[3]);
-		}
-	}
-	else{
-		this.xBasis = new Vector([1,0,0]);
-		this.yBasis = new Vector([0,1,0]);
-		this.zBasis = new Vector([0,0,1]);
-		this.origin = new Vector([0,0,0]);
-	}
-};
-
-Matrix.prototype = {
-	
-	setRotation : function(_axis, angle){
-		var axis = _axis.normalized();
-		var s = Math.sin(angle);
-		var c = Math.cos(angle);
-		var C = 1-c;
-		
-		this.xBasis = new Vector([axis.x*axis.x*C + c, axis.x*axis.y*C - axis.z*s, axis.x*axis.z*C + axis.y*s]);
-		this.yBasis = new Vector([axis.y*axis.x*C + axis.z*s, axis.y*axis.y*C + c, axis.y*axis.z*C - axis.x*s]);
-		this.zBasis = new Vector([axis.z*axis.x*C - axis.y*s, axis.z*axis.y*C + axis.x*s, axis.z*axis.z*C + c]);
-	},
-	
-	transformPoint : function(data){
-		return this.origin.plus(this.transformDirection(data));
-	},
-
-	transformDirection : function(data){
-		var x = this.xBasis.multiply(data.x);
-		var y = this.yBasis.multiply(data.y);
-		var z = this.zBasis.multiply(data.z);
-		return x.plus(y).plus(z);
-	},
-	
-	times : function(other){
-		var x = this.transformDirection(other.xBasis);
-		var y = this.transformDirection(other.yBasis);
-		var z = this.transformDirection(other.zBasis);
-		var o = this.transformPoint(other.origin);
-		return new Matrix([x,y,z,o]);
-	},
-	
-	rigidInverse : function(){
-		var x = new Vector([this.xBasis.x, this.yBasis.x, this.zBasis.x]);
-		var y = new Vector([this.xBasis.y, this.yBasis.y, this.zBasis.y]);
-		var z = new Vector([this.xBasis.z, this.yBasis.z, this.zBasis.z]);
-		var rotInverse = new Matrix([x,y,z]);
-		rotInverse.origin = rotInverse.transformDirection(Vector.zero().minus(this.origin));
-		return rotInverse;
-	},
-	
-	toArray3x3 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this.xBasis.x;
-		output[1] = this.xBasis.y;
-		output[2] = this.xBasis.z;
-		output[3] = this.yBasis.x;
-		output[4] = this.yBasis.y;
-		output[5] = this.yBasis.z;
-		output[6] = this.zBasis.x;
-		output[7] = this.zBasis.y;
-		output[8] = this.zBasis.z;
-		return output;
-	},
-	
-	toArray4x4 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this.xBasis.x;
-		output[1] = this.xBasis.y;
-		output[2] = this.xBasis.z;
-		output[3] = 0;
-		output[4] = this.yBasis.x;
-		output[5] = this.yBasis.y;
-		output[6] = this.yBasis.z;
-		output[7] = 0;
-		output[8] = this.zBasis.x;
-		output[9] = this.zBasis.y;
-		output[10] = this.zBasis.z;
-		output[11] = 0;
-		output[12] = this.origin.x;
-		output[13] = this.origin.y;
-		output[14] = this.origin.z;
-		output[15] = 1;
-		return output;
-	},
-	
-	toString : function(){
-		return "{xBasis:"+this.xBasis+",yBasis:"+this.yBasis+
-		",zBasis:"+this.zBasis+",origin:"+this.origin+"}";
-	},
-	
-	compare : function(other){
-		return this.xBasis.compare(other.xBasis) && 
-		this.yBasis.compare(other.yBasis) && 
-		this.zBasis.compare(other.zBasis) && 
-		this.origin.compare(other.origin);
-	}
-};
-
-Matrix.identity = function(){ return new Matrix(); };
 
 },{"./vector":10}],12:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
@@ -1511,7 +1307,7 @@ Connection.prototype.teardownSocket = function() {
   delete this.socket;
   delete this.protocol;
 }
-},{"./base_connection":17}],14:[function(require,module,exports){
+},{"./base_connection":17}],13:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
@@ -1554,14 +1350,45 @@ var Frame = require('./frame').Frame
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
 
+/**
+ * Constructs a Controller object.
+ *
+ * When creating a Controller object, you may optionally pass in options 
+ * to set the host , set the port, enable gestures, or select the frame event type.
+ * 
+ * ```javascript
+ * var controller = new Leap.Controller({
+ *   host: '127.0.0.1',
+ *   port: 6437,
+ *   enableGestures: true,
+ *   frameEventName: 'animationFrame'
+ * });
+ * ```
+ *
+ * @class Controller
+ * @memberof Leap
+ * @classdesc
+ * The Controller class is your main interface to the Leap Motion Controller.
+ * 
+ * Create an instance of this Controller class to access frames of tracking data 
+ * and configuration information. Frame data can be polled at any time using the 
+ * {@link Leap.Controller#frame}() function. Call frame() or frame(0) to get the most recent 
+ * frame. Set the history parameter to a positive integer to access previous frames. 
+ * A controller stores up to 60 frames in its frame history.
+ * 
+ * Polling is an appropriate strategy for applications which already have an 
+ * intrinsic update loop, such as a game.
+ */
 var Controller = exports.Controller = function(opts) {
-  this.opts = _.defaults(opts || {}, {frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'});
-  this.history = new CircularBuffer(200);
+  this.opts = _.defaults(opts || {}, {
+    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'
+  });
+  this.history = new CircularBuffer(60);
   var controller = this;
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
   this.lastConnectionFrame = Frame.Invalid;
-  var connectionType = this.connectionType();
+  var connectionType = this.opts.connectionType || this.connectionType();
   this.connection = new connectionType(this.opts);
   this.accumulatedGestures = [];
   this.connection.on('frame', function(frame) {
@@ -1609,6 +1436,22 @@ Controller.prototype.disconnect = function() {
   this.connection.disconnect();
 }
 
+/**
+ * Returns a frame of tracking data from the Leap.
+ * 
+ * Use the optional history parameter to specify which frame to retrieve. 
+ * Call frame() or frame(0) to access the most recent frame; call frame(1) to 
+ * access the previous frame, and so on. If you use a history value greater 
+ * than the number of stored frames, then the controller returns an invalid frame.
+ *
+ * @method frame
+ * @memberof Leap.Controller.prototype
+ * @param {Number} history The age of the frame to return, counting backwards from 
+ * the most recent frame (0) into the past and up to the maximum age (59).
+ * @returns {Leap.Frame} The specified frame; or, if no history 
+ * parameter is specified, the newest frame. If a frame is not available at 
+ * the specified history position, an invalid Frame is returned.
+ */
 Controller.prototype.frame = function(num) {
   return this.history.get(num) || Frame.Invalid;
 }
@@ -1666,7 +1509,475 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
+},{"events":16,"./frame":6,"./pipeline":20,"./circular_buffer":14,"./connection":12,"./node_connection":21,"underscore":22}],10:[function(require,module,exports){
+var _ = require('underscore');
+
+var Vector = exports.Vector = function(data){
+	
+	if(data == null){
+		this[0] = 0;
+		this[1] = 0;
+		this[2] = 0;
+	}
+	else if("x" in data){
+		this[0] = data[0];
+		this[1] = data[1];
+		this[2] = data[2];
+	}
+	else if("0" in data){
+		this[0] = (typeof(data[0]) == "number")?data[0]:0;
+		this[1] = (typeof(data[1]) == "number")?data[1]:0;
+		this[2] = (typeof(data[2]) == "number")?data[2]:0;
+	}
+	
+	this.length = 3;
+	this.x = this[0];
+	this.y = this[1];
+	this.z = this[2];
+};
+
+var VectorPrototype = {
+	
+	angleTo : function(other){
+		var denom = this.magnitude()*other.magnitude();
+		if(denom > 0) return Math.acos(this.dot(other)/denom);
+		else return 0;
+	},
+	
+	cross : function(other){
+		var x = this[1]*other[2] - other[1]*this[2];
+		var y = this[0]*other[2] - other[0]*this[2];
+		var z = this[0]*other[1] - other[0]*this[1];
+		return new Vector([x,y,z]);
+	},
+	
+	distanceTo : function(other){
+		return this.minus(other).magnitude();
+	},
+	
+	dot : function(other){
+		return this[0]*other[0] + this[1]*other[1] + this[2]*other[2];
+	},
+	
+	plus : function(other){
+		return new Vector([this[0] + other[0],this[1] + other[1],this[2] + other[2]]);
+	},
+	
+	minus : function(other){
+		return new Vector([this[0] - other[0],this[1] - other[1],this[2] - other[2]]);
+	},
+	
+	multiply : function(scalar){
+		return new Vector([this[0]*scalar,this[1]*scalar,this[2]*scalar]);
+	},
+	
+	dividedBy : function(scalar){
+		return new Vector([this[0]/scalar,this[1]/scalar,this[2]/scalar]);
+	},
+	
+	magnitude : function(){
+		return Math.sqrt(this.magnitudeSquared());
+	},
+	
+	magnitudeSquared : function(){
+		return Math.pow(this[0],2) + Math.pow(this[1],2) + Math.pow(this[2],2);
+	},
+	
+	normalized : function(){
+		var magnitude = this.magnitude();
+		if(magnitude > 0) return this.dividedBy(magnitude);
+		else return new Vector();
+	},
+	
+	pitch : function(){
+		return Math.atan2(this[1], -this[2]);
+	},
+	
+	roll : function(){
+		return Math.atan2(this[0], -this[1]);
+	},
+	
+	yaw : function(){
+		return Math.atan2(this[0], -this[2]);
+	},
+	
+	toArray : function(){
+		return [this[0], this[1], this[2]];
+	},
+	
+	toString : function(){
+		return "{x:"+this[0]+",y:"+this[1]+",z:"+this[2]+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	compare : function(other){
+		return this[0]==other[0] && this[1]==other[1] && this[2]==other[2];
+	},
+	
+	isValid : function(){
+		return (this[0] != NaN && this[0] > -Infinity && this[0] < Infinity) &&
+			   (this[1] != NaN && this[1] > -Infinity && this[1] < Infinity) &&
+			   (this[2] != NaN && this[2] > -Infinity && this[2] < Infinity);
+	}
+};
+
+Vector.prototype = new Array;
+_.extend(Vector.prototype, VectorPrototype);
+
+Vector.backward = function(){ return new Vector([0,0,1]); };
+Vector.down = function(){ return new Vector([0,-1,0]); };
+Vector.forward = function(){ return new Vector([0,0,-1]); };
+Vector.left = function(){ return new Vector([-1,0,0]); };
+Vector.right = function(){ return new Vector([1,0,0]); };
+Vector.up = function(){ return new Vector([0,1,0]); };
+Vector.xAxis = function(){ return new Vector([1,0,0]); };
+Vector.yAxis = function(){ return new Vector([0,1,0]); };
+Vector.zAxis = function(){ return new Vector([0,0,1]); };
+Vector.zero = function(){ return new Vector([0,0,0]); };
+
+},{"underscore":22}],8:[function(require,module,exports){
+var Pointable = require("./pointable").Pointable
+  , Vector = require("./vector").Vector
+  , Matrix = require("./matrix").Matrix
+  , _ = require("underscore");
+
+/**
+ * Constructs a Hand object.
+ *
+ * An uninitialized hand is considered invalid.
+ * Get valid Hand objects from a Frame object.
+ * @class Hand
+ * @memberof Leap
+ * @classdesc
+ * The Hand class reports the physical characteristics of a detected hand.
+ *
+ * Hand tracking data includes a palm position and velocity; vectors for
+ * the palm normal and direction to the fingers; properties of a sphere fit
+ * to the hand; and lists of the attached fingers and tools.
+ *
+ * Note that Hand objects can be invalid, which means that they do not contain
+ * valid tracking data and do not correspond to a physical entity. Invalid Hand
+ * objects can be the result of asking for a Hand object using an ID from an
+ * earlier frame when no Hand objects with that ID exist in the current frame.
+ * A Hand object created from the Hand constructor is also invalid.
+ * Test for validity with the {@link Leap.Hand#valid} property.
+ */
+var Hand = exports.Hand = function(data) {
+  /**
+   * A unique ID assigned to this Hand object, whose value remains the same
+   * across consecutive frames while the tracked hand remains visible. If
+   * tracking is lost (for example, when a hand is occluded by another hand
+   * or when it is withdrawn from or reaches the edge of the Leap field of view),
+   * the Leap may assign a new ID when it detects the hand in a future frame.
+   *
+   * Use the ID value with the {@link Frame.hand}() function to find this
+   * Hand object in future frames.
+   *
+   * @member id
+   * @memberof Leap.Hand.prototype
+   * @type {String}
+   */
+  this.id = data.id;
+  /**
+   * The center position of the palm in millimeters from the Leap origin.
+   * @member palmPosition
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Vector}
+   */
+  this.palmPosition = new Vector(data.palmPosition);
+  /**
+   * The direction from the palm position toward the fingers.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the directed line from the palm position to the fingers.
+   *
+   * @member direction
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Vector}
+   */
+  this.direction = new Vector(data.direction);
+  /**
+   * The rate of change of the palm position in millimeters/second.
+   *
+   * @member palmVeclocity
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Vector}
+   */
+  this.palmVelocity = new Vector(data.palmVelocity);
+  /**
+   * The normal vector to the palm. If your hand is flat, this vector will
+   * point downward, or "out" of the front surface of your palm.
+   *
+   * ![Palm Vectors](images/Leap_Palm_Vectors.png)
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the palm normal (that is, a vector orthogonal to the palm).
+   * @member palmNormal
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Vector}
+   */
+  this.palmNormal = new Vector(data.palmNormal);
+  /**
+   * The center of a sphere fit to the curvature of this hand.
+   *
+   * This sphere is placed roughly as if the hand were holding a ball.
+   *
+   * ![Hand Ball](images/Leap_Hand_Ball.png)
+   * @member sphereCenter
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Vector}
+   */
+  this.sphereCenter = new Vector(data.sphereCenter);
+  /**
+   * The radius of a sphere fit to the curvature of this hand, in millimeters.
+   *
+   * This sphere is placed roughly as if the hand were holding a ball. Thus the
+   * size of the sphere decreases as the fingers are curled into a fist.
+   *
+   * @member sphereRadius
+   * @memberof Leap.Hand.prototype
+   * @type {Number}
+   */
+  this.sphereRadius = data.sphereRadius;
+  /**
+   * Reports whether this is a valid Hand object.
+   *
+   * @member valid
+   * @memberof Leap.Hand.prototype
+   * @type {Boolean}
+   */
+  this.valid = true;
+  /**
+   * The list of Pointable objects (fingers and tools) detected in this frame
+   * that are associated with this hand, given in arbitrary order. The list
+   * can be empty if no fingers or tools associated with this hand are detected.
+   *
+   * Use the {@link Pointable} tool property to determine
+   * whether or not an item in the list represents a tool or finger.
+   * You can also get only the tools using the Hand.tools[] list or
+   * only the fingers using the Hand.fingers[] list.
+   *
+   * @member pointables[]
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Pointable}
+   */
+  this.pointables = [];
+  /**
+   * The list of fingers detected in this frame that are attached to
+   * this hand, given in arbitrary order.
+   *
+   * The list can be empty if no fingers attached to this hand are detected.
+   *
+   * @member fingers[]
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Pointable}
+   */
+  this.fingers = [];
+  /**
+   * The list of tools detected in this frame that are held by this
+   * hand, given in arbitrary order.
+   *
+   * The list can be empty if no tools held by this hand are detected.
+   *
+   * @member tools[]
+   * @memberof Leap.Hand.prototype
+   * @type {Leap.Pointable}
+   */
+  this.tools = [];
+  this._translation = new Vector(data.t);
+  this.rotation = new Matrix(data.r);
+  this._scaleFactor = data.s;
+}
+
+/**
+ * The finger with the specified ID attached to this hand.
+ *
+ * Use this function to retrieve a Pointable object representing a finger
+ * attached to this hand using an ID value obtained from a previous frame.
+ * This function always returns a Pointable object, but if no finger
+ * with the specified ID is present, an invalid Pointable object is returned.
+ *
+ * Note that the ID values assigned to fingers persist across frames, but only
+ * until tracking of a particular finger is lost. If tracking of a finger is
+ * lost and subsequently regained, the new Finger object representing that
+ * finger may have a different ID than that representing the finger in an
+ * earlier frame.
+ *
+ * @method finger
+ * @memberof Leap.Hand.prototype
+ * @param {String} id The ID value of a finger from a previous frame.
+ * @returns {Leap.Pointable} The Finger object with
+ * the matching ID if one exists for this hand in this frame; otherwise, an
+ * invalid Finger object is returned.
+ */
+Hand.prototype.finger = function(id) {
+  var finger = this.frame.finger(id);
+  return (finger && finger.handId == this.id) ? finger : Pointable.Invalid;
+}
+
+/**
+ * The angle of rotation around the rotation axis derived from the change in 
+ * orientation of this hand, and any associated fingers and tools, between the 
+ * current frame and the specified frame.
+ * 
+ * The returned angle is expressed in radians measured clockwise around the 
+ * rotation axis (using the right-hand rule) between the start and end frames. 
+ * The value is always between 0 and pi radians (0 and 180 degrees).
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then the angle of rotation is zero.
+ * 
+ * @method rotationAngle
+ * @memberof Leap.Hand.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in 
+ * the sinceFrame parameter.
+ */
+Hand.prototype.rotationAngle = function(sinceFrame, axis){
+	// TODO: implement axis parameter
+	if (!this.valid || !sinceFrame.valid) return 0.0;
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return 0.0;
+	
+	var rot = this.rotationMatrix(sinceFrame);
+	var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5
+	var angle = Math.acos(cs);
+	return isNaN(angle) ? 0.0 : angle;
+}
+
+/**
+ * The axis of rotation derived from the change in orientation of this hand, and 
+ * any associated fingers and tools, between the current frame and the specified frame.
+ * 
+ * The returned direction vector is normalized.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then this method returns a zero vector.
+ * 
+ * @method rotationAxis
+ * @memberof Leap.Hand.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Leap.Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.rotationAxis = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Vector.zero();
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return Vector.zero();
+	
+	var x = this.rotation[2][1] - sinceHand.rotation[1][2];
+	var y = this.rotation[0][2] - sinceHand.rotation[2][0];
+	var z = this.rotation[1][0] - sinceHand.rotation[0][1];
+	var vec = new Vector([x, y, z]);
+	return vec.normalized();
+}
+
+/**
+ * The transform matrix expressing the rotation derived from the change in 
+ * orientation of this hand, and any associated fingers and tools, between 
+ * the current frame and the specified frame.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either 
+ * this frame or sinceFrame are invalid Frame objects, then this method returns 
+ * an identity matrix.
+ * 
+ * @method rotationMatrix
+ * @memberof Leap.Hand.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Leap.Matrix} A transformation Matrix containing the heuristically determined 
+ * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.rotationMatrix = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return Matrix.identity();
+	
+	var xBasis = new Vector([this.rotation[0][0], this.rotation[1][0], this.rotation[2][0]]);
+	var yBasis = new Vector([this.rotation[0][1], this.rotation[1][1], this.rotation[2][1]]);
+	var zBasis = new Vector([this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]]);
+	var transpose = new Matrix([xBasis, yBasis, zBasis]);
+	return sinceHand.rotation.times(transpose);
+}
+
+/**
+ * The scale factor derived from the hand's motion between the current frame and the specified frame.
+ * 
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
+ * 
+ * The Leap derives scaling from the relative inward or outward motion of a hand 
+ * and its associated fingers and tools (independent of translation and rotation).
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame 
+ * are invalid Frame objects, then this method returns 1.0.
+ * 
+ * @method scaleFactor
+ * @memberof Leap.Hand.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative scaling.
+ * @returns {Number} A positive value representing the heuristically determined 
+ * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.scaleFactor = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return 1.0;
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return 1.0;
+	
+	return Math.exp(this._scaleFactor - sinceHand._scaleFactor);
+}
+
+/**
+ * The change of position of this hand between the current frame and the specified frame
+ * 
+ * The returned translation vector provides the magnitude and direction of the 
+ * movement in millimeters.
+ * 
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or 
+ * sinceFrame are invalid Frame objects, then this method returns a zero vector.
+ * 
+ * @method translation
+ * @memberof Leap.Hand.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative translation.
+ * @returns {Leap.Vector} A Vector representing the heuristically determined change in hand 
+ * position between the current frame and that specified in the sinceFrame parameter.
+ */
+Hand.prototype.translation = function(sinceFrame){
+	if (!this.valid || !sinceFrame.valid) return Vector.zero();
+	var sinceHand = sinceFrame.hand(this.id);
+	if(!sinceHand.valid) return Vector.zero();
+	
+	var x = this._translation[0] - sinceHand._translation[0];
+	var y = this._translation[1] - sinceHand._translation[1];
+	var z = this._translation[2] - sinceHand._translation[2];
+	return new Vector([x, y, z]);
+}
+
+/**
+ * A string containing a brief, human readable description of the Hand object.
+ * @method toString
+ * @memberof Leap.Hand.prototype
+ * @returns {String} A description of the Hand as a string.
+ */
+Hand.prototype.toString = function() {
+  return "Hand [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
+}
+
+/**
+ * An invalid Hand object.
+ *
+ * You can use an invalid Hand object in comparisons testing
+ * whether a given Hand instance is valid or invalid. (You can also use the
+ * Hand valid property.)
+ *
+ * @static
+ * @type {Leap.Hand}
+ * @name Invalid
+ * @memberof Leap.Hand
+ */
+Hand.Invalid = { valid: false };
+
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -1679,9 +1990,10 @@ var Hand = require("./hand").Hand
  *
  * Frame instances created with this constructor are invalid.
  * Get valid Frame objects by calling the
- * {@link Controller#frame}() function.
+ * {@link Leap.Controller#frame}() function.
  *
  * @class Frame
+ * @memberof Leap
  * @classdesc
  * The Frame class represents a set of hand and finger tracking data detected
  * in a single frame.
@@ -1689,7 +2001,7 @@ var Hand = require("./hand").Hand
  * The Leap detects hands, fingers and tools within the tracking area, reporting
  * their positions, orientations and motions in frames at the Leap frame rate.
  *
- * Access Frame objects using the {@link Controller#frame}() function.
+ * Access Frame objects using the {@link Leap.Controller#frame}() function.
  */
 var Frame = exports.Frame = function(data) {
   /**
@@ -1710,20 +2022,23 @@ var Frame = exports.Frame = function(data) {
    * frame(n) returned a null object. (You should still check that the
    * returned Finger instance is valid.)
    *
-   * @member Frame.prototype.valid
+   * @member valid
+   * @memberof Leap.Frame.prototype
    * @type {Boolean}
    */
   this.valid = true;
   /**
    * A unique ID for this Frame. Consecutive frames processed by the Leap
    * have consecutive increasing values.
-   * @member Frame.prototype.id
+   * @member id
+   * @memberof Leap.Frame.prototype
    * @type {String}
    */
   this.id = data.id;
   /**
    * The frame capture time in microseconds elapsed since the Leap started.
-   * @member Frame.prototype.timestamp
+   * @member timestamp
+   * @memberof Leap.Frame.prototype
    * @type {Number}
    */
   this.timestamp = data.timestamp;
@@ -1731,8 +2046,9 @@ var Frame = exports.Frame = function(data) {
    * The list of Hand objects detected in this frame, given in arbitrary order.
    * The list can be empty if no hands are detected.
    *
-   * @member Frame.prototype.hands[]
-   * @type {Hand}
+   * @member hands[]
+   * @memberof Leap.Frame.prototype
+   * @type {Leap.Hand}
    */
   this.hands = [];
   this.handsMap = {};
@@ -1741,23 +2057,26 @@ var Frame = exports.Frame = function(data) {
    * given in arbitrary order. The list can be empty if no fingers or tools are
    * detected.
    *
-   * @member Frame.prototype.pointables[]
-   * @type {Pointable}
+   * @member pointables[]
+   * @memberof Leap.Frame.prototype
+   * @type {Leap.Pointable}
    */
   this.pointables = [];
   /**
    * The list of Tool objects detected in this frame, given in arbitrary order.
    * The list can be empty if no tools are detected.
    *
-   * @member Frame.prototype.tools[]
-   * @type {Pointable}
+   * @member tools[]
+   * @memberof Leap.Frame.prototype
+   * @type {Leap.Pointable}
    */
   this.tools = [];
   /**
    * The list of Finger objects detected in this frame, given in arbitrary order.
    * The list can be empty if no fingers are detected.
-   * @member Frame.prototype.fingers[]
-   * @type {Pointable}
+   * @member fingers[]
+   * @memberof Leap.Frame.prototype
+   * @type {Leap.Pointable}
    */
 
   this.fingers = [];
@@ -1796,8 +2115,9 @@ var Frame = exports.Frame = function(data) {
     *
     * Circle and swipe gestures are updated every frame. Tap gestures
     * only appear in the list for a single frame.
-    * @member Frame.prototype.gestures[]
-    * @type {Gesture}
+    * @member gestures[]
+    * @memberof Leap.Frame.prototype
+    * @type {Leap.Gesture}
     */
     for (var gestureIdx = 0, gestureCount = data.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
       this.gestures.push(Gesture(data.gestures[gestureIdx]));
@@ -1818,9 +2138,10 @@ var Frame = exports.Frame = function(data) {
  * regained, the new Pointable object representing that tool may have a
  * different ID than that representing the tool in an earlier frame.
  *
- * @method Frame.prototype.tool
+ * @method tool
+ * @memberof Leap.Frame.prototype
  * @param {String} id The ID value of a Tool object from a previous frame.
- * @returns {Pointable | Pointable.Invalid} The tool with the
+ * @returns {Leap.Pointable} The tool with the
  * matching ID if one exists in this frame; otherwise, an invalid Pointable object
  * is returned.
  */
@@ -1842,9 +2163,10 @@ Frame.prototype.tool = function(id) {
  * regained, the new Pointable object representing that finger or tool may have
  * a different ID than that representing the finger or tool in an earlier frame.
  *
- * @method Frame.prototype.pointable
+ * @method pointable
+ * @memberof Leap.Frame.prototype
  * @param {String} id The ID value of a Pointable object from a previous frame.
- * @returns {Pointable | Pointable.Invalid} The Pointable object with
+ * @returns {Leap.Pointable} The Pointable object with
  * the matching ID if one exists in this frame;
  * otherwise, an invalid Pointable object is returned.
  */
@@ -1865,9 +2187,10 @@ Frame.prototype.pointable = function(id) {
  * regained, the new Pointable object representing that physical finger may have
  * a different ID than that representing the finger in an earlier frame.
  *
- * @method Frame.prototype.finger
+ * @method finger
+ * @memberof Leap.Frame.prototype
  * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Pointable | Pointable.Invalid} The finger with the
+ * @returns {Leap.Pointable} The finger with the
  * matching ID if one exists in this frame; otherwise, an invalid Pointable
  * object is returned.
  */
@@ -1889,9 +2212,10 @@ Frame.prototype.finger = function(id) {
  * regained, the new Hand object representing that physical hand may have
  * a different ID than that representing the physical hand in an earlier frame.
  *
- * @method Frame.prototype.hand
+ * @method hand
+ * @memberof Leap.Frame.prototype
  * @param {String} id The ID value of a Hand object from a previous frame.
- * @returns {Hand | Hand.Invalid} The Hand object with the matching
+ * @returns {Leap.Hand} The Hand object with the matching
  * ID if one exists in this frame; otherwise, an invalid Hand object is returned.
  */
 Frame.prototype.hand = function(id) {
@@ -1912,8 +2236,9 @@ Frame.prototype.hand = function(id) {
  * If either this frame or sinceFrame is an invalid Frame object, then the 
  * angle of rotation is zero.
  * 
- * @method Frame.prototype.rotationAngle
- * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @method rotationAngle
+ * @memberof Leap.Frame.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
  * @returns {Number} A positive value containing the heuristically determined 
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
@@ -1921,7 +2246,7 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
 	// TODO: implement axis parameter
 	if (!this.valid || !sinceFrame.valid) return 0.0;
 	var rot = this.rotationMatrix(sinceFrame);
-	var cs = (rot.xBasis.x + rot.yBasis.y + rot.zBasis.z - 1.0)*0.5
+	var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5
 	var angle = Math.acos(cs);
 	return isNaN(angle) ? 0.0 : angle;
 }
@@ -1938,16 +2263,17 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
  * If either this frame or sinceFrame is an invalid Frame object, or if no 
  * rotation is detected between the two frames, a zero vector is returned.
  * 
- * @method Frame.prototype.rotationAxis
- * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * @method rotationAxis
+ * @memberof Leap.Frame.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Leap.Vector} A normalized direction Vector representing the axis of the heuristically determined 
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
 Frame.prototype.rotationAxis = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
-	var x = this.rotation.zBasis.y - sinceFrame.rotation.yBasis.z;
-	var y = this.rotation.xBasis.z - sinceFrame.rotation.zBasis.x;
-	var z = this.rotation.yBasis.x - sinceFrame.rotation.xBasis.y;
+	var x = this.rotation[2][1] - sinceFrame.rotation[1][2];
+	var y = this.rotation[0][2] - sinceFrame.rotation[2][0];
+	var z = this.rotation[1][0] - sinceFrame.rotation[0][1];
 	var vec = new Vector([x, y, z]);
 	return vec.normalized();
 }
@@ -1962,16 +2288,17 @@ Frame.prototype.rotationAxis = function(sinceFrame){
  * If either this frame or sinceFrame is an invalid Frame object, then 
  * this method returns an identity matrix.
  * 
- * @method Frame.prototype.rotationMatrix
- * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Matrix} A transformation Matrix containing the heuristically determined 
+ * @method rotationMatrix
+ * @memberof Leap.Frame.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
+ * @returns {Leap.Matrix} A transformation Matrix containing the heuristically determined 
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
 Frame.prototype.rotationMatrix = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
-	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
-	var yBasis = new Vector([this.rotation.xBasis.y, this.rotation.yBasis.y, this.rotation.zBasis.y]);
-	var zBasis = new Vector([this.rotation.xBasis.z, this.rotation.yBasis.z, this.rotation.zBasis.z]);
+	var xBasis = new Vector([this.rotation[0][0], this.rotation[1][0], this.rotation[2][0]]);
+	var yBasis = new Vector([this.rotation[0][1], this.rotation[1][1], this.rotation[2][1]]);
+	var zBasis = new Vector([this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]]);
 	var transpose = new Matrix([xBasis, yBasis, zBasis]);
 	return sinceFrame.rotation.times(transpose);
 }
@@ -1987,8 +2314,9 @@ Frame.prototype.rotationMatrix = function(sinceFrame){
  * 
  * If either this frame or sinceFrame is an invalid Frame object, then this method returns 1.0.
  * 
- * @method Frame.prototype.scaleFactor
- * @param {Frame} sinceFrame The starting frame for computing the relative scaling.
+ * @method scaleFactor
+ * @memberof Leap.Frame.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative scaling.
  * @returns {Number} A positive value representing the heuristically determined 
  * scaling change ratio between the current frame and that specified in the sinceFrame parameter.
  */
@@ -2010,23 +2338,25 @@ Frame.prototype.scaleFactor = function(sinceFrame){
  * If either this frame or sinceFrame is an invalid Frame object, then this 
  * method returns a zero vector.
  * 
- * @method Frame.prototype.translation
- * @param {Frame} sinceFrame The starting frame for computing the relative translation.
- * @returns {Vector} A Vector representing the heuristically determined change in 
+ * @method translation
+ * @memberof Leap.Frame.prototype
+ * @param {Leap.Frame} sinceFrame The starting frame for computing the relative translation.
+ * @returns {Leap.Vector} A Vector representing the heuristically determined change in 
  * position of all objects between the current frame and that specified in the sinceFrame parameter.
  */
 Frame.prototype.translation = function(sinceFrame){
 	if (!this.valid || !sinceFrame.valid) return Vector.zero();
-	var x = this._translation.x - sinceFrame._translation.x;
-	var y = this._translation.y - sinceFrame._translation.y;
-	var z = this._translation.z - sinceFrame._translation.z;
+	var x = this._translation[0] - sinceFrame._translation[0];
+	var y = this._translation[1] - sinceFrame._translation[1];
+	var z = this._translation[2] - sinceFrame._translation[2];
 	return new Vector([x, y, z]);
 }
 
 /**
  * A string containing a brief, human readable description of the Frame object.
  *
- * @method Frame.prototype.toString
+ * @method toString
+ * @memberof Leap.Frame.prototype
  * @returns {String} A brief description of this frame.
  */
 Frame.prototype.toString = function() {
@@ -2040,7 +2370,8 @@ Frame.prototype.toString = function() {
  * Returns a JSON-formatted string containing the hands, pointables and gestures
  * in this frame.
  *
- * @method Frame.prototype.dump
+ * @method dump
+ * @memberof Leap.Frame.prototype
  * @returns {String} A JSON-formatted string.
  */
 Frame.prototype.dump = function() {
@@ -2071,11 +2402,12 @@ Frame.prototype.dump = function() {
  *
  * You can use this invalid Frame in comparisons testing
  * whether a given Frame instance is valid or invalid. (You can also check the
- * {@link Frame#valid} property.)
+ * {@link Leap.Frame#valid} property.)
  *
- * @constant
- * @type {Frame}
- * @name Frame.Invalid
+ * @static
+ * @type {Leap.Frame}
+ * @name Invalid
+ * @memberof Leap.Frame
  */
 Frame.Invalid = {
   valid: false,
@@ -2091,329 +2423,143 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
-var Pointable = require("./pointable").Pointable
-  , Vector = require("./vector").Vector
-  , Matrix = require("./matrix").Matrix
-  , _ = require("underscore");
+},{"./hand":8,"./gesture":7,"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],11:[function(require,module,exports){
+var Vector = require("./vector").Vector,
+    _ = require('underscore');
 
-/**
- * Constructs a Hand object.
- *
- * An uninitialized hand is considered invalid.
- * Get valid Hand objects from a Frame object.
- * @class Hand
- *
- * @classdesc
- * The Hand class reports the physical characteristics of a detected hand.
- *
- * Hand tracking data includes a palm position and velocity; vectors for
- * the palm normal and direction to the fingers; properties of a sphere fit
- * to the hand; and lists of the attached fingers and tools.
- *
- * Note that Hand objects can be invalid, which means that they do not contain
- * valid tracking data and do not correspond to a physical entity. Invalid Hand
- * objects can be the result of asking for a Hand object using an ID from an
- * earlier frame when no Hand objects with that ID exist in the current frame.
- * A Hand object created from the Hand constructor is also invalid.
- * Test for validity with the {@link Hand#valid} property.
- */
-var Hand = exports.Hand = function(data) {
-  /**
-   * A unique ID assigned to this Hand object, whose value remains the same
-   * across consecutive frames while the tracked hand remains visible. If
-   * tracking is lost (for example, when a hand is occluded by another hand
-   * or when it is withdrawn from or reaches the edge of the Leap field of view),
-   * the Leap may assign a new ID when it detects the hand in a future frame.
-   *
-   * Use the ID value with the {@link Frame.hand}() function to find this
-   * Hand object in future frames.
-   *
-   * @member Hand.prototype.id
-   * @type {String}
-   */
-  this.id = data.id;
-  /**
-   * The center position of the palm in millimeters from the Leap origin.
-   * @member Hand.prototype.palmPosition
-   * @type {Vector}
-   */
-  this.palmPosition = new Vector(data.palmPosition);
-  /**
-   * The direction from the palm position toward the fingers.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the directed line from the palm position to the fingers.
-   *
-   * @member Hand.prototype.direction
-   * @type {Vector}
-   */
-  this.direction = new Vector(data.direction);
-  /**
-   * The rate of change of the palm position in millimeters/second.
-   *
-   * @member Hand.prototype.palmVeclocity
-   * @type {Vector}
-   */
-  this.palmVelocity = new Vector(data.palmVelocity);
-  /**
-   * The normal vector to the palm. If your hand is flat, this vector will
-   * point downward, or "out" of the front surface of your palm.
-   *
-   * <img src="images/Leap_Palm_Vectors.png"/>
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the palm normal (that is, a vector orthogonal to the palm).
-   * @member Hand.prototype.palmNormal
-   * @type {Vector}
-   */
-  this.palmNormal = new Vector(data.palmNormal);
-  /**
-   * The center of a sphere fit to the curvature of this hand.
-   *
-   * This sphere is placed roughly as if the hand were holding a ball.
-   *
-   * <img src="images/Leap_Hand_Ball.png"/>
-   * @member Hand.prototype.sphereCenter
-   * @type {Vector}
-   */
-  this.sphereCenter = new Vector(data.sphereCenter);
-  /**
-   * The radius of a sphere fit to the curvature of this hand, in millimeters.
-   *
-   * This sphere is placed roughly as if the hand were holding a ball. Thus the
-   * size of the sphere decreases as the fingers are curled into a fist.
-   *
-   * @member Hand.prototype.sphereRadius
-   * @type {Number}
-   */
-  this.sphereRadius = data.sphereRadius;
-  /**
-   * Reports whether this is a valid Hand object.
-   *
-   * @member Hand.prototype.valid
-   * @type {Boolean}
-   */
-  this.valid = true;
-  /**
-   * The list of Pointable objects (fingers and tools) detected in this frame
-   * that are associated with this hand, given in arbitrary order. The list
-   * can be empty if no fingers or tools associated with this hand are detected.
-   *
-   * Use the {@link Pointable} tool property to determine
-   * whether or not an item in the list represents a tool or finger.
-   * You can also get only the tools using the Hand.tools[] list or
-   * only the fingers using the Hand.fingers[] list.
-   *
-   * @member Hand.prototype.pointables[]
-   * @type {Pointable}
-   */
-  this.pointables = [];
-  /**
-   * The list of fingers detected in this frame that are attached to
-   * this hand, given in arbitrary order.
-   *
-   * The list can be empty if no fingers attached to this hand are detected.
-   *
-   * @member Frame.prototype.fingers[]
-   * @type {Pointable}
-   */
-  this.fingers = [];
-  /**
-   * The list of tools detected in this frame that are held by this
-   * hand, given in arbitrary order.
-   *
-   * The list can be empty if no tools held by this hand are detected.
-   *
-   * @member Hand.prototype.tools[]
-   * @type {Pointable}
-   */
-  this.tools = [];
-  this._translation = new Vector(data.t);
-  this.rotation = new Matrix(data.r);
-  this._scaleFactor = data.s;
-}
-
-/**
- * The finger with the specified ID attached to this hand.
- *
- * Use this function to retrieve a Pointable object representing a finger
- * attached to this hand using an ID value obtained from a previous frame.
- * This function always returns a Pointable object, but if no finger
- * with the specified ID is present, an invalid Pointable object is returned.
- *
- * Note that the ID values assigned to fingers persist across frames, but only
- * until tracking of a particular finger is lost. If tracking of a finger is
- * lost and subsequently regained, the new Finger object representing that
- * finger may have a different ID than that representing the finger in an
- * earlier frame.
- *
- * @method Hand.prototype.finger
- * @param {String} id The ID value of a finger from a previous frame.
- * @returns {Pointable | Pointable.Invalid} The Finger object with
- * the matching ID if one exists for this hand in this frame; otherwise, an
- * invalid Finger object is returned.
- */
-Hand.prototype.finger = function(id) {
-  var finger = this.frame.finger(id);
-  return (finger && finger.handId == this.id) ? finger : Pointable.Invalid;
-}
-
-/**
- * The angle of rotation around the rotation axis derived from the change in 
- * orientation of this hand, and any associated fingers and tools, between the 
- * current frame and the specified frame.
- * 
- * The returned angle is expressed in radians measured clockwise around the 
- * rotation axis (using the right-hand rule) between the start and end frames. 
- * The value is always between 0 and pi radians (0 and 180 degrees).
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either 
- * this frame or sinceFrame are invalid Frame objects, then the angle of rotation is zero.
- * 
- * @method Hand.prototype.rotationAngle
- * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Number} A positive value representing the heuristically determined 
- * rotational change of the hand between the current frame and that specified in 
- * the sinceFrame parameter.
- */
-Hand.prototype.rotationAngle = function(sinceFrame, axis){
-	// TODO: implement axis parameter
-	if (!this.valid || !sinceFrame.valid) return 0.0;
-	var sinceHand = sinceFrame.hand(this.id);
-	if(!sinceHand.valid) return 0.0;
+var Matrix = exports.Matrix = function(data){
 	
-	var rot = this.rotationMatrix(sinceFrame);
-	var cs = (rot.xBasis.x + rot.yBasis.y + rot.zBasis.z - 1.0)*0.5
-	var angle = Math.acos(cs);
-	return isNaN(angle) ? 0.0 : angle;
-}
-
-/**
- * The axis of rotation derived from the change in orientation of this hand, and 
- * any associated fingers and tools, between the current frame and the specified frame.
- * 
- * The returned direction vector is normalized.
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either 
- * this frame or sinceFrame are invalid Frame objects, then this method returns a zero vector.
- * 
- * @method Hand.prototype.rotationAxis
- * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Vector} A normalized direction Vector representing the axis of the heuristically determined 
- * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
- */
-Hand.prototype.rotationAxis = function(sinceFrame){
-	if (!this.valid || !sinceFrame.valid) return Vector.zero();
-	var sinceHand = sinceFrame.hand(this.id);
-	if(!sinceHand.valid) return Vector.zero();
+	if(data instanceof Matrix){
+		this[0] = new Vector(data.xBasis);
+		this[1] = new Vector(data.yBasis);
+		this[2] = new Vector(data.zBasis);
+		this[3] = new Vector(data.origin);
+	}
+	else if(data instanceof Array){
+		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
+			this.setRotation(data[0],data[1]);
+			this[3] = new Vector(data[2]);
+		}
+		else{
+			this[0] = new Vector(data[0]);
+			this[1] = new Vector(data[1]);
+			this[2] = new Vector(data[2]);
+			this[3] = new Vector(data[3]);
+		}
+	}
+	else{
+		this[0] = new Vector([1,0,0]);
+		this[1] = new Vector([0,1,0]);
+		this[2] = new Vector([0,0,1]);
+		this[3] = new Vector([0,0,0]);
+	}
 	
-	var x = this.rotation.zBasis.y - sinceHand.rotation.yBasis.z;
-	var y = this.rotation.xBasis.z - sinceHand.rotation.zBasis.x;
-	var z = this.rotation.yBasis.x - sinceHand.rotation.xBasis.y;
-	var vec = new Vector([x, y, z]);
-	return vec.normalized();
-}
+	this.length = 4;
+	this.xBasis = this[0];
+	this.yBasis = this[1];
+	this.zBasis = this[2];
+	this.origin = this[3];
+};
 
-/**
- * The transform matrix expressing the rotation derived from the change in 
- * orientation of this hand, and any associated fingers and tools, between 
- * the current frame and the specified frame.
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either 
- * this frame or sinceFrame are invalid Frame objects, then this method returns 
- * an identity matrix.
- * 
- * @method Hand.prototype.rotationMatrix
- * @param {Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Matrix} A transformation Matrix containing the heuristically determined 
- * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
- */
-Hand.prototype.rotationMatrix = function(sinceFrame){
-	if (!this.valid || !sinceFrame.valid) return Matrix.identity();
-	var sinceHand = sinceFrame.hand(this.id);
-	if(!sinceHand.valid) return Matrix.identity();
+var MatrixPrototype = {
 	
-	var xBasis = new Vector([this.rotation.xBasis.x, this.rotation.yBasis.x, this.rotation.zBasis.x]);
-	var yBasis = new Vector([this.rotation.xBasis.y, this.rotation.yBasis.y, this.rotation.zBasis.y]);
-	var zBasis = new Vector([this.rotation.xBasis.z, this.rotation.yBasis.z, this.rotation.zBasis.z]);
-	var transpose = new Matrix([xBasis, yBasis, zBasis]);
-	return sinceHand.rotation.times(transpose);
-}
-
-/**
- * The scale factor derived from the hand's motion between the current frame and the specified frame.
- * 
- * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
- * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
- * 
- * The Leap derives scaling from the relative inward or outward motion of a hand 
- * and its associated fingers and tools (independent of translation and rotation).
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame 
- * are invalid Frame objects, then this method returns 1.0.
- * 
- * @method Hand.prototype.scaleFactor
- * @param {Frame} sinceFrame The starting frame for computing the relative scaling.
- * @returns {Number} A positive value representing the heuristically determined 
- * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
- */
-Hand.prototype.scaleFactor = function(sinceFrame){
-	if (!this.valid || !sinceFrame.valid) return 1.0;
-	var sinceHand = sinceFrame.hand(this.id);
-	if(!sinceHand.valid) return 1.0;
+	setRotation : function(_axis, angle){
+		var axis = _axis.normalized();
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
+		var C = 1-c;
+		
+		this[0] = new Vector([axis[0]*axis[0]*C + c, axis[0]*axis[1]*C - axis[2]*s, axis[0]*axis[2]*C + axis[1]*s]);
+		this[1] = new Vector([axis[1]*axis[0]*C + axis[2]*s, axis[1]*axis[1]*C + c, axis[1]*axis[2]*C - axis[0]*s]);
+		this[2] = new Vector([axis[2]*axis[0]*C - axis[1]*s, axis[2]*axis[1]*C + axis[0]*s, axis[2]*axis[2]*C + c]);
+	},
 	
-	return Math.exp(this._scaleFactor - sinceHand._scaleFactor);
-}
+	transformPoint : function(data){
+		return this[3].plus(this.transformDirection(data));
+	},
 
-/**
- * The change of position of this hand between the current frame and the specified frame
- * 
- * The returned translation vector provides the magnitude and direction of the 
- * movement in millimeters.
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either this frame or 
- * sinceFrame are invalid Frame objects, then this method returns a zero vector.
- * 
- * @method Hand.prototype.translation
- * @param {Frame} sinceFrame The starting frame for computing the relative translation.
- * @returns {Vector} A Vector representing the heuristically determined change in hand 
- * position between the current frame and that specified in the sinceFrame parameter.
- */
-Hand.prototype.translation = function(sinceFrame){
-	if (!this.valid || !sinceFrame.valid) return Vector.zero();
-	var sinceHand = sinceFrame.hand(this.id);
-	if(!sinceHand.valid) return Vector.zero();
+	transformDirection : function(data){
+		var x = this[0].multiply(data[0]);
+		var y = this[1].multiply(data[1]);
+		var z = this[2].multiply(data[2]);
+		return x.plus(y).plus(z);
+	},
 	
-	var x = this._translation.x - sinceHand._translation.x;
-	var y = this._translation.y - sinceHand._translation.y;
-	var z = this._translation.z - sinceHand._translation.z;
-	return new Vector([x, y, z]);
-}
+	times : function(other){
+		var x = this.transformDirection(other[0]);
+		var y = this.transformDirection(other[1]);
+		var z = this.transformDirection(other[2]);
+		var o = this.transformPoint(other[3]);
+		return new Matrix([x,y,z,o]);
+	},
+	
+	rigidInverse : function(){
+		var x = new Vector([this[0][0], this[1][0], this[2][0]]);
+		var y = new Vector([this[0][1], this[1][1], this[2][1]]);
+		var z = new Vector([this[0][2], this[1][2], this[2][2]]);
+		var rotInverse = new Matrix([x,y,z]);
+		rotInverse[3] = rotInverse.transformDirection(Vector.zero().minus(this[3]));
+		return rotInverse;
+	},
+	
+	toArray3x3 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this[0][0];
+		output[1] = this[0][1];
+		output[2] = this[0][2];
+		output[3] = this[1][0];
+		output[4] = this[1][1];
+		output[5] = this[1][2];
+		output[6] = this[2][0];
+		output[7] = this[2][1];
+		output[8] = this[2][2];
+		return output;
+	},
+	
+	toArray4x4 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this[0][0];
+		output[1] = this[0][1];
+		output[2] = this[0][2];
+		output[3] = 0;
+		output[4] = this[1][0];
+		output[5] = this[1][1];
+		output[6] = this[1][2];
+		output[7] = 0;
+		output[8] = this[2][0];
+		output[9] = this[2][1];
+		output[10] = this[2][2];
+		output[11] = 0;
+		output[12] = this[3][0];
+		output[13] = this[3][1];
+		output[14] = this[3][2];
+		output[15] = 1;
+		return output;
+	},
+	
+	toString : function(){
+		return "{xBasis:"+this[0]+",yBasis:"+this[1]+
+		",zBasis:"+this[2]+",origin:"+this[3]+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	compare : function(other){
+		return this[0].compare(other[0]) && 
+		this[1].compare(other[1]) && 
+		this[2].compare(other[2]) && 
+		this[3].compare(other[3]);
+	}
+};
 
-/**
- * A string containing a brief, human readable description of the Hand object.
- * @method Hand.prototype.toString
- * @returns {String} A description of the Hand as a string.
- */
-Hand.prototype.toString = function() {
-  return "Hand [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
-}
+Matrix.prototype = new Array;
+_.extend(Matrix.prototype, MatrixPrototype);
 
-/**
- * An invalid Hand object.
- *
- * You can use an invalid Hand object in comparisons testing
- * whether a given Hand instance is valid or invalid. (You can also use the
- * Hand valid property.)
- *
- * @constant
- * @type {Hand}
- * @name Hand.Invalid
- */
-Hand.Invalid = { valid: false };
+Matrix.identity = function(){ return new Matrix(); };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
+},{"./vector":10,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3642,7 +3788,184 @@ Hand.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],23:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Connection = exports.Connection = function(opts) {
+  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(opts.enableGestures);
+  });
+}
+
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this;
+  setTimeout(function() { connection.connect() }, 1000);
+}
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  this.socket = undefined;
+  this.protocol = undefined;
+}
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) {
+    this.teardownSocket();
+  }
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"events":16,"./protocol":23,"underscore":22}],23:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , util = require('util');
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  switch(header.version) {
+    case 1:
+      var protocol = function(data) {
+        return new Frame(data);
+      }
+      protocol.encode = function(message) {
+        return util.format("%j", message);
+      }
+      protocol.version = 1;
+      protocol.versionLong = 'Version 1';
+      protocol.type = 'version';
+      return protocol;
+    default:
+      throw "unrecognized version";
+  }
+}
+
+},{"util":24,"./frame":6}],18:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter
+  , Vector = require('../vector').Vector
+  , _ = require('underscore')
+
+var Region = exports.Region = function(start, end) {
+  this.start = new Vector(start)
+  this.end = new Vector(end)
+  this.enteredFrame = null
+}
+
+Region.prototype.hasPointables = function(frame) {
+  for (var i = 0; i != frame.pointables.length; i++) {
+    var position = frame.pointables[i].tipPosition
+    if (position.x >= this.start.x && position.x <= this.end.x && position.y >= this.start.y && position.y <= this.end.y && position.z >= this.start.z && position.z <= this.end.z) {
+      return true
+    }
+  }
+  return false
+}
+
+Region.prototype.listener = function(opts) {
+  var region = this
+  if (opts && opts.nearThreshold) this.setupNearRegion(opts.nearThreshold)
+  return function(frame) {
+    return region.updatePosition(frame)
+  }
+}
+
+Region.prototype.clipper = function() {
+  var region = this
+  return function(frame) {
+    region.updatePosition(frame)
+    return region.enteredFrame ? frame : null
+  }
+}
+
+Region.prototype.setupNearRegion = function(distance) {
+  var nearRegion = this.nearRegion = new Region(
+    [this.start.x - distance, this.start.y - distance, this.start.z - distance],
+    [this.end.x + distance, this.end.y + distance, this.end.z + distance]
+  )
+  var region = this
+  nearRegion.on("enter", function(frame) {
+    region.emit("near", frame)
+  })
+  nearRegion.on("exit", function(frame) {
+    region.emit("far", frame)
+  })
+  region.on('exit', function(frame) {
+    region.emit("near", frame)
+  })
+}
+
+Region.prototype.updatePosition = function(frame) {
+  if (this.nearRegion) this.nearRegion.updatePosition(frame)
+  if (this.hasPointables(frame) && this.enteredFrame == null) {
+    this.enteredFrame = frame
+    this.emit("enter", this.enteredFrame)
+  } else if (!this.hasPointables(frame) && this.enteredFrame != null) {
+    this.enteredFrame = null
+    this.emit("exit", this.enteredFrame)
+  }
+  return frame
+}
+
+Region.prototype.normalize = function(position) {
+  return new Vector([
+    (position.x - this.start.x) / (this.end.x - this.start.x),
+    (position.y - this.start.y) / (this.end.y - this.start.y),
+    (position.z - this.start.z) / (this.end.z - this.start.z)
+  ])
+}
+
+Region.prototype.mapToXY = function(position, width, height) {
+  var normalized = this.normalize(position)
+  var x = normalized.x, y = normalized.y
+  if (x > 1) x = 1
+  else if (x < -1) x = -1
+  if (y > 1) y = 1
+  else if (y < -1) y = -1
+  return [
+    (x + 1) / 2 * width,
+    (1 - y) / 2 * height,
+    normalized.z
+  ]
+}
+
+_.extend(Region.prototype, EventEmitter.prototype)
+},{"events":16,"../vector":10,"underscore":22}],24:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -3995,95 +4318,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],24:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  switch(header.version) {
-    case 1:
-      var protocol = function(data) {
-        return new Frame(data);
-      }
-      protocol.encode = function(message) {
-        return util.format("%j", message);
-      }
-      protocol.version = 1;
-      protocol.versionLong = 'Version 1';
-      protocol.type = 'version';
-      return protocol;
-    default:
-      throw "unrecognized version";
-  }
-}
-
-},{"util":23,"./frame":6}],17:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Connection = exports.Connection = function(opts) {
-  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(opts.enableGestures);
-  });
-}
-
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  this.socket = undefined;
-  this.protocol = undefined;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) {
-    this.teardownSocket();
-  }
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"events":16,"./protocol":24,"underscore":22}],21:[function(require,module,exports){
+},{"events":16}],21:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , WebSocket = require('ws')
 
@@ -4112,94 +4347,5 @@ module.exports = function() {
 }
 
 })(window)
-},{}],18:[function(require,module,exports){
-var EventEmitter = require('events').EventEmitter
-  , Vector = require('../vector').Vector
-  , _ = require('underscore')
-
-var Region = exports.Region = function(start, end) {
-  this.start = new Vector(start)
-  this.end = new Vector(end)
-  this.enteredFrame = null
-}
-
-Region.prototype.hasPointables = function(frame) {
-  for (var i = 0; i != frame.pointables.length; i++) {
-    var position = frame.pointables[i].tipPosition
-    if (position.x >= this.start.x && position.x <= this.end.x && position.y >= this.start.y && position.y <= this.end.y && position.z >= this.start.z && position.z <= this.end.z) {
-      return true
-    }
-  }
-  return false
-}
-
-Region.prototype.listener = function(opts) {
-  var region = this
-  if (opts && opts.nearThreshold) this.setupNearRegion(opts.nearThreshold)
-  return function(frame) {
-    return region.updatePosition(frame)
-  }
-}
-
-Region.prototype.clipper = function() {
-  var region = this
-  return function(frame) {
-    region.updatePosition(frame)
-    return region.enteredFrame ? frame : null
-  }
-}
-
-Region.prototype.setupNearRegion = function(distance) {
-  var nearRegion = this.nearRegion = new Region(
-    [this.start.x - distance, this.start.y - distance, this.start.z - distance],
-    [this.end.x + distance, this.end.y + distance, this.end.z + distance]
-  )
-  var region = this
-  nearRegion.on("enter", function(frame) {
-    region.emit("near", frame)
-  })
-  nearRegion.on("exit", function(frame) {
-    region.emit("far", frame)
-  })
-  region.on('exit', function(frame) {
-    region.emit("near", frame)
-  })
-}
-
-Region.prototype.updatePosition = function(frame) {
-  if (this.nearRegion) this.nearRegion.updatePosition(frame)
-  if (this.hasPointables(frame) && this.enteredFrame == null) {
-    this.enteredFrame = frame
-    this.emit("enter", this.enteredFrame)
-  } else if (!this.hasPointables(frame) && this.enteredFrame != null) {
-    this.enteredFrame = null
-    this.emit("exit", this.enteredFrame)
-  }
-  return frame
-}
-
-Region.prototype.normalize = function(position) {
-  return new Vector([
-    (position.x - this.start.x) / (this.end.x - this.start.x),
-    (position.y - this.start.y) / (this.end.y - this.start.y),
-    (position.z - this.start.z) / (this.end.z - this.start.z)
-  ])
-}
-
-Region.prototype.mapToXY = function(position, width, height) {
-  var normalized = this.normalize(position)
-  var x = normalized.x, y = normalized.y
-  if (x > 1) x = 1
-  else if (x < -1) x = -1
-  if (y > 1) y = 1
-  else if (y < -1) y = -1
-  return [
-    (x + 1) / 2 * width,
-    (1 - y) / 2 * height,
-    normalized.z
-  ]
-}
-
-_.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":22}]},{},[1,2,3])
+},{}]},{},[1,3,2])
 ;
