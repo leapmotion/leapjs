@@ -1561,7 +1561,7 @@ var Controller = exports.Controller = function(opts) {
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
   this.lastConnectionFrame = Frame.Invalid;
-  var connectionType = this.connectionType();
+  var connectionType = opts.connectionType || this.connectionType();
   this.connection = new connectionType(this.opts);
   this.accumulatedGestures = [];
   this.connection.on('frame', function(frame) {
@@ -3995,7 +3995,28 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],24:[function(require,module,exports){
+},{"events":16}],21:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
+
+var Connection = exports.Connection = require('./base_connection').Connection
+
+Connection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
+}
+
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
+}
+},{"./frame":6,"./base_connection":17,"ws":24}],25:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4083,28 +4104,7 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":24,"underscore":22}],21:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":17,"ws":25}],25:[function(require,module,exports){
+},{"events":16,"./protocol":25,"underscore":22}],24:[function(require,module,exports){
 (function(global){/// shim for browser packaging
 
 module.exports = function() {

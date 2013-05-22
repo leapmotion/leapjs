@@ -4,6 +4,11 @@ Welcome to the Leap JavaScript framework. This is intended for use with the Leap
 
 [![Build Status](https://travis-ci.org/leapmotion/leapjs.png)](https://travis-ci.org/leapmotion/leapjs)
 
+## Resources
+
+* [API Documentation](http://leapmotion.github.io/leapjs/)
+* [Examples](http://bl.ocks.org/leapjs)
+
 ## Installation
 
 If you're using npm, you can use `npm install leapjs`.
