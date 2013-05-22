@@ -1,0 +1,20 @@
+<script src="../leap.js"></script>
+<script>
+Leap.loop(function(obj) {
+  if (obj.hands.length < 1) return;
+
+  var hand = obj.hands[0];
+
+  var x = hand.palmPosition.x;
+  var y = hand.palmPosition.y;
+  var z = hand.palmPosition.z;
+
+  var hue = Math.round(x/2) % 360;
+  var saturation = Math.round(y/3);
+
+  document.body.style.background = "hsl(" + hue + "," + saturation + "%,50%)";
+});
+</script>
+<style>
+html, body { width:100%; height:100%; margin: 0; padding: 0}
+</style>

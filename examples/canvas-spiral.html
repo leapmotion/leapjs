@@ -1,0 +1,39 @@
+<canvas id="picture"></canvas>
+<script src="../leap.js"></script>
+<script>
+var canvas = document.getElementById("picture");
+var width = canvas.width = document.body.clientWidth;
+var height = canvas.height = document.body.clientHeight;
+var ctx = canvas.getContext("2d");
+
+ctx.translate(width/2,height/2);
+ctx.save();
+
+Leap.loop(function(obj) {
+  if (obj.hands.length < 1) return;
+
+  var x = obj.hands[0].palmNormal.x;
+  var z = obj.hands[0].palmNormal.z;
+
+  ctx.restore();
+  ctx.fillStyle = "rgba(255,255,255,0.4)";
+  ctx.fillRect(-width/2,-height/2,width,height);
+  ctx.save();
+
+  for (var i = 0; i<100; i++) {
+    var saturation = Math.round(Math.abs(90*z));
+    ctx.fillStyle = "hsl(" + i + "," + saturation + "%,40%)";
+    ctx.translate(i,0);
+    ctx.rotate(x*Math.PI/5);
+    ctx.fillRect(0,0,8+i/10,8+i/10);
+  }
+});
+</script>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>

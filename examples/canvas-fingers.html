@@ -1,0 +1,41 @@
+<canvas id="leap-overlay"></canvas>
+<script src="../leap.js"></script>
+<script>
+var canvas = document.getElementById("leap-overlay");
+
+// fullscreen
+canvas.width = document.body.clientWidth;
+canvas.height = document.body.clientHeight;
+
+// create a rendering context
+var ctx = canvas.getContext("2d");
+ctx.translate(canvas.width/2,canvas.height);
+ctx.fillStyle = "rgba(0,0,0,0.7)";
+
+// render each frame
+function draw(obj) {
+  // clear last frame
+  ctx.clearRect(-canvas.width/2,-canvas.height,canvas.width,canvas.height);
+
+  // render circles based on pointable positions
+  var pointablesMap = obj.pointablesMap;
+  for (var i in pointablesMap) {
+    // get the pointable's position
+    var pointable = pointablesMap[i];
+    var pos = pointable.tipPosition;
+
+    // create a circle for each pointable
+    var radius = Math.min(600/Math.abs(pos.z),20);
+    ctx.beginPath();
+    ctx.arc(pos.x-radius/2,-pos.y-radius/2,radius,0,2*Math.PI);
+    ctx.fill();
+  }
+};
+
+// listen to Leap Motion
+Leap.loop(draw);
+</script>
+<style>
+html, body { width: 100%; height: 100%; margin: 0; padding: 0}
+#leap-overlay { position: fixed; top: 0; left: 0;}
+</style>
