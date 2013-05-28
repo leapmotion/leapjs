@@ -7,7 +7,7 @@ Welcome to the Leap JavaScript framework. This is intended for use with the Leap
 ## Resources
 
 * [API Documentation](http://leapmotion.github.io/leapjs/)
-* [Examples](http://bl.ocks.org/leapjs)
+* [Examples](http://leapmotion.github.io/leapjs/examples/)
 
 ## Installation
 
