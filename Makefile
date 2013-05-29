@@ -33,7 +33,8 @@ docs-clone:
 	git clone -b gh-pages git@github.com:leapmotion/leapjs.git docs-repo
 
 docs-build:
-	./node_modules/jsdoc/jsdoc -c jsdoc_conf.json lib README.md -d docs-repo
+	if ! test -d './node_modules/jsdoc/templates/jsdoc3Template'; then cp -r ./docs-repo/templates/jsdoc3Template ./node_modules/jsdoc/templates/jsdoc3Template; fi
+	./node_modules/jsdoc/jsdoc -c jsdoc_conf.json lib README.md -d docs-repo -t ./node_modules/jsdoc/templates/jsdoc3Template
 
 docs-commit:
 	cd docs-repo
