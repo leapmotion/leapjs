@@ -45,7 +45,7 @@ Leap.loop(function(frame) {
 ```
 
 As well, you can call a special version of `Leap.loop` where you provide a second argument to the callback.
-This allows you to wait until you're ready to receieve further frame events. Here is an exmaple of
+This allows you to wait until you're ready to receieve further frame events. Here is an example of
 this approach.
 
 ```javascript
@@ -120,7 +120,7 @@ Inside the examples directory are a few great examples. To get them running, do 
 
 ### Node.js example
 
-To run the node.js example, run `node exmaples/node.js`.
+To run the node.js example, run `node examples/node.js`.
 
 ## Development
 
