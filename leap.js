@@ -3642,7 +3642,73 @@ Hand.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],23:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Connection = exports.Connection = function(opts) {
+  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(opts.enableGestures);
+  });
+}
+
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this;
+  setTimeout(function() { connection.connect() }, 1000);
+}
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  this.socket = undefined;
+  this.protocol = undefined;
+}
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) {
+    this.teardownSocket();
+  }
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"events":16,"./protocol":23,"underscore":22}],24:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -3995,28 +4061,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],21:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
-
-var Connection = exports.Connection = require('./base_connection').Connection
-
-Connection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
-}
-
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
-}
-},{"./frame":6,"./base_connection":17,"ws":24}],25:[function(require,module,exports){
+},{"events":16}],23:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4038,81 +4083,28 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"util":23,"./frame":6}],17:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
+},{"util":24,"./frame":6}],21:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , WebSocket = require('ws')
 
-var Connection = exports.Connection = function(opts) {
-  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(opts.enableGestures);
-  });
-}
+var Connection = exports.Connection = require('./base_connection').Connection
 
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
+Connection.prototype.setupSocket = function() {
   var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
+  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
+  socket.on('open', function() { connection.handleOpen() });
+  socket.on('message', function(m) { connection.handleData(m) });
+  socket.on('close', function() { connection.handleClose() });
+  socket.on('error', function() { connection.startReconnection() });
+  return socket;
 }
 
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  this.socket = undefined;
-  this.protocol = undefined;
+Connection.prototype.teardownSocket = function() {
+  this.socket.close();
+  delete this.socket;
+  delete this.protocol;
 }
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) {
-    this.teardownSocket();
-  }
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"events":16,"./protocol":25,"underscore":22}],24:[function(require,module,exports){
-(function(global){/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-})(window)
-},{}],18:[function(require,module,exports){
+},{"./frame":6,"./base_connection":17,"ws":25}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -4201,5 +4193,13 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":22}]},{},[1,2,3])
+},{"events":16,"../vector":10,"underscore":22}],25:[function(require,module,exports){
+(function(global){/// shim for browser packaging
+
+module.exports = function() {
+  return global.WebSocket || global.MozWebSocket;
+}
+
+})(window)
+},{}]},{},[1,2,3])
 ;
