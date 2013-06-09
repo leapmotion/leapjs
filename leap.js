@@ -474,122 +474,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],10:[function(require,module,exports){
-var Vector = exports.Vector = function(data){
-	
-	if(data == null){
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
-	}
-	else if("x" in data){
-		this.x = data.x;
-		this.y = data.y;
-		this.z = data.z;
-	}
-	else if("0" in data){
-		this.x = (typeof(data[0]) == "number")?data[0]:0;
-		this.y = (typeof(data[1]) == "number")?data[1]:0;
-		this.z = (typeof(data[2]) == "number")?data[2]:0;
-	}
-};
-
-Vector.prototype = {
-	
-	angleTo : function(other){
-		var denom = this.magnitude()*other.magnitude();
-		if(denom > 0) return Math.acos(this.dot(other)/denom);
-		else return 0;
-	},
-	
-	cross : function(other){
-		var x = this.y*other.z - other.y*this.z;
-		var y = this.x*other.z - other.x*this.z;
-		var z = this.x*other.y - other.x*this.y;
-		return new Vector([x,y,z]);
-	},
-	
-	distanceTo : function(other){
-		return this.minus(other).magnitude();
-	},
-	
-	dot : function(other){
-		return this.x*other.x + this.y*other.y + this.z*other.z;
-	},
-	
-	plus : function(other){
-		return new Vector([this.x + other.x,this.y + other.y,this.z + other.z]);
-	},
-	
-	minus : function(other){
-		return new Vector([this.x - other.x,this.y - other.y,this.z - other.z]);
-	},
-	
-	multiply : function(scalar){
-		return new Vector([this.x*scalar,this.y*scalar,this.z*scalar]);
-	},
-	
-	dividedBy : function(scalar){
-		return new Vector([this.x/scalar,this.y/scalar,this.z/scalar]);
-	},
-	
-	magnitude : function(){
-		return Math.sqrt(this.magnitudeSquared());
-	},
-	
-	magnitudeSquared : function(){
-		return Math.pow(this.x,2) + Math.pow(this.y,2) + Math.pow(this.z,2);
-	},
-	
-	normalized : function(){
-		var magnitude = this.magnitude();
-		if(magnitude > 0) return this.dividedBy(magnitude);
-		else return new Vector();
-	},
-	
-	pitch : function(){
-		return Math.atan2(this.y, -this.z);
-	},
-	
-	roll : function(){
-		return Math.atan2(this.x, -this.y);
-	},
-	
-	yaw : function(){
-		return Math.atan2(this.x, -this.z);
-	},
-	
-	toArray : function(){
-		return [this.x, this.y, this.z];
-	},
-	
-	toString : function(){
-		return "{x:"+this.x+",y:"+this.y+",z:"+this.z+"}";
-	},
-	
-	compare : function(other){
-		return this.x==other.x && this.y==other.y && this.z==other.z;
-	},
-	
-	isValid : function(){
-		return (this.x != NaN && this.x > -Infinity && this.x < Infinity) &&
-			   (this.y != NaN && this.y > -Infinity && this.y < Infinity) &&
-			   (this.z != NaN && this.z > -Infinity && this.z < Infinity);
-	}
-};
-
-Vector.backward = function(){ return new Vector([0,0,1]); };
-Vector.down = function(){ return new Vector([0,-1,0]); };
-Vector.forward = function(){ return new Vector([0,0,-1]); };
-Vector.left = function(){ return new Vector([-1,0,0]); };
-Vector.right = function(){ return new Vector([1,0,0]); };
-Vector.up = function(){ return new Vector([0,1,0]); };
-Vector.xAxis = function(){ return new Vector([1,0,0]); };
-Vector.yAxis = function(){ return new Vector([0,1,0]); };
-Vector.zAxis = function(){ return new Vector([0,0,1]); };
-Vector.zero = function(){ return new Vector([0,0,0]); };
-
-},{}],13:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],13:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -848,7 +733,9 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":15}],7:[function(require,module,exports){
+},{"__browserify_process":15}],17:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1370,130 +1257,6 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"./vector":10}],11:[function(require,module,exports){
-var Vector = require("./vector").Vector;
-
-var Matrix = exports.Matrix = function(data){
-	
-	if(data instanceof Matrix){
-		this.xBasis = new Vector(data.xBasis);
-		this.yBasis = new Vector(data.yBasis);
-		this.zBasis = new Vector(data.zBasis);
-		this.origin = new Vector(data.origin);
-	}
-	else if(data instanceof Array){
-		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
-			this.setRotation(data[0],data[1]);
-			this.origin = new Vector(data[2]);
-		}
-		else{
-			this.xBasis = new Vector(data[0]);
-			this.yBasis = new Vector(data[1]);
-			this.zBasis = new Vector(data[2]);
-			this.origin = new Vector(data[3]);
-		}
-	}
-	else{
-		this.xBasis = new Vector([1,0,0]);
-		this.yBasis = new Vector([0,1,0]);
-		this.zBasis = new Vector([0,0,1]);
-		this.origin = new Vector([0,0,0]);
-	}
-};
-
-Matrix.prototype = {
-	
-	setRotation : function(_axis, angle){
-		var axis = _axis.normalized();
-		var s = Math.sin(angle);
-		var c = Math.cos(angle);
-		var C = 1-c;
-		
-		this.xBasis = new Vector([axis.x*axis.x*C + c, axis.x*axis.y*C - axis.z*s, axis.x*axis.z*C + axis.y*s]);
-		this.yBasis = new Vector([axis.y*axis.x*C + axis.z*s, axis.y*axis.y*C + c, axis.y*axis.z*C - axis.x*s]);
-		this.zBasis = new Vector([axis.z*axis.x*C - axis.y*s, axis.z*axis.y*C + axis.x*s, axis.z*axis.z*C + c]);
-	},
-	
-	transformPoint : function(data){
-		return this.origin.plus(this.transformDirection(data));
-	},
-
-	transformDirection : function(data){
-		var x = this.xBasis.multiply(data.x);
-		var y = this.yBasis.multiply(data.y);
-		var z = this.zBasis.multiply(data.z);
-		return x.plus(y).plus(z);
-	},
-	
-	times : function(other){
-		var x = this.transformDirection(other.xBasis);
-		var y = this.transformDirection(other.yBasis);
-		var z = this.transformDirection(other.zBasis);
-		var o = this.transformPoint(other.origin);
-		return new Matrix([x,y,z,o]);
-	},
-	
-	rigidInverse : function(){
-		var x = new Vector([this.xBasis.x, this.yBasis.x, this.zBasis.x]);
-		var y = new Vector([this.xBasis.y, this.yBasis.y, this.zBasis.y]);
-		var z = new Vector([this.xBasis.z, this.yBasis.z, this.zBasis.z]);
-		var rotInverse = new Matrix([x,y,z]);
-		rotInverse.origin = rotInverse.transformDirection(Vector.zero().minus(this.origin));
-		return rotInverse;
-	},
-	
-	toArray3x3 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this.xBasis.x;
-		output[1] = this.xBasis.y;
-		output[2] = this.xBasis.z;
-		output[3] = this.yBasis.x;
-		output[4] = this.yBasis.y;
-		output[5] = this.yBasis.z;
-		output[6] = this.zBasis.x;
-		output[7] = this.zBasis.y;
-		output[8] = this.zBasis.z;
-		return output;
-	},
-	
-	toArray4x4 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this.xBasis.x;
-		output[1] = this.xBasis.y;
-		output[2] = this.xBasis.z;
-		output[3] = 0;
-		output[4] = this.yBasis.x;
-		output[5] = this.yBasis.y;
-		output[6] = this.yBasis.z;
-		output[7] = 0;
-		output[8] = this.zBasis.x;
-		output[9] = this.zBasis.y;
-		output[10] = this.zBasis.z;
-		output[11] = 0;
-		output[12] = this.origin.x;
-		output[13] = this.origin.y;
-		output[14] = this.origin.z;
-		output[15] = 1;
-		return output;
-	},
-	
-	toString : function(){
-		return "{xBasis:"+this.xBasis+",yBasis:"+this.yBasis+
-		",zBasis:"+this.zBasis+",origin:"+this.origin+"}";
-	},
-	
-	compare : function(other){
-		return this.xBasis.compare(other.xBasis) && 
-		this.yBasis.compare(other.yBasis) && 
-		this.zBasis.compare(other.zBasis) && 
-		this.origin.compare(other.origin);
-	}
-};
-
-Matrix.identity = function(){ return new Matrix(); };
-
 },{"./vector":10}],12:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
@@ -1511,12 +1274,12 @@ Connection.prototype.teardownSocket = function() {
   delete this.socket;
   delete this.protocol;
 }
-},{"./base_connection":17}],14:[function(require,module,exports){
+},{"./base_connection":18}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/region":18,"./ui/cursor":19}],20:[function(require,module,exports){
+},{"./ui/region":19,"./ui/cursor":20}],21:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -1534,7 +1297,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1666,7 +1429,7 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":16,"./frame":6,"./circular_buffer":13,"./pipeline":20,"./connection":12,"./node_connection":21,"underscore":22}],6:[function(require,module,exports){
+},{"events":16,"./node_connection":17,"./frame":6,"./circular_buffer":13,"./pipeline":21,"./connection":12,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -2091,7 +1854,310 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
+},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],11:[function(require,module,exports){
+var Vector = require("./vector").Vector,
+    _ = require('underscore');
+
+/**
+ * Constructs a Matrix object.
+ *
+ * Creates a new Matrix from the specified Array of Vectors or Matrix. 
+ * The default constructor creates an identity matrix.
+ *
+ * @class Matrix
+ * @memberof Leap
+ * @classdesc
+ * The Matrix object represents a transformation matrix. 
+ * 
+ * To use this object to transform a Vector, construct a matrix 
+ * containing the desired transformation and then use the 
+ * [Matrix.transformPoint]{@link Leap.Matrix#transformPoint}() or 
+ * [Matrix.transformDirection]{@link Leap.Matrix#transformDirection}() functions 
+ * to apply the transform.
+ * 
+ * Transforms can be combined by multiplying two or more transform 
+ * matrices using the times function. 
+ */
+var Matrix = exports.Matrix = function(data){
+	
+	if(data instanceof Matrix){
+		this[0] = new Vector(data.xBasis);
+		this[1] = new Vector(data.yBasis);
+		this[2] = new Vector(data.zBasis);
+		this[3] = new Vector(data.origin);
+	}
+	else if(data instanceof Array){
+		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
+			this.setRotation(data[0],data[1]);
+			this[3] = new Vector(data[2]);
+		}
+		else{
+			this[0] = new Vector(data[0]);
+			this[1] = new Vector(data[1]);
+			this[2] = new Vector(data[2]);
+			this[3] = new Vector(data[3]);
+		}
+	}
+	else{
+		this[0] = new Vector([1,0,0]);
+		this[1] = new Vector([0,1,0]);
+		this[2] = new Vector([0,0,1]);
+		this[3] = new Vector([0,0,0]);
+	}
+	
+	this.length = 4;
+
+	/**
+	 * The rotation and scale factors for the x-axis.
+	 * @member xBasis
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	/**
+	 * The rotation and scale factors for the x-axis.
+	 * @member [0]
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	this.xBasis = this[0];
+
+	/**
+	 * The rotation and scale factors for the y-axis.
+	 * @member yBasis
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	/**
+	 * The rotation and scale factors for the y-axis.
+	 * @member [1]
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	this.yBasis = this[1];
+
+	/**
+	 * The rotation and scale factors for the z-axis.
+	 * @member zBasis
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	/**
+	 * The rotation and scale factors for the z-axis.
+	 * @member [2]
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	this.zBasis = this[2];
+
+	/**
+	 * The translation factors for all three axes. 
+	 * @member origin
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	/**
+	 * The translation factors for all three axes. 
+	 * @member [3]
+	 * @memberof Leap.Matrix.prototype
+	 * @type {Leap.Vector}
+	 */
+	this.origin = this[3];
+};
+
+var MatrixPrototype = {
+	
+	/**
+	 * Sets this transformation matrix to represent a rotation around 
+	 * the specified vector.
+	 * 
+	 * This function erases any previous rotation and scale transforms 
+	 * applied to this matrix, but does not affect translation.
+	 * 
+	 * @method setRotation
+	 * @memberof Leap.Matrix.prototype
+	 * @param {Leap.Vector} _axis A Vector specifying the axis of rotation.
+	 * @param {float} angleRadians The amount of rotation in radians. 
+	 */
+	setRotation : function(_axis, angle){
+		var axis = _axis.normalized();
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
+		var C = 1-c;
+		
+		this[0] = new Vector([axis[0]*axis[0]*C + c, axis[0]*axis[1]*C - axis[2]*s, axis[0]*axis[2]*C + axis[1]*s]);
+		this[1] = new Vector([axis[1]*axis[0]*C + axis[2]*s, axis[1]*axis[1]*C + c, axis[1]*axis[2]*C - axis[0]*s]);
+		this[2] = new Vector([axis[2]*axis[0]*C - axis[1]*s, axis[2]*axis[1]*C + axis[0]*s, axis[2]*axis[2]*C + c]);
+	},
+	
+	/**
+	 * Transforms a vector with this matrix by transforming its 
+	 * rotation, scale, and translation. 
+	 * 
+	 * Translation is applied after rotation and scale.
+	 * 
+	 * @method transformPoint
+	 * @memberof Leap.Matrix.prototype
+	 * @param {Leap.Vector} in The Vector to transform.  
+	 * @returns {Leap.Vector} A new Vector representing the transformed original.
+	 */
+	transformPoint : function(data){
+		return this[3].plus(this.transformDirection(data));
+	},
+
+	/**
+	 * Transforms a vector with this matrix by transforming its 
+	 * rotation and scale only.
+	 * 
+	 * @method transformDirection
+	 * @memberof Leap.Matrix.prototype
+	 * @param {Leap.Vector} in The Vector to transform.  
+	 * @returns {Leap.Vector} A new Vector representing the transformed original.
+	 */
+	transformDirection : function(data){
+		var x = this[0].multiply(data[0]);
+		var y = this[1].multiply(data[1]);
+		var z = this[2].multiply(data[2]);
+		return x.plus(y).plus(z);
+	},
+	
+	/**
+	 * Multiply transform matrices.
+	 * 
+	 * Combines two transformations into a single equivalent transformation.
+	 * 
+	 * @method times
+	 * @memberof Leap.Matrix.prototype
+	 * @param {Matrix} other A Matrix to multiply on the right hand side. 
+	 * @returns {Leap.Matrix} A new Matrix representing the transformation 
+	 * equivalent to applying the other transformation followed by this transformation.
+	 */
+	times : function(other){
+		var x = this.transformDirection(other[0]);
+		var y = this.transformDirection(other[1]);
+		var z = this.transformDirection(other[2]);
+		var o = this.transformPoint(other[3]);
+		return new Matrix([x,y,z,o]);
+	},
+	
+	/**
+	 * Performs a matrix inverse if the matrix consists entirely of 
+	 * rigid transformations (translations and rotations). 
+	 * 
+	 * If the matrix is not rigid, this operation will not represent an inverse.
+	 * 
+	 * Note that all matricies that are directly returned by the API are rigid.
+	 * 
+	 * @method rigidInverse
+	 * @memberof Leap.Matrix.prototype
+	 * @returns {Leap.Matrix} The rigid inverse of the matrix.
+	 */
+	rigidInverse : function(){
+		var x = new Vector([this[0][0], this[1][0], this[2][0]]);
+		var y = new Vector([this[0][1], this[1][1], this[2][1]]);
+		var z = new Vector([this[0][2], this[1][2], this[2][2]]);
+		var rotInverse = new Matrix([x,y,z]);
+		rotInverse[3] = rotInverse.transformDirection(Vector.zero().minus(this[3]));
+		return rotInverse;
+	},
+	
+	/**
+	 * Writes the 3x3 Matrix object to a 9 element row-major float array. 
+	 * 
+	 * Translation factors are discarded.
+	 * 
+	 * @method toArray3x3
+	 * @memberof Leap.Matrix.prototype
+	 * @returns {Array} The rotation Matrix as a flattened array.
+	 */
+	toArray3x3 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this[0][0];
+		output[1] = this[0][1];
+		output[2] = this[0][2];
+		output[3] = this[1][0];
+		output[4] = this[1][1];
+		output[5] = this[1][2];
+		output[6] = this[2][0];
+		output[7] = this[2][1];
+		output[8] = this[2][2];
+		return output;
+	},
+	
+	/**
+	 * Convert a 4x4 Matrix object to a 16 element row-major float array. 
+	 * 
+	 * Translation factors are discarded.
+	 * 
+	 * @method toArray4x4
+	 * @memberof Leap.Matrix.prototype
+	 * @returns {Array} The entire Matrix as a flattened array.
+	 */
+	toArray4x4 : function(output){
+		if(output == null) output = [];
+		else output.length = 0;
+		output[0] = this[0][0];
+		output[1] = this[0][1];
+		output[2] = this[0][2];
+		output[3] = 0;
+		output[4] = this[1][0];
+		output[5] = this[1][1];
+		output[6] = this[1][2];
+		output[7] = 0;
+		output[8] = this[2][0];
+		output[9] = this[2][1];
+		output[10] = this[2][2];
+		output[11] = 0;
+		output[12] = this[3][0];
+		output[13] = this[3][1];
+		output[14] = this[3][2];
+		output[15] = 1;
+		return output;
+	},
+	
+	/**
+	 * Write the matrix to a string in a human readable format. 
+	 * 
+	 * @method toString
+	 * @memberof Leap.Matrix.prototype
+	 * @returns {String}
+	 */
+	toString : function(){
+		return "{xBasis:"+this[0]+",yBasis:"+this[1]+
+		",zBasis:"+this[2]+",origin:"+this[3]+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	/**
+	 * Compare Matrix equality component-wise. 
+	 * 
+	 * @method compare
+	 * @memberof Leap.Matrix.prototype
+	 * @returns {Boolean}
+	 */
+	compare : function(other){
+		return this[0].compare(other[0]) && 
+		this[1].compare(other[1]) && 
+		this[2].compare(other[2]) && 
+		this[3].compare(other[3]);
+	}
+};
+
+Matrix.prototype = new Array;
+_.extend(Matrix.prototype, MatrixPrototype);
+
+/**
+ * Returns the identity matrix specifying no translation, rotation, and scale.
+ *
+ * @static
+ * @type {Leap.Matrix}
+ * @name identity
+ * @memberof Leap.Matrix
+ */
+Matrix.identity = function(){ return new Matrix(); };
+
+},{"./vector":10,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2413,7 +2479,474 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],22:[function(require,module,exports){
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
+var _ = require('underscore');
+
+/**
+ * Constructs a Vector object.
+ *
+ * Creates a new Vector from the specified Array or Vector. 
+ * The default constructor sets all components to zero.
+ *
+ * @class Vector
+ * @memberof Leap
+ * @classdesc
+ * The Vector object represents a three-component mathematical vector or point 
+ * such as a direction or position in three-dimensional space.
+ * 
+ * The Leap software employs a right-handed Cartesian coordinate system. 
+ * Values given are in units of real-world millimeters. The origin is 
+ * centered at the center of the Leap device. The x- and z-axes lie in the 
+ * horizontal plane, with the x-axis running parallel to the long edge of 
+ * the device. The y-axis is vertical, with positive values increasing upwards 
+ * (in contrast to the downward orientation of most computer graphics 
+ * coordinate systems). The z-axis has positive values increasing away from the 
+ * computer screen.
+ */
+var Vector = exports.Vector = function(data){
+	
+	if(data == null){
+		this[0] = 0;
+		this[1] = 0;
+		this[2] = 0;
+	}
+	else if("x" in data){
+		this[0] = data[0];
+		this[1] = data[1];
+		this[2] = data[2];
+	}
+	else if("0" in data){
+		this[0] = (typeof(data[0]) == "number")?data[0]:0;
+		this[1] = (typeof(data[1]) == "number")?data[1]:0;
+		this[2] = (typeof(data[2]) == "number")?data[2]:0;
+	}
+	
+	this.length = 3;
+	/**
+	 * The horizontal component.
+	 * @member x
+	 * @memberof Leap.Vector.prototype
+	 * @type {Float}
+	 */
+	/**
+	 * The horizontal component.
+	 * @member [0]
+	 * @memberof Leap.Vector.prototype
+	 * @type {Float}
+	 */
+	this.x = this[0];
+	/**
+	 * The vertical component.
+	 * @member y
+	 * @memberof Leap.Vector.prototype
+	 * @type {Float}
+	 */
+	/**
+	 * The vertical component.
+	 * @member [1]
+	 * @memberof Leap.Vector.prototype
+	 * @type {Float}
+	 */
+	this.y = this[1];
+	/**
+	 * The depth component.
+	 * @member z
+	 * @memberof Leap.Vector.prototype
+	 * @type {Float}
+	 */
+	/**
+	 * The depth component.
+	 * @member [2]
+	 * @memberof Leap.Vector.prototype
+	 * @type {Float}
+	 */
+	this.z = this[2];
+};
+
+var VectorPrototype = {
+	/**
+	 * The angle between this vector and the specified vector in radians.
+	 * 
+	 * The angle is measured in the plane formed by the two vectors. 
+	 * The angle returned is always the smaller of the two conjugate angles. 
+	 * Thus A.angleTo(B) == B.angleTo(A) and is always a positive value less 
+	 * than or equal to pi radians (180 degrees).
+	 * 
+	 * If either vector has zero length, then this function returns zero.
+	 * 
+	 * ![Vector AngleTo](images/Math_AngleTo.png)
+	 * 
+	 * @method AngleTo
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Float} The angle between this vector and the specified 
+	 * vector in radians. 
+	 */
+	angleTo : function(other){
+		var denom = this.magnitude()*other.magnitude();
+		if(denom > 0) return Math.acos(this.dot(other)/denom);
+		else return 0;
+	},
+	
+	/**
+	 * The cross product of this vector and the specified vector.
+	 * 
+	 * The cross product is a vector orthogonal to both original vectors. 
+	 * It has a magnitude equal to the area of a parallelogram having the 
+	 * two vectors as sides. The direction of the returned vector is 
+	 * determined by the right-hand rule. Thus A.cross(B) == -B.cross(A).
+	 * 
+	 * ![Vector Cross](images/Math_Cross.png)
+	 * 
+	 * @method Cross
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Leap.Vector} The cross product of this vector and the 
+	 * specified vector. 
+	 */
+	cross : function(other){
+		var x = this[1]*other[2] - other[1]*this[2];
+		var y = this[0]*other[2] - other[0]*this[2];
+		var z = this[0]*other[1] - other[0]*this[1];
+		return new Vector([x,y,z]);
+	},
+	
+	/**
+	 * The distance between the point represented by this Vector object 
+	 * and a point represented by the specified Vector object. 
+	 * 
+	 * @method distanceTo
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Float} The distance from this point to the specified point.
+	 */
+	distanceTo : function(other){
+		return this.minus(other).magnitude();
+	},
+	
+	/**
+	 * The dot product of this vector with another vector.
+	 * 
+	 * The dot product is the magnitude of the projection of this vector onto 
+	 * the specified vector.
+	 * 
+	 * ![Vector Dot](images/Math_Dot.png)
+	 * 
+	 * @method dot
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Float} The dot product of this vector and the specified vector.
+	 */
+	dot : function(other){
+		return this[0]*other[0] + this[1]*other[1] + this[2]*other[2];
+	},
+	
+	/**
+	 * Add vectors component-wise.
+	 * 
+	 * @method plus
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Leap.Vector}
+	 */
+	plus : function(other){
+		return new Vector([this[0] + other[0],this[1] + other[1],this[2] + other[2]]);
+	},
+	
+	/**
+	 * Subtract vectors component-wise.
+	 * 
+	 * @method minus
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Leap.Vector}
+	 */
+	minus : function(other){
+		return new Vector([this[0] - other[0],this[1] - other[1],this[2] - other[2]]);
+	},
+	
+	/**
+	 * Multiply vector by a scalar.
+	 * 
+	 * @method multiply
+	 * @memberof Leap.Vector.prototype
+	 * @param {Float} scalar
+	 * @returns {Leap.Vector}
+	 */
+	multiply : function(scalar){
+		return new Vector([this[0]*scalar,this[1]*scalar,this[2]*scalar]);
+	},
+	
+	/**
+	 * Divide vector by a scalar.
+	 * 
+	 * @method dividedBy
+	 * @memberof Leap.Vector.prototype
+	 * @param {Float} scalar
+	 * @returns {Leap.Vector}
+	 */
+	dividedBy : function(scalar){
+		return new Vector([this[0]/scalar,this[1]/scalar,this[2]/scalar]);
+	},
+	
+	/**
+	 * The magnitude, or length, of this vector.
+	 * 
+	 * The magnitude is the L2 norm, or Euclidean distance between the 
+	 * origin and the point represented by the (x, y, z) components of 
+	 * this Vector object.
+	 * 
+	 * @method magnitude
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Float} The length of this vector.
+	 */
+	magnitude : function(){
+		return Math.sqrt(this.magnitudeSquared());
+	},
+	
+	/**
+	 * The square of the magnitude, or length, of this vector.
+	 * 
+	 * @method magnitudeSquared
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Float} The square of the length of this vector. 
+	 */
+	magnitudeSquared : function(){
+		return Math.pow(this[0],2) + Math.pow(this[1],2) + Math.pow(this[2],2);
+	},
+	
+	/**
+	 * A normalized copy of this vector.
+	 * 
+	 * A normalized vector has the same direction as the original 
+	 * vector, but with a length of one.
+	 * 
+	 * @method normalized
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Leap.Vector} A Vector object with a length of one, 
+	 * pointing in the same direction as this Vector object. 
+	 */
+	normalized : function(){
+		var magnitude = this.magnitude();
+		if(magnitude > 0) return this.dividedBy(magnitude);
+		else return new Vector();
+	},
+	
+	/**
+	 * The pitch angle in radians.
+	 * 
+	 * Pitch is the angle between the negative z-axis and the projection 
+	 * of the vector onto the y-z plane. In other words, pitch represents 
+	 * rotation around the x-axis. If the vector points upward, the 
+	 * returned angle is between 0 and pi radians (180 degrees); if it 
+	 * points downward, the angle is between 0 and -pi radians.
+	 * 
+	 * ![Vector Pitch](images/Math_Pitch_Angle.png)
+	 * 
+	 * @method pitch
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Float} The angle of this vector above or below the 
+	 * horizon (x-z plane). 
+	 */
+	pitch : function(){
+		return Math.atan2(this[1], -this[2]);
+	},
+	
+	/**
+	 * The roll angle in radians.
+	 * 
+	 * Roll is the angle between the y-axis and the projection of 
+	 * the vector onto the x-y plane. In other words, roll represents 
+	 * rotation around the z-axis. If the vector points to the left 
+	 * of the y-axis, then the returned angle is between 0 and pi 
+	 * radians (180 degrees); if it points to the right, the angle is 
+	 * between 0 and -pi radians.
+	 * 
+	 * ![Vector Roll](images/Math_Roll_Angle.png)
+	 * 
+	 * Use this function to get roll angle of the plane to which this 
+	 * vector is a normal. For example, if this vector represents the 
+	 * normal to the palm, then this function returns the tilt or roll 
+	 * of the palm plane compared to the horizontal (x-z) plane.
+	 * 
+	 * @method roll
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Float} The angle of this vector above or below the 
+	 * horizon (x-z plane). 
+	 */
+	roll : function(){
+		return Math.atan2(this[0], -this[1]);
+	},
+	
+	/**
+	 * The yaw angle in radians. 
+	 * 
+	 * Yaw is the angle between the negative z-axis and the projection 
+	 * of the vector onto the x-z plane. In other words, yaw represents 
+	 * rotation around the y-axis. If the vector points to the right 
+	 * of the negative z-axis, then the returned angle is between 0 and 
+	 * pi radians (180 degrees); if it points to the left, the angle 
+	 * is between 0 and -pi radians.
+	 * 
+	 * ![Vector Roll](images/Math_Yaw_Angle.png)
+	 * 
+	 * @method yaw
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Float} The angle of this vector to the right or left 
+	 * of the negative z-axis. 
+	 */
+	yaw : function(){
+		return Math.atan2(this[0], -this[2]);
+	},
+	
+	/**
+	 * Returns the vector as a float array.
+	 * 
+	 * @method toArray
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Float[]}
+	 */
+	toArray : function(){
+		return [this[0], this[1], this[2]];
+	},
+	
+	/**
+	 * Returns a string containing this vector in a human readable 
+	 * format: (x, y, z). 
+	 * 
+	 * @method toString
+	 * @memberof Leap.Vector.prototype
+	 * @returns {String}
+	 */
+	toString : function(){
+		return "{x:"+this[0]+",y:"+this[1]+",z:"+this[2]+"}";
+	},
+	
+	toSource : function(){ this.toString(); },
+	
+	/**
+	 * Compare Vector equality component-wise.
+	 * 
+	 * @method compare
+	 * @memberof Leap.Vector.prototype
+	 * @param {Leap.Vector} other A Vector object.
+	 * @returns {Boolean}
+	 */
+	compare : function(other){
+		return this[0]==other[0] && this[1]==other[1] && this[2]==other[2];
+	},
+	
+	/**
+	 * Returns true if all of the vector's components are finite.
+	 *
+	 * If any component is NaN or infinite, then this returns false.
+	 * 
+	 * @method isValid
+	 * @memberof Leap.Vector.prototype
+	 * @returns {Boolean}
+	 */
+	isValid : function(){
+		return (this[0] != NaN && this[0] > -Infinity && this[0] < Infinity) &&
+				 (this[1] != NaN && this[1] > -Infinity && this[1] < Infinity) &&
+			   (this[2] != NaN && this[2] > -Infinity && this[2] < Infinity);
+	}
+};
+
+Vector.prototype = new Array;
+_.extend(Vector.prototype, VectorPrototype);
+
+/**
+ * The unit vector pointing backward along the positive z-axis: (0, 0, 1)
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name backward
+ * @memberof Leap.Vector
+ */
+Vector.backward = function(){ return new Vector([0,0,1]); };
+/**
+ * The unit vector pointing down along the negative y-axis: (0, -1, 0) 
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name down
+ * @memberof Leap.Vector
+ */
+Vector.down = function(){ return new Vector([0,-1,0]); };
+/**
+ * The unit vector pointing forward along the negative z-axis: (0, 0, -1) 
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name forward
+ * @memberof Leap.Vector
+ */
+Vector.forward = function(){ return new Vector([0,0,-1]); };
+/**
+ * The unit vector pointing left along the negative x-axis: (-1, 0, 0) 
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name left
+ * @memberof Leap.Vector
+ */
+Vector.left = function(){ return new Vector([-1,0,0]); };
+/**
+ * The unit vector pointing right along the positive x-axis: (1, 0, 0) 
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name right
+ * @memberof Leap.Vector
+ */
+Vector.right = function(){ return new Vector([1,0,0]); };
+/**
+ * The unit vector pointing up along the positive y-axis: (0, 1, 0) 
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name up
+ * @memberof Leap.Vector
+ */
+Vector.up = function(){ return new Vector([0,1,0]); };
+/**
+ * The x-axis unit vector: (1, 0, 0)
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name xAxis
+ * @memberof Leap.Vector
+ */
+Vector.xAxis = function(){ return new Vector([1,0,0]); };
+/**
+ * The y-axis unit vector: (0, 1, 0)
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name yAxis
+ * @memberof Leap.Vector
+ */
+Vector.yAxis = function(){ return new Vector([0,1,0]); };
+/**
+ * The z-axis unit vector: (0, 0, 1)
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name zAxis
+ * @memberof Leap.Vector
+ */
+Vector.zAxis = function(){ return new Vector([0,0,1]); };
+/**
+ * The zero vector: (0, 0, 0)
+ *
+ * @static
+ * @type {Leap.Vector}
+ * @name zero
+ * @memberof Leap.Vector
+ */
+Vector.zero = function(){ return new Vector([0,0,0]); };
+
+},{"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3642,73 +4175,7 @@ Hand.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],17:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Connection = exports.Connection = function(opts) {
-  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(opts.enableGestures);
-  });
-}
-
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  this.socket = undefined;
-  this.protocol = undefined;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) {
-    this.teardownSocket();
-  }
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"events":16,"./protocol":23,"underscore":22}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -4061,7 +4528,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],23:[function(require,module,exports){
+},{"events":16}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4083,28 +4550,73 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"util":24,"./frame":6}],21:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , WebSocket = require('ws')
+},{"util":23,"./frame":6}],18:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
 
-var Connection = exports.Connection = require('./base_connection').Connection
+var Connection = exports.Connection = function(opts) {
+  opts = _.defaults(opts || {}, {host : '127.0.0.1', enableGestures: false, port: 6437});
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(opts.enableGestures);
+  });
+}
 
-Connection.prototype.setupSocket = function() {
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
   var connection = this;
-  var socket = new WebSocket("ws://" + this.host + ":" + this.port);
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
-  return socket;
+  setTimeout(function() { connection.connect() }, 1000);
 }
 
-Connection.prototype.teardownSocket = function() {
-  this.socket.close();
-  delete this.socket;
-  delete this.protocol;
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  this.socket = undefined;
+  this.protocol = undefined;
 }
-},{"./frame":6,"./base_connection":17,"ws":25}],18:[function(require,module,exports){
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) {
+    this.teardownSocket();
+  }
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"events":16,"./protocol":24,"underscore":22}],19:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -4193,13 +4705,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":22}],25:[function(require,module,exports){
-(function(global){/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-})(window)
-},{}]},{},[1,2,3])
+},{"events":16,"../vector":10,"underscore":22}]},{},[1,2,3])
 ;
