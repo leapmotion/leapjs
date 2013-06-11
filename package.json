@@ -8,19 +8,19 @@
   },
   "license": "BSD-2-Clause",
   "dependencies": {
-    "ws": "*"
+    "ws": "0.4.25",
+    "underscore": "1.4.4"
   },
   "devDependencies": {
-    "underscore": "*",
-    "browserify": "git://github.com/substack/node-browserify.git",
+    "underscore": "1.4.4",
+    "browserify": "2.18.1",
     "mocha": "1.7.4",
     "mocha-phantomjs": "3.0.0",
     "phantomjs": "1.9.0-6",
-    "http-server": "*",
-    "uglify-js": "*",
-    "chai": "*",
-    "mocha-phantomjs": "*",
-    "nodemon": "*",
-    "jsdoc": "git://github.com/jsdoc3/jsdoc.git"
+    "http-server": "0.5.3",
+    "uglify-js": "2.3.6",
+    "chai": "1.6.1",
+    "nodemon": "0.7.8",
+    "jsdoc": "3.2.0-dev"
   }
 }
