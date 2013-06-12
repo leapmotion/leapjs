@@ -1596,15 +1596,6 @@ var Frame = exports.Frame = function(data) {
    */
   this.timestamp = data.timestamp;
   /**
-   * The interaction box for this frame, which contains a center and a size
-   * 
-   * @type{Object}
-   */
-  this.interactionBox = {
-      center: new Vector(data.interactionBox.center),
-      size: new Vector(data.interactionBox.size)
-  }
-  /**
    * The list of Hand objects detected in this frame, given in arbitrary order.
    * The list can be empty if no hands are detected.
    *
@@ -1992,7 +1983,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./vector":10,"./pointable":9,"./gesture":7,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
+},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -4692,7 +4683,29 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],18:[function(require,module,exports){
+},{"events":16}],24:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , util = require('util');
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  switch(header.version) {
+    case 1:
+      var protocol = function(data) {
+        return new Frame(data);
+      }
+      protocol.encode = function(message) {
+        return util.format("%j", message);
+      }
+      protocol.version = 1;
+      protocol.versionLong = 'Version 1';
+      protocol.type = 'version';
+      return protocol;
+    default:
+      throw "unrecognized version";
+  }
+}
+
+},{"util":23,"./frame":6}],18:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -4758,29 +4771,7 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":24,"underscore":22}],24:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  switch(header.version) {
-    case 1:
-      var protocol = function(data) {
-        return new Frame(data);
-      }
-      protocol.encode = function(message) {
-        return util.format("%j", message);
-      }
-      protocol.version = 1;
-      protocol.versionLong = 'Version 1';
-      protocol.type = 'version';
-      return protocol;
-    default:
-      throw "unrecognized version";
-  }
-}
-
-},{"util":23,"./frame":6}],19:[function(require,module,exports){
+},{"events":16,"./protocol":24,"underscore":22}],19:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Vector = require('../vector').Vector
   , _ = require('underscore')
