@@ -1632,6 +1632,11 @@ var Frame = exports.Frame = function(data) {
    * @type {Leap.Pointable}
    */
 
+  this.interactionBox = {
+    center: new Vector(data.center),
+    size: new Vector(data.size)
+  }
+
   this.fingers = [];
   this.gestures = [];
   this.pointablesMap = {};
@@ -1983,7 +1988,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
+},{"./hand":8,"./pointable":9,"./vector":10,"./gesture":7,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2331,7 +2336,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
+},{"./vector":10,"./pointable":9,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
 var _ = require('underscore');
 
 /**
