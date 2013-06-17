@@ -7,7 +7,7 @@ var fingerId = 0
   , frameId =0;
 
 var fakeController = exports.fakeController = function(opts) {
-  opts = _.defaults(opts || {}, {supressAnimationLoop: false, frameEventName: "connectionFrame"})
+  opts = _.defaults(opts || {}, {supressAnimationLoop: false, frameEventName: "connectionFrame", enableHeartbeat:false})
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
 

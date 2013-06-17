@@ -40,4 +40,18 @@ describe('Connection', function(){
       connection.connect()
     })
   })
+
+  describe('heartbeating', function(){
+    it('should heartbeat', function(done){
+      var controller = fakeController({enableHeartbeat: true})
+      var connection = controller.connection
+      connection.on('ready', function() {
+        setTimeout(function() {
+          assert.deepEqual({}, connection.socket.messages[connection.socket.messages.length - 1]);
+          done();
+        }, 200)
+      })
+      connection.connect()
+    })
+  })
 })
