@@ -1452,8 +1452,8 @@ var Controller = exports.Controller = function(opts) {
   this.connection.on('ready', function() { controller.emit('ready') });
   this.connection.on('connect', function() { controller.emit('connect') });
   this.connection.on('disconnect', function() { controller.emit('disconnect') });
-  this.connection.on('active', function() { controller.emit('active') });
-  this.connection.on('inactive', function() { controller.emit('inactive') });
+  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('blur', function() { controller.emit('blur') });
 }
 
 Controller.prototype.inBrowser = function() {
