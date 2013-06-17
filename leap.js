@@ -1325,9 +1325,11 @@ Connection.prototype.startHeartbeat = function() {
   } else {
     propertyName = "hidden";
   }
+
+  var windowVisible = true;
+
   window.previousOnfocus = window.onfocus ? window.onfocus : null;
   window.previousOnblur = window.onblur ? window.onblur : null;
-  var windowVisible = document[propertyName] === false;
   window.onfocus = function() {
     if (window.previousOnfocus) window.previousOnfocus();
     windowVisible = true;
@@ -1344,7 +1346,11 @@ Connection.prototype.startHeartbeat = function() {
   });
   this.heartbeatTimer = setInterval(function() {
     var isVisible = document[propertyName] === false;
-    if (isVisible) connection.sendHeartbeat();
+    if (isVisible && windowVisible) {
+      connection.sendHeartbeat();
+    } else {
+      connection.setHeartbeatState(false);
+    }
   }, this.opts.heartbeatInterval);
 }
 
@@ -1446,6 +1452,8 @@ var Controller = exports.Controller = function(opts) {
   this.connection.on('ready', function() { controller.emit('ready') });
   this.connection.on('connect', function() { controller.emit('connect') });
   this.connection.on('disconnect', function() { controller.emit('disconnect') });
+  this.connection.on('active', function() { controller.emit('active') });
+  this.connection.on('inactive', function() { controller.emit('inactive') });
 }
 
 Controller.prototype.inBrowser = function() {
@@ -4751,6 +4759,7 @@ var Connection = exports.Connection = function(opts) {
 }
 
 Connection.prototype.sendHeartbeat = function() {
+  this.setHeartbeatState(true);
   this.send(this.protocol.encode({})); // it looks like a heart
 }
 
@@ -4808,6 +4817,13 @@ Connection.prototype.stopHeartbeat = function() {
   if (!this.heartbeatTimer) return;
   clearInterval(this.heartbeatTimer);
   delete this.heartbeatTimer;
+  this.setHeartbeatState(false);
+};
+
+Connection.prototype.setHeartbeatState = function(state) {
+  if (this.heartbeatState === state) return;
+  this.heartbeatState = state;
+  this.emit(this.heartbeatState ? 'focus' : 'blur');
 };
 
 _.extend(Connection.prototype, EventEmitter.prototype);
