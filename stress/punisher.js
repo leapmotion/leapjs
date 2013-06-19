@@ -6,7 +6,12 @@ setTimeout(function() {
 
 var controller = new Leap.Controller();
 
+controller.on('connect', function() {
+  console.log("connected")
+});
+
 controller.on('ready', function() {
+  console.log("ready")
   setInterval(function() {
     controller.connection.sendHeartbeat();
   }, 10);
