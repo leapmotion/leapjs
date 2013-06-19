@@ -14,7 +14,7 @@ controller.on('ready', function() {
   console.log("ready")
   setInterval(function() {
     controller.connection.sendHeartbeat();
-  }, 10);
+  }, 1);
 })
 
 controller.loop(function(frame) {
