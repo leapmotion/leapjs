@@ -48,7 +48,7 @@ describe('Connection', function(){
         var connection = controller.connection
         connection.on('focus', function() {
           setTimeout(function() {
-            assert.equal("{}", connection.socket.messages[connection.socket.messages.length - 1]);
+            assert.equal('{"heartbeat":true}', connection.socket.messages[connection.socket.messages.length - 1]);
             done();
           }, 200);
         })
