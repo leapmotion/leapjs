@@ -1312,6 +1312,7 @@ Connection.prototype.teardownSocket = function() {
 
 Connection.prototype.startHeartbeat = function() {
   if (this.heartbeatTimer) return;
+  if (!this.protocol.sendHeartbeat) return;
   var connection = this;
   var propertyName = null;
   if (typeof document.hidden !== "undefined") {
@@ -4715,22 +4716,35 @@ exports.format = function(f) {
 var Frame = require('./frame').Frame
   , util = require('util');
 
+var JSONProtocol = function(version) {
+  var protocol = function(data) {
+    return new Frame(data);
+  }
+  protocol.encode = function(message) {
+    return util.format("%j", message);
+  }
+  protocol.version = version;
+  protocol.versionLong = 'Version ' + version;
+  protocol.type = 'version';
+  return protocol;
+};
+
 var chooseProtocol = exports.chooseProtocol = function(header) {
+  var protocol;
   switch(header.version) {
     case 1:
-      var protocol = function(data) {
-        return new Frame(data);
+      protocol = JSONProtocol(1);
+      break;
+    case 2:
+      protocol = JSONProtocol(2);
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
       }
-      protocol.encode = function(message) {
-        return util.format("%j", message);
-      }
-      protocol.version = 1;
-      protocol.versionLong = 'Version 1';
-      protocol.type = 'version';
-      return protocol;
+      break;
     default:
       throw "unrecognized version";
   }
+  return protocol;
 }
 
 },{"util":23,"./frame":6}],18:[function(require,module,exports){
@@ -4760,7 +4774,7 @@ var Connection = exports.Connection = function(opts) {
 
 Connection.prototype.sendHeartbeat = function() {
   this.setHeartbeatState(true);
-  this.send(this.protocol.encode({heartbeat:true})); // it looks like a heart
+  this.protocol.sendHeartbeat(this);
 }
 
 Connection.prototype.handleOpen = function() {
