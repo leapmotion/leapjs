@@ -40,4 +40,20 @@ describe('Connection', function(){
       connection.connect()
     })
   })
+
+  if (typeof(window) === 'undefined') {
+    describe('heartbeating', function(){
+      it('should heartbeat', function(done){
+        var controller = fakeController({enableHeartbeat: true, version: 2})
+        var connection = controller.connection
+        connection.on('focus', function() {
+          setTimeout(function() {
+            assert.equal('{"heartbeat":true}', connection.socket.messages[connection.socket.messages.length - 1]);
+            done();
+          }, 200);
+        })
+        connection.connect()
+      })
+    })
+  }
 })
