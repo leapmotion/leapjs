@@ -1,5 +1,8 @@
 BROWSERIFY_ARGS=--ignore=./node_connection lib/websocketjs/swfobject.js lib/websocketjs/web_socket.js template/entry.js
 
+stress: stress/punisher.js
+	node stress/punisher.js
+
 serve:
 	./node_modules/.bin/http-server .
 
@@ -41,4 +44,5 @@ docs-commit:
 	git commit -a -m"regenerate docs"
 	git push origin gh-pages
 	cd ..
+
 

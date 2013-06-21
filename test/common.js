@@ -7,7 +7,7 @@ var fingerId = 0
   , frameId =0;
 
 var fakeController = exports.fakeController = function(opts) {
-  opts = _.defaults(opts || {}, {supressAnimationLoop: false, frameEventName: "connectionFrame"})
+  opts = _.defaults(opts || {}, {supressAnimationLoop: false, frameEventName: "connectionFrame", enableHeartbeat:false, version: 1})
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
 
@@ -30,7 +30,7 @@ var fakeController = exports.fakeController = function(opts) {
       }
     };
     connection.on('connect', function() {
-      connection.handleData(JSON.stringify({version: 1}))
+      connection.handleData(JSON.stringify({version: opts.version}))
     });
     return socket;
   }
