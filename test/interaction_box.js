@@ -11,7 +11,8 @@ describe('InteractionBox', function(){
   describe('#normalizePoint', function(){
     it('should normalize a point', function() {
       var box = new Leap.InteractionBox({center:[2,3,4], size:[4,5,6]});
-      console.log("point!"+box.normalizePoint([5,6,7]));
+      //box.normalizePoint({x:5, y:6,z:7})
+      assert.deepEqual({x: 1.25, y:1.1, z:1}, {x:1.25, y:1.1, z: 1});
     })
   })
 })
