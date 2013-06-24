@@ -1,4 +1,9 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
+	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
+*/
+var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
+},{}],2:[function(require,module,exports){
 (function(){// Copyright: Hiroshi Ichikawa <http://gimite.net/en/>
 // License: New BSD License
 // Reference: http://dev.w3.org/html5/websockets/
@@ -392,11 +397,6 @@
 })();
 
 })()
-},{}],2:[function(require,module,exports){
-/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
-	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
-*/
-var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
 },{}],3:[function(require,module,exports){
 window.requestAnimFrame = (function() {
   return  window.requestAnimationFrame ||
@@ -418,6 +418,7 @@ Leap = require("../lib/index").Leap
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
   , Connection = require("./connection").Connection
+  , InteractionBox = require("./interaction_box").InteractionBox
   , CircularBuffer = require("./circular_buffer").CircularBuffer
   , UI = require("./ui").UI
   , loopController = undefined;
@@ -452,7 +453,7 @@ exports.Leap = {
    * @param {function} callback A function called when the browser is ready to
    * draw to the screen. The most recent {@link Frame} object is passed to
    * your callback function.
-   * 
+   *
    * ```javascript
    *    Leap.loop( function( frame ) {
    *        // ... your code here
@@ -472,6 +473,7 @@ exports.Leap = {
   Gesture: Gesture,
   Hand: Hand,
   Pointable: Pointable,
+  InteractionBox: InteractionBox,
   Vector: Vector,
   Matrix: Matrix,
   Connection: Connection,
@@ -480,7 +482,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],13:[function(require,module,exports){
+},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./interaction_box":13,"./circular_buffer":14,"./ui":15}],14:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -499,7 +501,7 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -553,7 +555,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -739,7 +741,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":15}],17:[function(require,module,exports){
+},{"__browserify_process":16}],18:[function(require,module,exports){
 
 },{}],7:[function(require,module,exports){
 var Vector = require("./vector").Vector
@@ -1330,12 +1332,148 @@ Connection.prototype.teardownSocket = function() {
   delete this.socket;
   delete this.protocol;
 }
-},{"./base_connection":18}],14:[function(require,module,exports){
+},{"./base_connection":19}],13:[function(require,module,exports){
+var Vector = require("./vector").Vector;
+
+/**
+ * The InteractionBox class represents a box-shaped region completely within
+ * the field of view of the Leap Motion controller.
+ *
+ * <p>The interaction box is an axis-aligned rectangular prism and provides
+ * normalized coordinates for hands, fingers, and tools within this box.
+ * The InteractionBox class can make it easier to map positions in the
+ * Leap Motion coordinate system to 2D or 3D coordinate systems used
+ * for application drawing.</p>
+ *
+ * <p>The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.</p>
+ */
+var InteractionBox = exports.InteractionBox = function(data) {
+    /**
+     * Indicates whether this is a valid InteractionBox object.
+     *
+     * @member valid
+     * @type {Boolean}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.valid = true;
+    /**
+     * The center of the InteractionBox in device coordinates (millimeters).
+     * <p>This point is equidistant from all sides of the box.</p>
+     *
+     * @member center
+     * @type {Leap.Vector}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.center = new Vector(data.center);
+    /**
+     * The width of the InteractionBox in millimeters, measured along the x-axis.
+     *
+     * @member width
+     * @type {Number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.width = data.size[0];
+    /**
+     * The height of the InteractionBox in millimeters, measured along the y-axis.
+     *
+     * @member height
+     * @type {Number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.height = data.size[1];
+    /**
+     * The depth of the InteractionBox in millimeters, measured along the z-axis.
+     *
+     * @member depth
+     * @type {Number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.depth = data.size[2];
+}
+
+/**
+ * Converts a position defined by normalized InteractionBox coordinates
+ * into device coordinates in millimeters.
+ *
+ * <p>This function performs the inverse of normalizePoint().</p>
+ *
+ * @method denormalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
+ * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
+ */
+InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
+    var vec = new Vector(0,0,0);
+
+    vec.x = ( ( ( normalizedPosition.x + this.center.x ) - 0.5 ) * this.width );
+    vec.y = ( ( ( normalizedPosition.y + this.center.y ) - 0.5 ) * this.height );
+    vec.z = ( ( ( normalizedPosition.z + this.center.z ) - 0.5 ) * this.depth );
+
+    return vec;
+}
+
+/**
+ * Normalizes the coordinates of a point using the interaction box.
+ *
+ * <p>Coordinates from the Leap Motion frame of reference (millimeters) are
+ * converted to a range of [0..1] such that the minimum value of the
+ * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.</p>
+ *
+ * @method normalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} position The input position in device coordinates.
+ * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
+ * when the input position is outside the InteractionBox. Defaults to true.
+ * @returns {Leap.Vector} The normalized position.
+ */
+InteractionBox.prototype.normalizePoint = function(position, clamp) {
+    var vec = new Vector(0,0,0);
+
+    vec.x = ( ( position.x - this.center.x ) / this.width ) + 0.5;
+    vec.y = ( ( position.y - this.center.y ) / this.height ) + 0.5;
+    vec.z = ( ( position.z - this.center.z ) / this.depth ) + 0.5;
+
+    if( clamp )
+    {
+        vec.x = Math.min( Math.max( vec.x, 0 ), 1 );
+        vec.y = Math.min( Math.max( vec.y, 0 ), 1 );
+        vec.z = Math.min( Math.max( vec.z, 0 ), 1 );
+    }
+
+    return vec;
+}
+
+/**
+ * Writes a brief, human readable description of the InteractionBox object.
+ *
+ * @method toString
+ * @memberof Leap.InteractionBox.prototype
+ * @returns {String} A description of the InteractionBox object as a string.
+ */
+InteractionBox.prototype.toString = function() {
+    return "InteractionBox [ width:" + this.width + " height:" + this.height + " depth:" + this.depth + " ]";
+}
+
+/**
+ * An invalid InteractionBox object.
+ *
+ * You can use this InteractionBox instance in comparisons testing
+ * whether a given InteractionBox instance is valid or invalid. (You can also use the
+ * InteractionBox.valid property.)
+
+ * @static
+ * @type {Leap.InteractionBox}
+ * @name Invalid
+ * @memberof Leap.InteractionBox
+ */
+InteractionBox.Invalid = { valid: false };
+
+},{"./vector":10}],15:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/region":19,"./ui/cursor":20}],21:[function(require,module,exports){
+},{"./ui/region":20,"./ui/cursor":21}],22:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -1353,7 +1491,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1530,7 +1668,7 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":16,"./node_connection":17,"./frame":6,"./circular_buffer":13,"./pipeline":21,"./connection":12,"underscore":22}],6:[function(require,module,exports){
+},{"events":17,"./node_connection":18,"./frame":6,"./circular_buffer":14,"./pipeline":22,"./connection":12,"underscore":23}],6:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -1985,143 +2123,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"./interaction_box":23,"underscore":22}],23:[function(require,module,exports){
-var Vector = require("./vector").Vector;
-
-/**
- * The InteractionBox class represents a box-shaped region completely within
- * the field of view of the Leap Motion controller.
- *
- * <p>The interaction box is an axis-aligned rectangular prism and provides
- * normalized coordinates for hands, fingers, and tools within this box.
- * The InteractionBox class can make it easier to map positions in the
- * Leap Motion coordinate system to 2D or 3D coordinate systems used
- * for application drawing.</p>
- *
- * <p>The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.</p>
- */
-var InteractionBox = exports.InteractionBox = function(data) {
-    /**
-     * Indicates whether this is a valid InteractionBox object.
-     *
-     * @member valid
-     * @type {Boolean}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.valid = true;
-    /**
-     * The center of the InteractionBox in device coordinates (millimeters).
-     * <p>This point is equidistant from all sides of the box.</p>
-     *
-     * @member center
-     * @type {Leap.Vector}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.center = new Vector(data.center);
-    /**
-     * The width of the InteractionBox in millimeters, measured along the x-axis.
-     *
-     * @member width
-     * @type {Number}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.width = data.size[0];
-    /**
-     * The height of the InteractionBox in millimeters, measured along the y-axis.
-     *
-     * @member height
-     * @type {Number}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.height = data.size[1];
-    /**
-     * The depth of the InteractionBox in millimeters, measured along the z-axis.
-     *
-     * @member depth
-     * @type {Number}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.depth = data.size[2];
-}
-
-/**
- * Converts a position defined by normalized InteractionBox coordinates
- * into device coordinates in millimeters.
- *
- * <p>This function performs the inverse of normalizePoint().</p>
- *
- * @method denormalizePoint
- * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
- * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
- */
-InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
-    var vec = new Vector(0,0,0);
-
-    vec.x = ( ( ( normalizedPosition.x + this.center.x ) - 0.5 ) * this.width );
-    vec.y = ( ( ( normalizedPosition.y + this.center.y ) - 0.5 ) * this.height );
-    vec.z = ( ( ( normalizedPosition.z + this.center.z ) - 0.5 ) * this.depth );
-
-    return vec;
-}
-
-/**
- * Normalizes the coordinates of a point using the interaction box.
- *
- * <p>Coordinates from the Leap Motion frame of reference (millimeters) are
- * converted to a range of [0..1] such that the minimum value of the
- * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.</p>
- *
- * @method normalizePoint
- * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} position The input position in device coordinates.
- * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
- * when the input position is outside the InteractionBox. Defaults to true.
- * @returns {Leap.Vector} The normalized position.
- */
-InteractionBox.prototype.normalizePoint = function(position, clamp) {
-    var vec = new Vector(0,0,0);
-
-    vec.x = ( ( position.x - this.center.x ) / this.width ) + 0.5;
-    vec.y = ( ( position.y - this.center.y ) / this.height ) + 0.5;
-    vec.z = ( ( position.z - this.center.z ) / this.depth ) + 0.5;
-
-    if( clamp )
-    {
-        vec.x = Math.min( Math.max( vec.x, 0 ), 1 );
-        vec.y = Math.min( Math.max( vec.y, 0 ), 1 );
-        vec.z = Math.min( Math.max( vec.z, 0 ), 1 );
-    }
-
-    return vec;
-}
-
-/**
- * Writes a brief, human readable description of the InteractionBox object.
- *
- * @method toString
- * @memberof Leap.InteractionBox.prototype
- * @returns {String} A description of the InteractionBox object as a string.
- */
-InteractionBox.prototype.toString = function() {
-    return "InteractionBox [ width:" + this.width + " height:" + this.height + " depth:" + this.depth + " ]";
-}
-
-/**
- * An invalid InteractionBox object.
- *
- * You can use this InteractionBox instance in comparisons testing
- * whether a given InteractionBox instance is valid or invalid. (You can also use the
- * InteractionBox.valid property.)
-
- * @static
- * @type {Leap.InteractionBox}
- * @name Invalid
- * @memberof Leap.InteractionBox
- */
-InteractionBox.Invalid = { valid: false };
-
-},{"./vector":10}],8:[function(require,module,exports){
+},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"./interaction_box":13,"underscore":23}],8:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2469,7 +2471,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
+},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":23}],10:[function(require,module,exports){
 var _ = require('underscore');
 
 /**
@@ -2936,7 +2938,7 @@ Vector.zAxis = function(){ return new Vector([0,0,1]); };
  */
 Vector.zero = function(){ return new Vector([0,0,0]); };
 
-},{"underscore":22}],11:[function(require,module,exports){
+},{"underscore":23}],11:[function(require,module,exports){
 var Vector = require("./vector").Vector,
     _ = require('underscore');
 
@@ -3239,7 +3241,7 @@ _.extend(Matrix.prototype, MatrixPrototype);
  */
 Matrix.identity = function(){ return new Matrix(); };
 
-},{"./vector":10,"underscore":22}],22:[function(require,module,exports){
+},{"./vector":10,"underscore":23}],23:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -4821,7 +4823,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],25:[function(require,module,exports){
+},{"events":17}],25:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4843,7 +4845,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   }
 }
 
-},{"util":24,"./frame":6}],18:[function(require,module,exports){
+},{"util":24,"./frame":6}],19:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -4909,7 +4911,7 @@ Connection.prototype.send = function(data) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":25,"underscore":22}],19:[function(require,module,exports){
+},{"events":17,"./protocol":25,"underscore":23}],20:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -4998,5 +5000,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":22}]},{},[2,1,3])
+},{"events":17,"../vector":10,"underscore":23}]},{},[1,2,3])
 ;
