@@ -416,6 +416,7 @@ Leap = require("../lib/index").Leap
   , Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Connection = require("./connection").Connection
+  , InteractionBox = require("./interaction_box").InteractionBox
   , CircularBuffer = require("./circular_buffer").CircularBuffer
   , UI = require("./ui").UI
   , loopController = undefined;
@@ -470,13 +471,148 @@ exports.Leap = {
   Gesture: Gesture,
   Hand: Hand,
   Pointable: Pointable,
+  InteractionBox: InteractionBox,
   Connection: Connection,
   CircularBuffer: CircularBuffer,
   UI: UI
 }
 
 })()
-},{"./circular_buffer":5,"./connection":6,"./controller":7,"./frame":8,"./gesture":9,"./hand":10,"./pointable":11,"./ui":12}],5:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./controller":7,"./frame":8,"./gesture":9,"./hand":10,"./interaction_box":11,"./pointable":12,"./ui":13}],11:[function(require,module,exports){
+/**
+ * The InteractionBox class represents a box-shaped region completely within
+ * the field of view of the Leap Motion controller.
+ *
+ * <p>The interaction box is an axis-aligned rectangular prism and provides
+ * normalized coordinates for hands, fingers, and tools within this box.
+ * The InteractionBox class can make it easier to map positions in the
+ * Leap Motion coordinate system to 2D or 3D coordinate systems used
+ * for application drawing.</p>
+ *
+ * <p>The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.</p>
+ */
+var InteractionBox = exports.InteractionBox = function(data) {
+    /**
+     * Indicates whether this is a valid InteractionBox object.
+     *
+     * @member valid
+     * @type {Boolean}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.valid = true;
+    /**
+     * The center of the InteractionBox in device coordinates (millimeters).
+     * <p>This point is equidistant from all sides of the box.</p>
+     *
+     * @member center
+     * @type {number[]}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.center = data.center;
+    /**
+     * The width of the InteractionBox in millimeters, measured along the x-axis.
+     *
+     * @member width
+     * @type {number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.width = data.size[0];
+    /**
+     * The height of the InteractionBox in millimeters, measured along the y-axis.
+     *
+     * @member height
+     * @type {number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.height = data.size[1];
+    /**
+     * The depth of the InteractionBox in millimeters, measured along the z-axis.
+     *
+     * @member depth
+     * @type {number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.depth = data.size[2];
+}
+
+/**
+ * Converts a position defined by normalized InteractionBox coordinates
+ * into device coordinates in millimeters.
+ *
+ * <p>This function performs the inverse of normalizePoint().</p>
+ *
+ * @method denormalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
+ * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
+ */
+InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
+    var vec = new Vector(0,0,0);
+
+    vec.x = ( ( ( normalizedPosition.x + this.center.x ) - 0.5 ) * this.width );
+    vec.y = ( ( ( normalizedPosition.y + this.center.y ) - 0.5 ) * this.height );
+    vec.z = ( ( ( normalizedPosition.z + this.center.z ) - 0.5 ) * this.depth );
+
+    return vec;
+}
+
+/**
+ * Normalizes the coordinates of a point using the interaction box.
+ *
+ * <p>Coordinates from the Leap Motion frame of reference (millimeters) are
+ * converted to a range of [0..1] such that the minimum value of the
+ * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.</p>
+ *
+ * @method normalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} position The input position in device coordinates.
+ * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
+ * when the input position is outside the InteractionBox. Defaults to true.
+ * @returns {Leap.Vector} The normalized position.
+ */
+InteractionBox.prototype.normalizePoint = function(position, clamp) {
+    var vec = new Vector(0,0,0);
+
+    vec.x = ( ( position.x - this.center.x ) / this.width ) + 0.5;
+    vec.y = ( ( position.y - this.center.y ) / this.height ) + 0.5;
+    vec.z = ( ( position.z - this.center.z ) / this.depth ) + 0.5;
+
+    if( clamp )
+    {
+        vec.x = Math.min( Math.max( vec.x, 0 ), 1 );
+        vec.y = Math.min( Math.max( vec.y, 0 ), 1 );
+        vec.z = Math.min( Math.max( vec.z, 0 ), 1 );
+    }
+
+    return vec;
+}
+
+/**
+ * Writes a brief, human readable description of the InteractionBox object.
+ *
+ * @method toString
+ * @memberof Leap.InteractionBox.prototype
+ * @returns {String} A description of the InteractionBox object as a string.
+ */
+InteractionBox.prototype.toString = function() {
+    return "InteractionBox [ width:" + this.width + " height:" + this.height + " depth:" + this.depth + " ]";
+}
+
+/**
+ * An invalid InteractionBox object.
+ *
+ * You can use this InteractionBox instance in comparisons testing
+ * whether a given InteractionBox instance is valid or invalid. (You can also use the
+ * InteractionBox.valid property.)
+
+ * @static
+ * @type {Leap.InteractionBox}
+ * @name Invalid
+ * @memberof Leap.InteractionBox
+ */
+InteractionBox.Invalid = { valid: false };
+
+},{}],5:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -495,9 +631,9 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],13:[function(require,module,exports){
-
 },{}],14:[function(require,module,exports){
+
+},{}],15:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -551,7 +687,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -737,7 +873,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":14}],6:[function(require,module,exports){
+},{"__browserify_process":15}],6:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
@@ -789,12 +925,12 @@ Connection.prototype.startHeartbeat = function() {
   }, this.opts.heartbeatInterval);
 }
 
-},{"./base_connection":16}],12:[function(require,module,exports){
+},{"./base_connection":17}],13:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/cursor":17,"./ui/region":18}],19:[function(require,module,exports){
+},{"./ui/cursor":18,"./ui/region":19}],20:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -812,141 +948,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],20:[function(require,module,exports){
-/**
- * The InteractionBox class represents a box-shaped region completely within
- * the field of view of the Leap Motion controller.
- *
- * <p>The interaction box is an axis-aligned rectangular prism and provides
- * normalized coordinates for hands, fingers, and tools within this box.
- * The InteractionBox class can make it easier to map positions in the
- * Leap Motion coordinate system to 2D or 3D coordinate systems used
- * for application drawing.</p>
- *
- * <p>The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.</p>
- */
-var InteractionBox = exports.InteractionBox = function(data) {
-    /**
-     * Indicates whether this is a valid InteractionBox object.
-     *
-     * @member valid
-     * @type {Boolean}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.valid = true;
-    /**
-     * The center of the InteractionBox in device coordinates (millimeters).
-     * <p>This point is equidistant from all sides of the box.</p>
-     *
-     * @member center
-     * @type {number[]}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.center = data.center;
-    /**
-     * The width of the InteractionBox in millimeters, measured along the x-axis.
-     *
-     * @member width
-     * @type {number}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.width = data.size[0];
-    /**
-     * The height of the InteractionBox in millimeters, measured along the y-axis.
-     *
-     * @member height
-     * @type {number}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.height = data.size[1];
-    /**
-     * The depth of the InteractionBox in millimeters, measured along the z-axis.
-     *
-     * @member depth
-     * @type {number}
-     * @memberof Leap.InteractionBox.prototype
-     */
-    this.depth = data.size[2];
-}
-
-/**
- * Converts a position defined by normalized InteractionBox coordinates
- * into device coordinates in millimeters.
- *
- * <p>This function performs the inverse of normalizePoint().</p>
- *
- * @method denormalizePoint
- * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
- * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
- */
-InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
-    var vec = new Vector(0,0,0);
-
-    vec.x = ( ( ( normalizedPosition.x + this.center.x ) - 0.5 ) * this.width );
-    vec.y = ( ( ( normalizedPosition.y + this.center.y ) - 0.5 ) * this.height );
-    vec.z = ( ( ( normalizedPosition.z + this.center.z ) - 0.5 ) * this.depth );
-
-    return vec;
-}
-
-/**
- * Normalizes the coordinates of a point using the interaction box.
- *
- * <p>Coordinates from the Leap Motion frame of reference (millimeters) are
- * converted to a range of [0..1] such that the minimum value of the
- * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.</p>
- *
- * @method normalizePoint
- * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} position The input position in device coordinates.
- * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
- * when the input position is outside the InteractionBox. Defaults to true.
- * @returns {Leap.Vector} The normalized position.
- */
-InteractionBox.prototype.normalizePoint = function(position, clamp) {
-    var vec = new Vector(0,0,0);
-
-    vec.x = ( ( position.x - this.center.x ) / this.width ) + 0.5;
-    vec.y = ( ( position.y - this.center.y ) / this.height ) + 0.5;
-    vec.z = ( ( position.z - this.center.z ) / this.depth ) + 0.5;
-
-    if( clamp )
-    {
-        vec.x = Math.min( Math.max( vec.x, 0 ), 1 );
-        vec.y = Math.min( Math.max( vec.y, 0 ), 1 );
-        vec.z = Math.min( Math.max( vec.z, 0 ), 1 );
-    }
-
-    return vec;
-}
-
-/**
- * Writes a brief, human readable description of the InteractionBox object.
- *
- * @method toString
- * @memberof Leap.InteractionBox.prototype
- * @returns {String} A description of the InteractionBox object as a string.
- */
-InteractionBox.prototype.toString = function() {
-    return "InteractionBox [ width:" + this.width + " height:" + this.height + " depth:" + this.depth + " ]";
-}
-
-/**
- * An invalid InteractionBox object.
- *
- * You can use this InteractionBox instance in comparisons testing
- * whether a given InteractionBox instance is valid or invalid. (You can also use the
- * InteractionBox.valid property.)
-
- * @static
- * @type {Leap.InteractionBox}
- * @name Invalid
- * @memberof Leap.InteractionBox
- */
-InteractionBox.Invalid = { valid: false };
-
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1152,7 +1154,7 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":21}],8:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":14,"./pipeline":20,"__browserify_process":15,"events":16,"underscore":21}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -1603,7 +1605,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":9,"./hand":10,"./interaction_box":20,"./pointable":11,"gl-matrix":22,"underscore":21}],9:[function(require,module,exports){
+},{"./gesture":9,"./hand":10,"./interaction_box":11,"./pointable":12,"gl-matrix":22,"underscore":21}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2347,7 +2349,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":11,"gl-matrix":22,"underscore":21}],11:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":22,"underscore":21}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -7175,7 +7177,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":15}],16:[function(require,module,exports){
+},{"events":16}],17:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -7274,7 +7276,7 @@ Connection.prototype.setHeartbeatState = function(state) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"./protocol":24,"events":15,"underscore":21}],24:[function(require,module,exports){
+},{"./protocol":24,"events":16,"underscore":21}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -7309,7 +7311,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-},{"./frame":8,"util":23}],18:[function(require,module,exports){
+},{"./frame":8,"util":23}],19:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
 //  , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -7398,5 +7400,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":15,"underscore":21}]},{},[1,2,3])
+},{"events":16,"underscore":21}]},{},[1,2,3])
 ;
