@@ -52,6 +52,7 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
+    interactionBox: {center: [1,2,3], size: [1,2,3]}
   };
   if (opts.gestures) {
     frame.gestures = opts.gestures;
@@ -96,6 +97,8 @@ var fakeFinger = exports.fakeFinger = function() {
     width: 5,
     direction: [10, 10, 10],
     tipPosition: [10, 10, 10],
-    tipVelocity: [10, 10, 10]
+    tipVelocity: [10, 10, 10],
+    touchZone: "none",
+    touchDistance: 5
   }
 }

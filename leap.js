@@ -812,6 +812,140 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
+},{}],20:[function(require,module,exports){
+/**
+ * The InteractionBox class represents a box-shaped region completely within
+ * the field of view of the Leap Motion controller.
+ *
+ * <p>The interaction box is an axis-aligned rectangular prism and provides
+ * normalized coordinates for hands, fingers, and tools within this box.
+ * The InteractionBox class can make it easier to map positions in the
+ * Leap Motion coordinate system to 2D or 3D coordinate systems used
+ * for application drawing.</p>
+ *
+ * <p>The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.</p>
+ */
+var InteractionBox = exports.InteractionBox = function(data) {
+    /**
+     * Indicates whether this is a valid InteractionBox object.
+     *
+     * @member valid
+     * @type {Boolean}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.valid = true;
+    /**
+     * The center of the InteractionBox in device coordinates (millimeters).
+     * <p>This point is equidistant from all sides of the box.</p>
+     *
+     * @member center
+     * @type {number[]}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.center = data.center;
+    /**
+     * The width of the InteractionBox in millimeters, measured along the x-axis.
+     *
+     * @member width
+     * @type {number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.width = data.size[0];
+    /**
+     * The height of the InteractionBox in millimeters, measured along the y-axis.
+     *
+     * @member height
+     * @type {number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.height = data.size[1];
+    /**
+     * The depth of the InteractionBox in millimeters, measured along the z-axis.
+     *
+     * @member depth
+     * @type {number}
+     * @memberof Leap.InteractionBox.prototype
+     */
+    this.depth = data.size[2];
+}
+
+/**
+ * Converts a position defined by normalized InteractionBox coordinates
+ * into device coordinates in millimeters.
+ *
+ * <p>This function performs the inverse of normalizePoint().</p>
+ *
+ * @method denormalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
+ * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
+ */
+InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
+    var vec = new Vector(0,0,0);
+
+    vec.x = ( ( ( normalizedPosition.x + this.center.x ) - 0.5 ) * this.width );
+    vec.y = ( ( ( normalizedPosition.y + this.center.y ) - 0.5 ) * this.height );
+    vec.z = ( ( ( normalizedPosition.z + this.center.z ) - 0.5 ) * this.depth );
+
+    return vec;
+}
+
+/**
+ * Normalizes the coordinates of a point using the interaction box.
+ *
+ * <p>Coordinates from the Leap Motion frame of reference (millimeters) are
+ * converted to a range of [0..1] such that the minimum value of the
+ * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.</p>
+ *
+ * @method normalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} position The input position in device coordinates.
+ * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
+ * when the input position is outside the InteractionBox. Defaults to true.
+ * @returns {Leap.Vector} The normalized position.
+ */
+InteractionBox.prototype.normalizePoint = function(position, clamp) {
+    var vec = new Vector(0,0,0);
+
+    vec.x = ( ( position.x - this.center.x ) / this.width ) + 0.5;
+    vec.y = ( ( position.y - this.center.y ) / this.height ) + 0.5;
+    vec.z = ( ( position.z - this.center.z ) / this.depth ) + 0.5;
+
+    if( clamp )
+    {
+        vec.x = Math.min( Math.max( vec.x, 0 ), 1 );
+        vec.y = Math.min( Math.max( vec.y, 0 ), 1 );
+        vec.z = Math.min( Math.max( vec.z, 0 ), 1 );
+    }
+
+    return vec;
+}
+
+/**
+ * Writes a brief, human readable description of the InteractionBox object.
+ *
+ * @method toString
+ * @memberof Leap.InteractionBox.prototype
+ * @returns {String} A description of the InteractionBox object as a string.
+ */
+InteractionBox.prototype.toString = function() {
+    return "InteractionBox [ width:" + this.width + " height:" + this.height + " depth:" + this.depth + " ]";
+}
+
+/**
+ * An invalid InteractionBox object.
+ *
+ * You can use this InteractionBox instance in comparisons testing
+ * whether a given InteractionBox instance is valid or invalid. (You can also use the
+ * InteractionBox.valid property.)
+
+ * @static
+ * @type {Leap.InteractionBox}
+ * @name Invalid
+ * @memberof Leap.InteractionBox
+ */
+InteractionBox.Invalid = { valid: false };
+
 },{}],17:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
@@ -1018,13 +1152,14 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":20}],8:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":21}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
+  , InteractionBox = require("./interaction_box").InteractionBox
   , _ = require("underscore");
 
 /**
@@ -1121,11 +1256,7 @@ var Frame = exports.Frame = function(data) {
    * @type {Leap.Pointable}
    */
 
-  this.interactionBox = {
-    center: new Vector(data.center),
-    size: new Vector(data.size)
-  }
-
+  this.interactionBox = new InteractionBox(data.interactionBox);
   this.fingers = [];
   this.gestures = [];
   this.pointablesMap = {};
@@ -1472,7 +1603,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":9,"./hand":10,"./pointable":11,"gl-matrix":21,"underscore":20}],9:[function(require,module,exports){
+},{"./gesture":9,"./hand":10,"./interaction_box":20,"./pointable":11,"gl-matrix":22,"underscore":21}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -1874,7 +2005,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"gl-matrix":21}],10:[function(require,module,exports){
+},{"gl-matrix":22}],10:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2216,7 +2347,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":11,"gl-matrix":21,"underscore":20}],11:[function(require,module,exports){
+},{"./pointable":11,"gl-matrix":22,"underscore":21}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2327,7 +2458,7 @@ var Pointable = exports.Pointable = function(data) {
    * @type {Leap.Vector}
    * @memberof Leap.Pointable.prototype
    */
-  this.stabilizedTipPosition = new Vector(data.stabilizedTipPosition);
+  this.stabilizedTipPosition = data.stabilizedTipPosition;
   /**
    * The tip position in millimeters from the Leap origin.
    *
@@ -2353,9 +2484,9 @@ var Pointable = exports.Pointable = function(data) {
   /**
    * Distance from 'Touch Plane'
    *
-   * @member Pointable.prototype.touchDist {number}
+   * @member Pointable.prototype.touchDistance {number}
    */
-  this.touchDist = data.touchDistance;
+  this.touchDistance = data.touchDistance;
 }
 
 /**
@@ -2388,7 +2519,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":21}],20:[function(require,module,exports){
+},{"gl-matrix":22}],21:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3617,7 +3748,7 @@ Pointable.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 (function(){/**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6691,106 +6822,7 @@ if(typeof(exports) !== 'undefined') {
 })();
 
 })()
-},{}],16:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Connection = exports.Connection = function(opts) {
-  this.opts = _.defaults(opts || {}, {
-    host : '127.0.0.1',
-    enableGestures: false,
-    port: 6437,
-    enableHeartbeat: true,
-    heartbeatInterval: 100,
-    requestProtocolVersion: 2
-  });
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(this.opts.enableGestures);
-    if (this.opts.enableHeartbeat) this.startHeartbeat();
-  });
-  this.on('disconnect', function() {
-    if (this.opts.enableHeartbeat) this.stopHeartbeat();
-  });
-  this.heartbeatTimer = null;
-}
-
-Connection.prototype.getUrl = function() {
-  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
-}
-
-Connection.prototype.sendHeartbeat = function() {
-  this.setHeartbeatState(true);
-  this.protocol.sendHeartbeat(this);
-}
-
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.disconnect();
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  delete this.socket;
-  delete this.protocol;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) return;
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-Connection.prototype.stopHeartbeat = function() {
-  if (!this.heartbeatTimer) return;
-  clearInterval(this.heartbeatTimer);
-  delete this.heartbeatTimer;
-  this.setHeartbeatState(false);
-};
-
-Connection.prototype.setHeartbeatState = function(state) {
-  if (this.heartbeatState === state) return;
-  this.heartbeatState = state;
-  this.emit(this.heartbeatState ? 'focus' : 'blur');
-};
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"./protocol":22,"events":15,"underscore":20}],23:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7143,7 +7175,106 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":15}],22:[function(require,module,exports){
+},{"events":15}],16:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Connection = exports.Connection = function(opts) {
+  this.opts = _.defaults(opts || {}, {
+    host : '127.0.0.1',
+    enableGestures: false,
+    port: 6437,
+    enableHeartbeat: true,
+    heartbeatInterval: 100,
+    requestProtocolVersion: 2
+  });
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(this.opts.enableGestures);
+    if (this.opts.enableHeartbeat) this.startHeartbeat();
+  });
+  this.on('disconnect', function() {
+    if (this.opts.enableHeartbeat) this.stopHeartbeat();
+  });
+  this.heartbeatTimer = null;
+}
+
+Connection.prototype.getUrl = function() {
+  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
+}
+
+Connection.prototype.sendHeartbeat = function() {
+  this.setHeartbeatState(true);
+  this.protocol.sendHeartbeat(this);
+}
+
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.disconnect();
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this;
+  setTimeout(function() { connection.connect() }, 1000);
+}
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  delete this.socket;
+  delete this.protocol;
+}
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) return;
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+Connection.prototype.stopHeartbeat = function() {
+  if (!this.heartbeatTimer) return;
+  clearInterval(this.heartbeatTimer);
+  delete this.heartbeatTimer;
+  this.setHeartbeatState(false);
+};
+
+Connection.prototype.setHeartbeatState = function(state) {
+  if (this.heartbeatState === state) return;
+  this.heartbeatState = state;
+  this.emit(this.heartbeatState ? 'focus' : 'blur');
+};
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"./protocol":24,"events":15,"underscore":21}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -7267,5 +7398,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":15,"underscore":20}]},{},[1,2,3])
+},{"events":15,"underscore":21}]},{},[1,2,3])
 ;
