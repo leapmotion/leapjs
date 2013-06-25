@@ -812,13 +812,6 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],20:[function(require,module,exports){
-exports.vectorize = function(array) {
-  array.x = array[0];
-  array.y = array[1];
-  array.z = array[2];
-  return array;
-};
 },{}],17:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
@@ -1025,14 +1018,13 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":21}],8:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":20}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
-  , vectorize = require('./util').vectorize
   , _ = require("underscore");
 
 /**
@@ -1334,7 +1326,7 @@ Frame.prototype.rotationAxis = function(sinceFrame){
     this.rotation[2] - sinceFrame.rotation[6],
     this.rotation[3] - sinceFrame.rotation[1]
   ])
-  return vectorize(vec3.normalize(vec3.create(), vec));
+  return vec3.normalize(vec3.create(), vec);
 }
 
 /**
@@ -1406,7 +1398,7 @@ Frame.prototype.scaleFactor = function(sinceFrame){
  */
 Frame.prototype.translation = function(sinceFrame){
   if (!this.valid || !sinceFrame.valid) return vec3.create();
-  return vectorize(vec3.subtract(vec3.create(), this._translation, sinceFrame._translation));
+  return vec3.subtract(vec3.create(), this._translation, sinceFrame._translation);
 }
 
 /**
@@ -1480,9 +1472,9 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":9,"./hand":10,"./pointable":11,"./util":20,"gl-matrix":22,"underscore":21}],9:[function(require,module,exports){
+},{"./gesture":9,"./hand":10,"./pointable":11,"gl-matrix":21,"underscore":20}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
-  , vectorize = require('./util').vectorize;
+  , vec3 = glMatrix.vec3;
 
 /**
  * Constructs a new Gesture object.
@@ -1671,7 +1663,7 @@ var CircleGesture = function(data) {
   * @memberof Leap.CircleGesture.prototype
   * @type {Leap.Vector}
   */
-  this.center = vectorize(data.center);
+  this.center = data.center;
  /**
   * The normal vector for the circle being traced.
   *
@@ -1696,7 +1688,7 @@ var CircleGesture = function(data) {
   * @memberof Leap.CircleGesture.prototype
   * @type {Leap.Vector}
   */
-  this.normal = vectorize(data.normal);
+  this.normal = data.normal;
  /**
   * The number of times the finger tip has traversed the circle.
   *
@@ -1759,7 +1751,7 @@ var SwipeGesture = function(data) {
   * @memberof Leap.SwipeGesture.prototype
   * @type {Leap.Vector}
   */
-  this.position = vectorize(data.position);
+  this.position = data.position;
  /**
   * The unit direction vector parallel to the swipe motion.
   *
@@ -1772,7 +1764,7 @@ var SwipeGesture = function(data) {
   * @memberof Leap.SwipeGesture.prototype
   * @type {Leap.Vector}
   */
-  this.direction = vectorize(data.direction);
+  this.direction = data.direction;
  /**
   * The speed of the finger performing the swipe gesture in
   * millimeters per second.
@@ -1814,7 +1806,7 @@ var ScreenTapGesture = function(data) {
   * @memberof Leap.ScreenTapGesture.prototype
   * @type {Leap.Vector}
   */
-  this.position = vectorize(data.position);
+  this.position = data.position;
  /**
   * The direction of finger tip motion.
   *
@@ -1822,7 +1814,7 @@ var ScreenTapGesture = function(data) {
   * @memberof Leap.ScreenTapGesture.prototype
   * @type {Leap.Vector}
   */
-  this.direction = vectorize(data.direction);
+  this.direction = data.direction;
  /**
   * The progess value is always 1.0 for a screen tap gesture.
   *
@@ -1863,7 +1855,7 @@ var KeyTapGesture = function(data) {
      * @memberof Leap.KeyTapGesture.prototype
      * @type {Leap.Vector}
      */
-    this.position = vectorize(data.position);
+    this.position = data.position;
     /**
      * The direction of finger tip motion.
      *
@@ -1871,7 +1863,7 @@ var KeyTapGesture = function(data) {
      * @memberof Leap.KeyTapGesture.prototype
      * @type {Leap.Vector}
      */
-    this.direction = vectorize(data.direction);
+    this.direction = data.direction;
     /**
      * The progess value is always 1.0 for a key tap gesture.
      *
@@ -1882,7 +1874,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"./util":20,"gl-matrix":22}],10:[function(require,module,exports){
+},{"gl-matrix":21}],10:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2231,7 +2223,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":11,"gl-matrix":22,"underscore":21}],11:[function(require,module,exports){
+},{"./pointable":11,"gl-matrix":21,"underscore":20}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2382,7 +2374,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":22}],21:[function(require,module,exports){
+},{"gl-matrix":21}],20:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3611,7 +3603,7 @@ Pointable.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function(){/**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6685,7 +6677,7 @@ if(typeof(exports) !== 'undefined') {
 })();
 
 })()
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7132,7 +7124,7 @@ Connection.prototype.setHeartbeatState = function(state) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"./protocol":24,"events":15,"underscore":21}],24:[function(require,module,exports){
+},{"./protocol":23,"events":15,"underscore":20}],23:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -7167,7 +7159,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-},{"./frame":8,"util":23}],18:[function(require,module,exports){
+},{"./frame":8,"util":22}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
 //  , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -7256,5 +7248,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":15,"underscore":21}]},{},[1,2,3])
+},{"events":15,"underscore":20}]},{},[1,2,3])
 ;
