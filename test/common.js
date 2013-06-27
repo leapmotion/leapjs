@@ -60,11 +60,14 @@ var fakeFrame = exports.fakeFrame = function(opts) {
 };
 
 var fakeGesture = exports.fakeGesture = function(opts) {
-  if (opts === undefined) opts = {};
-  var gesture = {
-    type: 'circle'
+  if (opts === undefined) opts = {
+    type:"circle",
+    center:[2,3,4],
+    normal:[5,6,7],
+    progress: 10,
+    radius: 20
   };
-  return gesture;
+  return opts;
 };
 
 var fakeHand = exports.fakeHand = function(opts) {

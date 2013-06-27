@@ -812,6 +812,13 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
+},{}],20:[function(require,module,exports){
+exports.vectorize = function(array) {
+  array.x = array[0];
+  array.y = array[1];
+  array.z = array[2];
+  return array;
+};
 },{}],17:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
@@ -1018,13 +1025,14 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":20}],8:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":21}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
+  , vectorize = require('./util').vectorize
   , _ = require("underscore");
 
 /**
@@ -1326,7 +1334,7 @@ Frame.prototype.rotationAxis = function(sinceFrame){
     this.rotation[2] - sinceFrame.rotation[6],
     this.rotation[3] - sinceFrame.rotation[1]
   ])
-  return vec3.normalize(vec3.create(), vec);
+  return vectorize(vec3.normalize(vec3.create(), vec));
 }
 
 /**
@@ -1398,7 +1406,7 @@ Frame.prototype.scaleFactor = function(sinceFrame){
  */
 Frame.prototype.translation = function(sinceFrame){
   if (!this.valid || !sinceFrame.valid) return vec3.create();
-  return vec3.subtract(vec3.create(), this._translation, sinceFrame._translation);
+  return vectorize(vec3.subtract(vec3.create(), this._translation, sinceFrame._translation));
 }
 
 /**
@@ -1472,9 +1480,9 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":9,"./hand":10,"./pointable":11,"gl-matrix":21,"underscore":20}],9:[function(require,module,exports){
+},{"./gesture":9,"./hand":10,"./pointable":11,"./util":20,"gl-matrix":22,"underscore":21}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
+  , vectorize = require('./util').vectorize;
 
 /**
  * Constructs a new Gesture object.
@@ -1663,7 +1671,7 @@ var CircleGesture = function(data) {
   * @memberof Leap.CircleGesture.prototype
   * @type {Leap.Vector}
   */
-  this.center = data.center;
+  this.center = vectorize(data.center);
  /**
   * The normal vector for the circle being traced.
   *
@@ -1688,7 +1696,7 @@ var CircleGesture = function(data) {
   * @memberof Leap.CircleGesture.prototype
   * @type {Leap.Vector}
   */
-  this.normal = data.normal;
+  this.normal = vectorize(data.normal);
  /**
   * The number of times the finger tip has traversed the circle.
   *
@@ -1751,7 +1759,7 @@ var SwipeGesture = function(data) {
   * @memberof Leap.SwipeGesture.prototype
   * @type {Leap.Vector}
   */
-  this.position = data.position;
+  this.position = vectorize(data.position);
  /**
   * The unit direction vector parallel to the swipe motion.
   *
@@ -1764,7 +1772,7 @@ var SwipeGesture = function(data) {
   * @memberof Leap.SwipeGesture.prototype
   * @type {Leap.Vector}
   */
-  this.direction = data.direction;
+  this.direction = vectorize(data.direction);
  /**
   * The speed of the finger performing the swipe gesture in
   * millimeters per second.
@@ -1806,7 +1814,7 @@ var ScreenTapGesture = function(data) {
   * @memberof Leap.ScreenTapGesture.prototype
   * @type {Leap.Vector}
   */
-  this.position = data.position;
+  this.position = vectorize(data.position);
  /**
   * The direction of finger tip motion.
   *
@@ -1814,7 +1822,7 @@ var ScreenTapGesture = function(data) {
   * @memberof Leap.ScreenTapGesture.prototype
   * @type {Leap.Vector}
   */
-  this.direction = data.direction;
+  this.direction = vectorize(data.direction);
  /**
   * The progess value is always 1.0 for a screen tap gesture.
   *
@@ -1855,7 +1863,7 @@ var KeyTapGesture = function(data) {
      * @memberof Leap.KeyTapGesture.prototype
      * @type {Leap.Vector}
      */
-    this.position = data.position;
+    this.position = vectorize(data.position);
     /**
      * The direction of finger tip motion.
      *
@@ -1863,7 +1871,7 @@ var KeyTapGesture = function(data) {
      * @memberof Leap.KeyTapGesture.prototype
      * @type {Leap.Vector}
      */
-    this.direction = data.direction;
+    this.direction = vectorize(data.direction);
     /**
      * The progess value is always 1.0 for a key tap gesture.
      *
@@ -1874,158 +1882,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"gl-matrix":21}],11:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
-
-/**
- * Constructs a Pointable object.
- *
- * An uninitialized pointable is considered invalid.
- * Get valid Pointable objects from a Frame or a Hand object.
- *
- * @class Pointable
- * @memberof Leap
- * @classdesc
- * The Pointable class reports the physical characteristics of a detected
- * finger or tool.
- *
- * Both fingers and tools are classified as Pointable objects. Use the
- * Pointable.tool property to determine whether a Pointable object represents a
- * tool or finger. The Leap classifies a detected entity as a tool when it is
- * thinner, straighter, and longer than a typical finger.
- *
- * Note that Pointable objects can be invalid, which means that they do not
- * contain valid tracking data and do not correspond to a physical entity.
- * Invalid Pointable objects can be the result of asking for a Pointable object
- * using an ID from an earlier frame when no Pointable objects with that ID
- * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid
- * property.
- */
-var Pointable = exports.Pointable = function(data) {
-  /**
-   * Indicates whether this is a valid Pointable object.
-   *
-   * @member valid
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.valid = true;
-  /**
-   * A unique ID assigned to this Pointable object, whose value remains the
-   * same across consecutive frames while the tracked finger or tool remains
-   * visible. If tracking is lost (for example, when a finger is occluded by
-   * another finger or when it is withdrawn from the Leap field of view), the
-   * Leap may assign a new ID when it detects the entity in a future frame.
-   *
-   * Use the ID value with the pointable() functions defined for the
-   * {@link Frame} and {@link Frame.Hand} classes to find this
-   * Pointable object in future frames.
-   *
-   * @member id
-   * @type {String}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.id = data.id;
-  this.handId = data.handId;
-  /**
-   * The estimated length of the finger or tool in millimeters.
-   *
-   * The reported length is the visible length of the finger or tool from the
-   * hand to tip. If the length isn't known, then a value of 0 is returned.
-   *
-   * @member length
-   * @type {Number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.length = data.length;
-  /**
-   * Whether or not the Pointable is believed to be a tool.
-   * Tools are generally longer, thinner, and straighter than fingers.
-   *
-   * If tool is false, then this Pointable must be a finger.
-   *
-   * @member tool
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tool = data.tool;
-  /**
-   * The estimated width of the tool in millimeters.
-   *
-   * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
-   * then a value of 0 is returned.
-   *
-   * Pointable objects representing fingers do not have a width property.
-   *
-   * @member width
-   * @type {Number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.width = data.width;
-  /**
-   * The direction in which this finger or tool is pointing.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the tip.
-   *
-   * ![Finger](images/Leap_Finger_Model.png)
-   * @member direction
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.direction = data.direction;
-  /**
-   * The tip position in millimeters from the Leap origin.
-   *
-   * @member tipPosition
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipPosition = data.tipPosition;
-  /**
-   * The rate of change of the tip position in millimeters/second.
-   *
-   * @member tipVelocity
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipVelocity = data.tipVelocity;
-}
-
-/**
- * A string containing a brief, human readable description of the Pointable
- * object.
- *
- * @method toString
- * @memberof Leap.Pointable.prototype
- * @returns {String} A description of the Pointable object as a string.
- */
-Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
-}
-
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @static
- * @type {Leap.Pointable}
- * @name Invalid
- * @memberof Leap.Pointable
- */
-Pointable.Invalid = { valid: false };
-
-},{"gl-matrix":21}],10:[function(require,module,exports){
+},{"./util":20,"gl-matrix":22}],10:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2374,7 +2231,158 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":11,"gl-matrix":21,"underscore":20}],20:[function(require,module,exports){
+},{"./pointable":11,"gl-matrix":22,"underscore":21}],11:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
+
+/**
+ * Constructs a Pointable object.
+ *
+ * An uninitialized pointable is considered invalid.
+ * Get valid Pointable objects from a Frame or a Hand object.
+ *
+ * @class Pointable
+ * @memberof Leap
+ * @classdesc
+ * The Pointable class reports the physical characteristics of a detected
+ * finger or tool.
+ *
+ * Both fingers and tools are classified as Pointable objects. Use the
+ * Pointable.tool property to determine whether a Pointable object represents a
+ * tool or finger. The Leap classifies a detected entity as a tool when it is
+ * thinner, straighter, and longer than a typical finger.
+ *
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
+ * exist in the current frame. A Pointable object created from the Pointable
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
+ */
+var Pointable = exports.Pointable = function(data) {
+  /**
+   * Indicates whether this is a valid Pointable object.
+   *
+   * @member valid
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.valid = true;
+  /**
+   * A unique ID assigned to this Pointable object, whose value remains the
+   * same across consecutive frames while the tracked finger or tool remains
+   * visible. If tracking is lost (for example, when a finger is occluded by
+   * another finger or when it is withdrawn from the Leap field of view), the
+   * Leap may assign a new ID when it detects the entity in a future frame.
+   *
+   * Use the ID value with the pointable() functions defined for the
+   * {@link Frame} and {@link Frame.Hand} classes to find this
+   * Pointable object in future frames.
+   *
+   * @member id
+   * @type {String}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.id = data.id;
+  this.handId = data.handId;
+  /**
+   * The estimated length of the finger or tool in millimeters.
+   *
+   * The reported length is the visible length of the finger or tool from the
+   * hand to tip. If the length isn't known, then a value of 0 is returned.
+   *
+   * @member length
+   * @type {Number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.length = data.length;
+  /**
+   * Whether or not the Pointable is believed to be a tool.
+   * Tools are generally longer, thinner, and straighter than fingers.
+   *
+   * If tool is false, then this Pointable must be a finger.
+   *
+   * @member tool
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tool = data.tool;
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member width
+   * @type {Number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.width = data.width;
+  /**
+   * The direction in which this finger or tool is pointing.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the tip.
+   *
+   * ![Finger](images/Leap_Finger_Model.png)
+   * @member direction
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.direction = data.direction;
+  /**
+   * The tip position in millimeters from the Leap origin.
+   *
+   * @member tipPosition
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipPosition = data.tipPosition;
+  /**
+   * The rate of change of the tip position in millimeters/second.
+   *
+   * @member tipVelocity
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipVelocity = data.tipVelocity;
+}
+
+/**
+ * A string containing a brief, human readable description of the Pointable
+ * object.
+ *
+ * @method toString
+ * @memberof Leap.Pointable.prototype
+ * @returns {String} A description of the Pointable object as a string.
+ */
+Pointable.prototype.toString = function() {
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
+}
+
+/**
+ * An invalid Pointable object.
+ *
+ * You can use this Pointable instance in comparisons testing
+ * whether a given Pointable instance is valid or invalid. (You can also use the
+ * Pointable.valid property.)
+
+ * @static
+ * @type {Leap.Pointable}
+ * @name Invalid
+ * @memberof Leap.Pointable
+ */
+Pointable.Invalid = { valid: false };
+
+},{"gl-matrix":22}],21:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -3603,7 +3611,7 @@ Hand.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 (function(){/**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6677,7 +6685,7 @@ if(typeof(exports) !== 'undefined') {
 })();
 
 })()
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7124,7 +7132,7 @@ Connection.prototype.setHeartbeatState = function(state) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"./protocol":23,"events":15,"underscore":20}],23:[function(require,module,exports){
+},{"./protocol":24,"events":15,"underscore":21}],24:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -7159,7 +7167,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-},{"./frame":8,"util":22}],18:[function(require,module,exports){
+},{"./frame":8,"util":23}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
 //  , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -7248,5 +7256,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":15,"underscore":20}]},{},[1,2,3])
+},{"events":15,"underscore":21}]},{},[1,2,3])
 ;
