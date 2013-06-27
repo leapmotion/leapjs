@@ -6,6 +6,10 @@
   "scripts": {
     "test": "make test-node"
   },
+  "repository" : {
+    "type" : "git",
+    "url" : "http://github.com/leapmotion/leapjs.git"
+  },
   "license": "BSD-2-Clause",
   "dependencies": {
     "ws": "0.4.25",
@@ -13,7 +17,7 @@
   },
   "devDependencies": {
     "underscore": "1.4.4",
-    "browserify": "2.18.1",
+    "browserify": "git://github.com/joshbuddy/node-browserify.git#7a43547ec7e69c9818a865edfc06b3decbf206fb",
     "mocha": "1.7.4",
     "mocha-phantomjs": "3.0.0",
     "phantomjs": "1.9.0-6",
