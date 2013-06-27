@@ -22,5 +22,9 @@ controller.on("disconnect", function(frame) {
   process.exit();
 });
 
+controller.on("device", function(state) {
+  console.log("device is "+state);
+});
 controller.connect();
 console.log("\nWaiting for device to connect...");
+

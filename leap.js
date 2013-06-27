@@ -480,7 +480,7 @@ exports.Leap = {
 }
 
 })()
-},{"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./pointable":9,"./vector":10,"./matrix":11,"./connection":12,"./circular_buffer":13,"./ui":14}],13:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./controller":7,"./frame":8,"./gesture":9,"./hand":10,"./matrix":11,"./pointable":12,"./ui":13,"./vector":14}],5:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -500,6 +500,8 @@ CircularBuffer.prototype.push = function(o) {
 }
 
 },{}],15:[function(require,module,exports){
+
+},{}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -553,7 +555,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -739,9 +741,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":15}],17:[function(require,module,exports){
-
-},{}],7:[function(require,module,exports){
+},{"__browserify_process":16}],9:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1142,7 +1142,7 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"./vector":10}],9:[function(require,module,exports){
+},{"./vector":14}],12:[function(require,module,exports){
 var Vector = require("./vector").Vector
 
 /**
@@ -1292,7 +1292,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"./vector":10}],12:[function(require,module,exports){
+},{"./vector":14}],6:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
@@ -1344,12 +1344,12 @@ Connection.prototype.startHeartbeat = function() {
   }, this.opts.heartbeatInterval);
 }
 
-},{"./base_connection":18}],14:[function(require,module,exports){
+},{"./base_connection":18}],13:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/region":19,"./ui/cursor":20}],21:[function(require,module,exports){
+},{"./ui/cursor":19,"./ui/region":20}],21:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -1367,7 +1367,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1378,7 +1378,7 @@ var Cursor = exports.Cursor = function() {
   }
 }
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var inNode = typeof(window) === 'undefined';
 
 var Frame = require('./frame').Frame
@@ -1448,7 +1448,7 @@ var Controller = exports.Controller = function(opts) {
     controller.devicePresent = undefined;
     controller.deviceReadyTimer = setTimeout(function() {
       controller.updateDevicePresent(false);
-    }, 50)
+    }, 100)
     controller.emit('connect');
   });
   this.connection.on('disconnect', function() { controller.emit('disconnect') });
@@ -1458,6 +1458,7 @@ var Controller = exports.Controller = function(opts) {
 
 Controller.prototype.updateDevicePresent = function(newState) {
   if (this.devicePresent !== newState) {
+    if (newState) clearTimeout(this.deviceReadyTimer);
     this.devicePresent = newState;
     this.emit('device', newState);
   }
@@ -1565,7 +1566,7 @@ Controller.prototype.processFinishedFrame = function(frame) {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"events":16,"./node_connection":17,"./frame":6,"./circular_buffer":13,"./pipeline":21,"./connection":12,"underscore":22}],6:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":15,"./pipeline":21,"events":17,"underscore":22}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -2018,7 +2019,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./hand":8,"./pointable":9,"./gesture":7,"./vector":10,"./matrix":11,"underscore":22}],8:[function(require,module,exports){
+},{"./gesture":9,"./hand":10,"./matrix":11,"./pointable":12,"./vector":14,"underscore":22}],10:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , Vector = require("./vector").Vector
   , Matrix = require("./matrix").Matrix
@@ -2366,7 +2367,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":9,"./vector":10,"./matrix":11,"underscore":22}],10:[function(require,module,exports){
+},{"./matrix":11,"./pointable":12,"./vector":14,"underscore":22}],14:[function(require,module,exports){
 var _ = require('underscore');
 
 /**
@@ -3136,7 +3137,7 @@ _.extend(Matrix.prototype, MatrixPrototype);
  */
 Matrix.identity = function(){ return new Matrix(); };
 
-},{"./vector":10,"underscore":22}],22:[function(require,module,exports){
+},{"./vector":14,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -4718,42 +4719,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":16}],24:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var JSONProtocol = function(version) {
-  var protocol = function(data) {
-    return new Frame(data);
-  }
-  protocol.encode = function(message) {
-    return util.format("%j", message);
-  }
-  protocol.version = version;
-  protocol.versionLong = 'Version ' + version;
-  protocol.type = 'version';
-  return protocol;
-};
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  var protocol;
-  switch(header.version) {
-    case 1:
-      protocol = JSONProtocol(1);
-      break;
-    case 2:
-      protocol = JSONProtocol(2);
-      protocol.sendHeartbeat = function(connection) {
-        connection.send(protocol.encode({heartbeat: true}));
-      }
-      break;
-    default:
-      throw "unrecognized version";
-  }
-  return protocol;
-}
-
-},{"util":23,"./frame":6}],18:[function(require,module,exports){
+},{"events":17}],18:[function(require,module,exports){
 var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -4847,7 +4813,42 @@ Connection.prototype.setHeartbeatState = function(state) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"events":16,"./protocol":24,"underscore":22}],19:[function(require,module,exports){
+},{"./protocol":24,"events":17,"underscore":22}],24:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , util = require('util');
+
+var JSONProtocol = function(version) {
+  var protocol = function(data) {
+    return new Frame(data);
+  }
+  protocol.encode = function(message) {
+    return util.format("%j", message);
+  }
+  protocol.version = version;
+  protocol.versionLong = 'Version ' + version;
+  protocol.type = 'version';
+  return protocol;
+};
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  var protocol;
+  switch(header.version) {
+    case 1:
+      protocol = JSONProtocol(1);
+      break;
+    case 2:
+      protocol = JSONProtocol(2);
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
+      break;
+    default:
+      throw "unrecognized version";
+  }
+  return protocol;
+}
+
+},{"./frame":8,"util":23}],20:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , Vector = require('../vector').Vector
   , _ = require('underscore')
@@ -4936,5 +4937,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":16,"../vector":10,"underscore":22}]},{},[1,2,3])
+},{"../vector":14,"events":17,"underscore":22}]},{},[1,2,3])
 ;
