@@ -75,7 +75,6 @@ var fakeHand = exports.fakeHand = function(opts) {
   return {
     id: handId - 1,
     valid: true,
-    palm: [],
     palmPosition: [1,2,3],
     direction: [1,2,3],
     palmVelocity: [1,2,3],
