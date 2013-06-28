@@ -1,25 +1,41 @@
 var Leap = require('../lib/index').Leap;
 
-var frames = [];
-
 var controller = new Leap.Controller()
 controller.on("frame", function(frame) {
   console.log("Frame: " + frame.id + " @ " + frame.timestamp);
-  frames.push(frame);
 });
 
-controller.on("connect", function(frame) {
-  console.log("\nDevice connected\nCollecting data...\n");
-  setTimeout(function(){
-	var time = frames.length/2;
-    console.log("\nRecieved " + frames.length + " frames @ " + time + "fps");
-	process.exit();
-  }, 2000);
+var frameCount = 0;
+controller.on("frame", function(frame) {
+  frameCount++;
 });
 
-controller.on("disconnect", function(frame) {
-  console.log("Device not connected");
-  process.exit();
+setInterval(function() {
+  var time = frameCount/2;
+  console.log("recieved " + frameCount + " frames @ " + time + "fps");
+  frameCount = 0;
+}, 2000);
+
+controller.on('ready', function() {
+    console.log("ready");
+});
+controller.on('connect', function() {
+    console.log("connect");
+});
+controller.on('disconnect', function() {
+    console.log("disconnect");
+});
+controller.on('focus', function() {
+    console.log("focus");
+});
+controller.on('blur', function() {
+    console.log("blur");
+});
+controller.on('deviceConnected', function() {
+    console.log("deviceConnected");
+});
+controller.on('deviceDisconnected', function() {
+    console.log("deviceDisconnected");
 });
 
 controller.connect();
