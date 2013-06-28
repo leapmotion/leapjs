@@ -50,7 +50,7 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     timestamp: frameId,
     pointables: _(opts.fingers || 0).times(function() { return fakeFinger() }),
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
-    r: opts.rotation || [0,1,2, 2,3,4, 2,3,4],
+    r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
   };
   if (opts.gestures) {
@@ -76,7 +76,7 @@ var fakeHand = exports.fakeHand = function(opts) {
     id: handId - 1,
     valid: true,
     palm: [],
-    r: (opts && opts.rotation) || [0,1,2, 2,3,4, 2,3,4],
+    r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
     t: (opts && opts.translation) || [1, 2, 3]
   }
 }

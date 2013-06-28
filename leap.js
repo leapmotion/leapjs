@@ -1322,9 +1322,9 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
 Frame.prototype.rotationAxis = function(sinceFrame){
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var vec = vec3.clone([
-    this.rotation[7] - sinceFrame.rotation[5],
-    this.rotation[2] - sinceFrame.rotation[6],
-    this.rotation[3] - sinceFrame.rotation[1]
+    this.rotation[2][1] - sinceFrame.rotation[1][2],
+    this.rotation[0][2] - sinceFrame.rotation[2][0],
+    this.rotation[1][0] - sinceFrame.rotation[0][1]
   ])
   return vec3.normalize(vec3.create(), vec);
 }
@@ -1348,11 +1348,11 @@ Frame.prototype.rotationAxis = function(sinceFrame){
 Frame.prototype.rotationMatrix = function(sinceFrame){
   if (!this.valid || !sinceFrame.valid) return mat3.create();
   var transpose = [
-    this.rotation[0], this.rotation[3], this.rotation[6],
-    this.rotation[1], this.rotation[4], this.rotation[7],
-    this.rotation[2], this.rotation[5], this.rotation[8]
+    this.rotation[0][0], this.rotation[1][0], this.rotation[2][0],
+    this.rotation[0][1], this.rotation[1][1], this.rotation[2][1],
+    this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]
   ];
-  return mat3.multiply(mat3.create(), sinceFrame.rotation, transpose);
+  return mat3.multiply(mat3.create(), _.flatten(sinceFrame.rotation), transpose);
 }
 
 /**
@@ -2112,9 +2112,9 @@ Hand.prototype.rotationAxis = function(sinceFrame){
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   return vec3.normalize(vec3.create(), [
-    this.rotation[7] - sinceHand.rotation[5],
-    this.rotation[2] - sinceHand.rotation[6],
-    this.rotation[3] - sinceHand.rotation[1]
+    this.rotation[2][1] - sinceHand.rotation[1][2],
+    this.rotation[0][2] - sinceHand.rotation[2][0],
+    this.rotation[1][0] - sinceHand.rotation[0][1]
   ]);
 }
 
@@ -2139,11 +2139,11 @@ Hand.prototype.rotationMatrix = function(sinceFrame){
   if(!sinceHand.valid) return Matrix.identity();
 
   var transpose = [
-    this.rotation[0], this.rotation[3], this.rotation[6],
-    this.rotation[1], this.rotation[4], this.rotation[7],
-    this.rotation[2], this.rotation[5], this.rotation[8]
+    this.rotation[0][0], this.rotation[1][0], this.rotation[2][0],
+    this.rotation[0][1], this.rotation[1][1], this.rotation[2][1],
+    this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]
   ];
-  return mat3.multiply(mat3.create(), sinceHand.rotation, transpose);
+  return mat3.multiply(mat3.create(), _.flatten(sinceHand.rotation), transpose);
 }
 
 /**
