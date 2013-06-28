@@ -480,16 +480,21 @@ exports.Leap = {
 })()
 },{"./circular_buffer":5,"./connection":6,"./controller":7,"./frame":8,"./gesture":9,"./hand":10,"./interaction_box":11,"./pointable":12,"./ui":13}],11:[function(require,module,exports){
 /**
+ * Constructs a InteractionBox object.
+ *
+ * @class InteractionBox
+ * @memberof Leap
+ * @classdesc
  * The InteractionBox class represents a box-shaped region completely within
  * the field of view of the Leap Motion controller.
  *
- * <p>The interaction box is an axis-aligned rectangular prism and provides
+ * The interaction box is an axis-aligned rectangular prism and provides
  * normalized coordinates for hands, fingers, and tools within this box.
  * The InteractionBox class can make it easier to map positions in the
  * Leap Motion coordinate system to 2D or 3D coordinate systems used
- * for application drawing.</p>
+ * for application drawing.
  *
- * <p>The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.</p>
+ * The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.
  */
 var InteractionBox = exports.InteractionBox = function(data) {
     /**
@@ -502,7 +507,7 @@ var InteractionBox = exports.InteractionBox = function(data) {
     this.valid = true;
     /**
      * The center of the InteractionBox in device coordinates (millimeters).
-     * <p>This point is equidistant from all sides of the box.</p>
+     * This point is equidistant from all sides of the box.
      *
      * @member center
      * @type {number[]}
@@ -539,7 +544,7 @@ var InteractionBox = exports.InteractionBox = function(data) {
  * Converts a position defined by normalized InteractionBox coordinates
  * into device coordinates in millimeters.
  *
- * <p>This function performs the inverse of normalizePoint().</p>
+ * This function performs the inverse of normalizePoint().
  *
  * @method denormalizePoint
  * @memberof Leap.InteractionBox.prototype
@@ -559,9 +564,9 @@ InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
 /**
  * Normalizes the coordinates of a point using the interaction box.
  *
- * <p>Coordinates from the Leap Motion frame of reference (millimeters) are
+ * Coordinates from the Leap Motion frame of reference (millimeters) are
  * converted to a range of [0..1] such that the minimum value of the
- * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.</p>
+ * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.
  *
  * @method normalizePoint
  * @memberof Leap.InteractionBox.prototype
@@ -577,8 +582,7 @@ InteractionBox.prototype.normalizePoint = function(position, clamp) {
     vec.y = ( ( position.y - this.center.y ) / this.height ) + 0.5;
     vec.z = ( ( position.z - this.center.z ) / this.depth ) + 0.5;
 
-    if( clamp )
-    {
+    if( clamp ) {
         vec.x = Math.min( Math.max( vec.x, 0 ), 1 );
         vec.y = Math.min( Math.max( vec.y, 0 ), 1 );
         vec.z = Math.min( Math.max( vec.z, 0 ), 1 );
@@ -595,7 +599,7 @@ InteractionBox.prototype.normalizePoint = function(position, clamp) {
  * @returns {String} A description of the InteractionBox object as a string.
  */
 InteractionBox.prototype.toString = function() {
-    return "InteractionBox [ width:" + this.width + " height:" + this.height + " depth:" + this.depth + " ]";
+    return "InteractionBox [ width:" + this.width + " | height:" + this.height + " | depth:" + this.depth + " ]";
 }
 
 /**
@@ -604,7 +608,7 @@ InteractionBox.prototype.toString = function() {
  * You can use this InteractionBox instance in comparisons testing
  * whether a given InteractionBox instance is valid or invalid. (You can also use the
  * InteractionBox.valid property.)
-
+ *
  * @static
  * @type {Leap.InteractionBox}
  * @name Invalid
