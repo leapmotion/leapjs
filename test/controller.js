@@ -64,4 +64,21 @@ describe('Controller', function(){
       controller.connect()
     });
   });
+
+  describe('events', function() {
+    it('should fire a device event with true if there is a frame', function(done) {
+      var controller = fakeController()
+      controller.on('ready', function() {
+        controller.processFrame(fakeFrame());
+      });
+      controller.on('deviceConnected', done);
+      controller.connect()
+    });
+
+    it('should fire a device event with false if there is no frame', function(done) {
+      var controller = fakeController()
+      controller.on('deviceDisconnected', done);
+      controller.connect()
+    });
+  });
 })
