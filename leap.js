@@ -922,7 +922,7 @@ Controller.prototype.disconnect = function() {
  *
  * @method frame
  * @memberof Leap.Controller.prototype
- * @param {Number} history The age of the frame to return, counting backwards from
+ * @param {number} history The age of the frame to return, counting backwards from
  * the most recent frame (0) into the past and up to the maximum age (59).
  * @returns {Leap.Frame} The specified frame; or, if no history
  * parameter is specified, the newest frame. If a frame is not available at
@@ -1081,7 +1081,7 @@ var Frame = exports.Frame = function(data) {
    * The frame capture time in microseconds elapsed since the Leap started.
    * @member timestamp
    * @memberof Leap.Frame.prototype
-   * @type {Number}
+   * @type {number}
    */
   this.timestamp = data.timestamp;
   /**
@@ -1281,11 +1281,11 @@ Frame.prototype.hand = function(id) {
  * @method rotationAngle
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @param {Leap.Vector} [axis] The axis to measure rotation around.
- * @returns {Number} A positive value containing the heuristically determined
+ * @param {number[]} [axis] The axis to measure rotation around.
+ * @returns {number} A positive value containing the heuristically determined
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.rotationAngle = function(sinceFrame, axis){
+Frame.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
 
   var rot = this.rotationMatrix(sinceFrame);
@@ -1293,9 +1293,9 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
   var angle = Math.acos(cs);
   angle = isNaN(angle) ? 0.0 : angle;
 
-  if(axis){
+  if (axis !== undefined) {
     var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= rotAxis.dot(axis.normalized());
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis.normalized()));
   }
 
   return angle;
@@ -1316,10 +1316,10 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis){
  * @method rotationAxis
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Vector} A normalized direction Vector representing the axis of the heuristically determined
+ * @returns {number[]} A normalized direction vector representing the axis of the heuristically determined
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.rotationAxis = function(sinceFrame){
+Frame.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var vec = vec3.clone([
     this.rotation[2][1] - sinceFrame.rotation[1][2],
@@ -1342,10 +1342,10 @@ Frame.prototype.rotationAxis = function(sinceFrame){
  * @method rotationMatrix
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Matrix} A transformation Matrix containing the heuristically determined
+ * @returns {number[]} A transformation matrix containing the heuristically determined
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.rotationMatrix = function(sinceFrame){
+Frame.prototype.rotationMatrix = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return mat3.create();
   var transpose = [
     this.rotation[0][0], this.rotation[1][0], this.rotation[2][0],
@@ -1369,10 +1369,10 @@ Frame.prototype.rotationMatrix = function(sinceFrame){
  * @method scaleFactor
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative scaling.
- * @returns {Number} A positive value representing the heuristically determined
+ * @returns {number} A positive value representing the heuristically determined
  * scaling change ratio between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.scaleFactor = function(sinceFrame){
+Frame.prototype.scaleFactor = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return 1.0;
   return Math.exp(this._scaleFactor - sinceFrame._scaleFactor);
 }
@@ -1393,10 +1393,10 @@ Frame.prototype.scaleFactor = function(sinceFrame){
  * @method translation
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative translation.
- * @returns {Leap.Vector} A Vector representing the heuristically determined change in
+ * @returns {number[]} A vector representing the heuristically determined change in
  * position of all objects between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.translation = function(sinceFrame){
+Frame.prototype.translation = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   return vec3.subtract(vec3.create(), this._translation, sinceFrame._translation);
 }
@@ -1557,7 +1557,7 @@ var Gesture = exports.Gesture = function(data) {
   *
   * @member id
   * @memberof Leap.Gesture.prototype
-  * @type {Number}
+  * @type {number}
   */
   gesture.id = data.id;
  /**
@@ -1591,7 +1591,7 @@ var Gesture = exports.Gesture = function(data) {
   *
   * @member duration
   * @memberof Leap.Gesture.prototype
-  * @type {Number}
+  * @type {number}
   */
   gesture.duration = data.duration;
  /**
@@ -1661,7 +1661,7 @@ var CircleGesture = function(data) {
   *
   * @member center
   * @memberof Leap.CircleGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.center = data.center;
  /**
@@ -1686,7 +1686,7 @@ var CircleGesture = function(data) {
   *
   * @member normal
   * @memberof Leap.CircleGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.normal = data.normal;
  /**
@@ -1704,7 +1704,7 @@ var CircleGesture = function(data) {
   *
   * @member progress
   * @memberof Leap.CircleGesture.prototype
-  * @type {Number}
+  * @type {number}
   */
   this.progress = data.progress;
  /**
@@ -1712,7 +1712,7 @@ var CircleGesture = function(data) {
   *
   * @member radius
   * @memberof Leap.CircleGesture.prototype
-  * @type {Number}
+  * @type {number}
   */
   this.radius = data.radius;
 }
@@ -1740,7 +1740,7 @@ var SwipeGesture = function(data) {
   *
   * @member startPosition
   * @memberof Leap.SwipeGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.startPosition = data.startPosition;
  /**
@@ -1749,7 +1749,7 @@ var SwipeGesture = function(data) {
   *
   * @member position
   * @memberof Leap.SwipeGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.position = data.position;
  /**
@@ -1762,7 +1762,7 @@ var SwipeGesture = function(data) {
   *
   * @member direction
   * @memberof Leap.SwipeGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.direction = data.direction;
  /**
@@ -1771,7 +1771,7 @@ var SwipeGesture = function(data) {
   *
   * @member speed
   * @memberof Leap.SwipeGesture.prototype
-  * @type {Number}
+  * @type {number}
   */
   this.speed = data.speed;
 }
@@ -1804,7 +1804,7 @@ var ScreenTapGesture = function(data) {
   *
   * @member position
   * @memberof Leap.ScreenTapGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.position = data.position;
  /**
@@ -1812,7 +1812,7 @@ var ScreenTapGesture = function(data) {
   *
   * @member direction
   * @memberof Leap.ScreenTapGesture.prototype
-  * @type {Leap.Vector}
+  * @type {number[]}
   */
   this.direction = data.direction;
  /**
@@ -1820,7 +1820,7 @@ var ScreenTapGesture = function(data) {
   *
   * @member progress
   * @memberof Leap.ScreenTapGesture.prototype
-  * @type {Number}
+  * @type {number}
   */
   this.progress = data.progress;
 }
@@ -1853,7 +1853,7 @@ var KeyTapGesture = function(data) {
      *
      * @member position
      * @memberof Leap.KeyTapGesture.prototype
-     * @type {Leap.Vector}
+     * @type {number[]}
      */
     this.position = data.position;
     /**
@@ -1861,7 +1861,7 @@ var KeyTapGesture = function(data) {
      *
      * @member direction
      * @memberof Leap.KeyTapGesture.prototype
-     * @type {Leap.Vector}
+     * @type {number[]}
      */
     this.direction = data.direction;
     /**
@@ -1869,7 +1869,7 @@ var KeyTapGesture = function(data) {
      *
      * @member progress
      * @memberof Leap.KeyTapGesture.prototype
-     * @type {Number}
+     * @type {number}
      */
     this.progress = data.progress;
 }
@@ -1922,7 +1922,7 @@ var Hand = exports.Hand = function(data) {
    * The center position of the palm in millimeters from the Leap origin.
    * @member palmPosition
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
   this.palmPosition = data.palmPosition;
   /**
@@ -1933,7 +1933,7 @@ var Hand = exports.Hand = function(data) {
    *
    * @member direction
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
   this.direction = data.direction;
   /**
@@ -1941,7 +1941,7 @@ var Hand = exports.Hand = function(data) {
    *
    * @member palmVeclocity
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
   this.palmVelocity = data.palmVelocity;
   /**
@@ -1954,7 +1954,7 @@ var Hand = exports.Hand = function(data) {
    * direction as the palm normal (that is, a vector orthogonal to the palm).
    * @member palmNormal
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
   this.palmNormal = data.palmNormal;
   /**
@@ -1965,7 +1965,7 @@ var Hand = exports.Hand = function(data) {
    * ![Hand Ball](images/Leap_Hand_Ball.png)
    * @member sphereCenter
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
   this.sphereCenter = data.sphereCenter;
   /**
@@ -1976,7 +1976,7 @@ var Hand = exports.Hand = function(data) {
    *
    * @member sphereRadius
    * @memberof Leap.Hand.prototype
-   * @type {Number}
+   * @type {number}
    */
   this.sphereRadius = data.sphereRadius;
   /**
@@ -1984,7 +1984,7 @@ var Hand = exports.Hand = function(data) {
    *
    * @member valid
    * @memberof Leap.Hand.prototype
-   * @type {Boolean}
+   * @type {boolean}
    */
   this.valid = true;
   /**
@@ -2070,8 +2070,8 @@ Hand.prototype.finger = function(id) {
  * @method rotationAngle
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @param {Leap.Vector} [axis] The axis to measure rotation around.
- * @returns {Number} A positive value representing the heuristically determined
+ * @param {numnber[]} [axis] The axis to measure rotation around.
+ * @returns {number} A positive value representing the heuristically determined
  * rotational change of the hand between the current frame and that specified in
  * the sinceFrame parameter.
  */
@@ -2085,9 +2085,9 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis){
   var angle = Math.acos(cs);
   angle = isNaN(angle) ? 0.0 : angle;
 
-  if(axis){
+  if (axis !== undefined) {
     var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= rotAxis.dot(axis.normalized());
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis.normalized()));
   }
 
   return angle;
@@ -2105,17 +2105,17 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis){
  * @method rotationAxis
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Vector} A normalized direction Vector representing the axis of the heuristically determined
+ * @returns {number[]} A normalized direction Vector representing the axis of the heuristically determined
  * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
  */
 Hand.prototype.rotationAxis = function(sinceFrame){
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   return vec3.normalize(vec3.create(), [
-    this.rotation[2][1] - sinceHand.rotation[1][2],
-    this.rotation[0][2] - sinceHand.rotation[2][0],
-    this.rotation[1][0] - sinceHand.rotation[0][1]
-  ]);
+      this.rotation[2][1] - sinceHand.rotation[1][2],
+      this.rotation[0][2] - sinceHand.rotation[2][0],
+      this.rotation[1][0] - sinceHand.rotation[0][1]
+    ]);
 }
 
 /**
@@ -2161,7 +2161,7 @@ Hand.prototype.rotationMatrix = function(sinceFrame){
  * @method scaleFactor
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative scaling.
- * @returns {Number} A positive value representing the heuristically determined
+ * @returns {number} A positive value representing the heuristically determined
  * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
  */
 Hand.prototype.scaleFactor = function(sinceFrame){
@@ -2184,7 +2184,7 @@ Hand.prototype.scaleFactor = function(sinceFrame){
  * @method translation
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative translation.
- * @returns {Leap.Vector} A Vector representing the heuristically determined change in hand
+ * @returns {number[]} A Vector representing the heuristically determined change in hand
  * position between the current frame and that specified in the sinceFrame parameter.
  */
 Hand.prototype.translation = function(sinceFrame){
@@ -2196,7 +2196,6 @@ Hand.prototype.translation = function(sinceFrame){
     this._translation[1] - sinceHand._translation[1],
     this._translation[2] - sinceHand._translation[2]
   ];
-  return new Vector([x, y, z]);
 }
 
 /**
@@ -2285,7 +2284,7 @@ var Pointable = exports.Pointable = function(data) {
    * hand to tip. If the length isn't known, then a value of 0 is returned.
    *
    * @member length
-   * @type {Number}
+   * @type {number}
    * @memberof Leap.Pointable.prototype
    */
   this.length = data.length;
@@ -2310,7 +2309,7 @@ var Pointable = exports.Pointable = function(data) {
    * Pointable objects representing fingers do not have a width property.
    *
    * @member width
-   * @type {Number}
+   * @type {number}
    * @memberof Leap.Pointable.prototype
    */
   this.width = data.width;
@@ -2322,7 +2321,7 @@ var Pointable = exports.Pointable = function(data) {
    *
    * ![Finger](images/Leap_Finger_Model.png)
    * @member direction
-   * @type {Leap.Vector}
+   * @type {number[]}
    * @memberof Leap.Pointable.prototype
    */
   this.direction = data.direction;

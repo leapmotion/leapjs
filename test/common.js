@@ -76,6 +76,11 @@ var fakeHand = exports.fakeHand = function(opts) {
     id: handId - 1,
     valid: true,
     palm: [],
+    palmPosition: [1,2,3],
+    direction: [1,2,3],
+    palmVelocity: [1,2,3],
+    palmNormal: [1,2,3],
+    sphereCenter:[1,2,3],
     r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
     t: (opts && opts.translation) || [1, 2, 3]
   }
@@ -88,11 +93,8 @@ var fakeFinger = exports.fakeFinger = function() {
     length: 5,
     tool: false,
     width: 5,
-
-    tip: {
-      direction: [10, 10, 10],
-      position: [10, 10, 10],
-      direction: [10, 10, 10]
-    }
+    direction: [10, 10, 10],
+    tipPosition: [10, 10, 10],
+    tipVelocity: [10, 10, 10]
   }
 }
