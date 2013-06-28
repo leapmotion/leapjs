@@ -1428,7 +1428,6 @@ var Controller = exports.Controller = function(opts) {
   var connectionType = this.opts.connectionType || this.connectionType();
   this.connection = new connectionType(this.opts);
   this.accumulatedGestures = [];
-
   this.connection.on('frame', function(frame) {
     if (frame.gestures) {
       controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
