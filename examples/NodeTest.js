@@ -1,11 +1,8 @@
 var Leap = require('../lib/index').Leap;
 
-var frames = [];
-
 var controller = new Leap.Controller()
 controller.on("frame", function(frame) {
   console.log("Frame: " + frame.id + " @ " + frame.timestamp);
-  frames.push(frame);
 });
 
 var frameCount = 0;
