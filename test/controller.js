@@ -69,22 +69,15 @@ describe('Controller', function(){
     it('should fire a device event with true if there is a frame', function(done) {
       var controller = fakeController()
       controller.on('ready', function() {
-        controller.processFrame(fakeFrame())
+        controller.processFrame(fakeFrame());
       });
-      controller.on('device', function(state) {
-        if (state) done();
-      });
+      controller.on('deviceConnected', done);
       controller.connect()
     });
 
     it('should fire a device event with false if there is no frame', function(done) {
       var controller = fakeController()
-      controller.on('ready', function() {
-        controller.processFrame(fakeFrame())
-      });
-      controller.on('device', function(state) {
-        if (!state) done();
-      });
+      controller.on('deviceDisconnected', done);
       controller.connect()
     });
   });
