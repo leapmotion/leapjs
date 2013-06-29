@@ -71,6 +71,7 @@ var fakeGesture = exports.fakeGesture = function(opts) {
 };
 
 var fakeHand = exports.fakeHand = function(opts) {
+  if (opts === undefined) opts = {};
   handId++
   return {
     id: handId - 1,
@@ -89,6 +90,7 @@ var fakeFinger = exports.fakeFinger = function() {
   fingerId++
   return {
     id: fingerId - 1,
+    handId: 0,
     length: 5,
     tool: false,
     width: 5,

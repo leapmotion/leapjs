@@ -1143,7 +1143,7 @@ var Frame = exports.Frame = function(data) {
     this.pointables.push(pointable);
     this.pointablesMap[pointable.id] = pointable;
     (pointable.tool ? this.tools : this.fingers).push(pointable);
-    if (pointable.handId && handMap.hasOwnProperty(pointable.handId)) {
+    if (pointable.handId !== undefined && handMap.hasOwnProperty(pointable.handId)) {
       var hand = this.hands[handMap[pointable.handId]];
       hand.pointables.push(pointable);
       (pointable.tool ? hand.tools : hand.fingers).push(pointable);
