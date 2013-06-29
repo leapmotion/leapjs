@@ -1125,7 +1125,7 @@ var Frame = exports.Frame = function(data) {
   this.gestures = [];
   this.pointablesMap = {};
   this._translation = data.t;
-  this.rotation = data.r;
+  this._rotation = _.flatten(data.r);
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
@@ -1295,7 +1295,7 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
 
   if (axis !== undefined) {
     var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis.normalized()));
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
   }
 
   return angle;
@@ -1322,9 +1322,9 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
 Frame.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var vec = vec3.clone([
-    this.rotation[2][1] - sinceFrame.rotation[1][2],
-    this.rotation[0][2] - sinceFrame.rotation[2][0],
-    this.rotation[1][0] - sinceFrame.rotation[0][1]
+    this._rotation[7] - sinceFrame._rotation[5],
+    this._rotation[2] - sinceFrame._rotation[6],
+    this._rotation[3] - sinceFrame._rotation[1]
   ])
   return vec3.normalize(vec3.create(), vec);
 }
@@ -1348,11 +1348,11 @@ Frame.prototype.rotationAxis = function(sinceFrame) {
 Frame.prototype.rotationMatrix = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return mat3.create();
   var transpose = [
-    this.rotation[0][0], this.rotation[1][0], this.rotation[2][0],
-    this.rotation[0][1], this.rotation[1][1], this.rotation[2][1],
-    this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]
+    this._rotation[0], this._rotation[3], this._rotation[6],
+    this._rotation[1], this._rotation[4], this._rotation[7],
+    this._rotation[2], this._rotation[5], this._rotation[8]
   ];
-  return mat3.multiply(mat3.create(), _.flatten(sinceFrame.rotation), transpose);
+  return mat3.multiply(mat3.create(), sinceFrame._rotation, transpose);
 }
 
 /**
@@ -2025,7 +2025,7 @@ var Hand = exports.Hand = function(data) {
    */
   this.tools = [];
   this._translation = data.t;
-  this.rotation = data.r;
+  this._rotation = _.flatten(data.r);
   this._scaleFactor = data.s;
 }
 
@@ -2075,7 +2075,7 @@ Hand.prototype.finger = function(id) {
  * rotational change of the hand between the current frame and that specified in
  * the sinceFrame parameter.
  */
-Hand.prototype.rotationAngle = function(sinceFrame, axis){
+Hand.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 0.0;
@@ -2087,7 +2087,7 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis){
 
   if (axis !== undefined) {
     var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis.normalized()));
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
   }
 
   return angle;
@@ -2108,14 +2108,14 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis){
  * @returns {number[]} A normalized direction Vector representing the axis of the heuristically determined
  * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.rotationAxis = function(sinceFrame){
+Hand.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   return vec3.normalize(vec3.create(), [
-      this.rotation[2][1] - sinceHand.rotation[1][2],
-      this.rotation[0][2] - sinceHand.rotation[2][0],
-      this.rotation[1][0] - sinceHand.rotation[0][1]
-    ]);
+    this._rotation[7] - sinceHand._rotation[5],
+    this._rotation[2] - sinceHand._rotation[6],
+    this._rotation[3] - sinceHand._rotation[1]
+  ]);
 }
 
 /**
@@ -2130,20 +2130,20 @@ Hand.prototype.rotationAxis = function(sinceFrame){
  * @method rotationMatrix
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Matrix} A transformation Matrix containing the heuristically determined
+ * @returns {number[]} A transformation Matrix containing the heuristically determined
  * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.rotationMatrix = function(sinceFrame){
+Hand.prototype.rotationMatrix = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return Matrix.identity();
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return Matrix.identity();
 
   var transpose = [
-    this.rotation[0][0], this.rotation[1][0], this.rotation[2][0],
-    this.rotation[0][1], this.rotation[1][1], this.rotation[2][1],
-    this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]
+    this._rotation[0], this._rotation[3], this._rotation[6],
+    this._rotation[1], this._rotation[4], this._rotation[7],
+    this._rotation[2], this._rotation[5], this._rotation[8]
   ];
-  return mat3.multiply(mat3.create(), _.flatten(sinceHand.rotation), transpose);
+  return mat3.multiply(mat3.create(), sinceHand._rotation, transpose);
 }
 
 /**
@@ -2164,7 +2164,7 @@ Hand.prototype.rotationMatrix = function(sinceFrame){
  * @returns {number} A positive value representing the heuristically determined
  * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.scaleFactor = function(sinceFrame){
+Hand.prototype.scaleFactor = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return 1.0;
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 1.0;
@@ -2187,7 +2187,7 @@ Hand.prototype.scaleFactor = function(sinceFrame){
  * @returns {number[]} A Vector representing the heuristically determined change in hand
  * position between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.translation = function(sinceFrame){
+Hand.prototype.translation = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return vec3.create();
