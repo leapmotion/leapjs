@@ -82,16 +82,17 @@ var controller = new Leap.Controller({enableGestures: true});
 
 ### Event types
 
-The controller supports a number of event types. When leap.js connects to the websocket server, it first fires the `connect` event. After that, once the protocol has been selected, it fires a `ready` event. Once a frame has been received, a `deviceConnected` event gets fired once. Then, a `connectionFrame` gets fired for each frame coming from the websocket server conenction.
+The controller supports a number of event types. When leap.js connects to the websocket server, it first fires the `connect` event. After that, once the protocol has been selected, it fires a `ready` event. Once a frame has been received, a `deviceConnected` event gets fired once. Then, a `deviceFrame` gets fired for each frame coming from the websocket server conenction.
 
 * `connect` - The client is connected to the websocket server
+* `protocol` - The protocol has been selected for the connection. The protocol object is passed as an argument to the event handler.
 * `ready` - The protocol has been selected
 * `disconnect` - The client disconnects from the websocket server
 * `focus` - The browser received focus
 * `blur` - The browser loses focus
-* `frame` - A frame is finished being processed by the controller. This event is either driven by the `animationFrame` event or the `connectionFrame` event.
-* `animationFrame` - A frame is being emitted in time with the animation loop
-* `connectionFrame` - A frame is being emitted by the connection
+* `frame` - A frame is finished being processed by the controller. This event is either driven by the `animationFrame` event or the `deviceFrame` event. The frame is passed as an argument to the event handler.
+* `animationFrame` - A frame is being emitted in time with the animation loop. The frame is passed as an argument to the event handler.
+* `deviceFrame` - A frame is being emitted by the connection. The frame is passed as an argument to the event handler.
 * `deviceConnected` - A device has been connected.
 * `deviceDisconnected` - A device has been disconnected.
 

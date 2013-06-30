@@ -75,6 +75,15 @@ describe('Controller', function(){
       controller.connect()
     });
 
+    it('should fire a protocol event', function(done) {
+      var controller = fakeController()
+      controller.on('protocol', function(protocol) {
+        assert.equal(1, protocol.version);
+        done();
+      });
+      controller.connect()
+    });
+
     it('should fire a device event with false if there is no frame', function(done) {
       var controller = fakeController()
       controller.on('deviceDisconnected', done);
