@@ -80,6 +80,21 @@ To pass in options when constructing the controller, do the following:
 var controller = new Leap.Controller({enableGestures: true});
 ```
 
+### Event types
+
+The controller supports a number of event types. When leap.js connects to the websocket server, if first fires the `connect` event. After that, once the protocol has been selected, it fires a `ready` event. Once a frame has been received, a `deviceConnected` event gets fired once. Then, a `connectionFrame` gets fired for each frame coming from the websocket server conenction.
+
+* `connect` - The client is connected to the websocket server
+* `ready` - The protocol has been selected
+* `disconnect` - The client disconnects from the websocket server
+* `focus` - The browser received focus
+* `blur` - The browser loses focus
+* `frame` - A frame is finished being processed by the controller. This event is either driven by the `animationFrame` event or the `connectionFrame` event.
+* `animationFrame` - A frame is being emitted in time with the animation loop
+* `connectionFrame` - A frame is being emitted by the connection
+* `deviceConnected` - A device has been connected.
+* `deviceDisconnected` - A device has been disconnected.
+
 ### Internals of the event loop
 
 Leap.loop attempts to pick the right event loop to use. Within the
