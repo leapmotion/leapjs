@@ -82,7 +82,7 @@ var controller = new Leap.Controller({enableGestures: true});
 
 ### Event types
 
-The controller supports a number of event types. When leap.js connects to the websocket server, if first fires the `connect` event. After that, once the protocol has been selected, it fires a `ready` event. Once a frame has been received, a `deviceConnected` event gets fired once. Then, a `connectionFrame` gets fired for each frame coming from the websocket server conenction.
+The controller supports a number of event types. When leap.js connects to the websocket server, it first fires the `connect` event. After that, once the protocol has been selected, it fires a `ready` event. Once a frame has been received, a `deviceConnected` event gets fired once. Then, a `connectionFrame` gets fired for each frame coming from the websocket server conenction.
 
 * `connect` - The client is connected to the websocket server
 * `ready` - The protocol has been selected
