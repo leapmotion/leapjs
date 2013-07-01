@@ -415,8 +415,6 @@ Leap = require("../lib/index").Leap
   , Gesture = require("./gesture").Gesture
   , Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
-  , Vector = require("./vector").Vector
-  , Matrix = require("./matrix").Matrix
   , Connection = require("./connection").Connection
   , CircularBuffer = require("./circular_buffer").CircularBuffer
   , UI = require("./ui").UI
@@ -452,7 +450,7 @@ exports.Leap = {
    * @param {function} callback A function called when the browser is ready to
    * draw to the screen. The most recent {@link Frame} object is passed to
    * your callback function.
-   * 
+   *
    * ```javascript
    *    Leap.loop( function( frame ) {
    *        // ... your code here
@@ -472,15 +470,13 @@ exports.Leap = {
   Gesture: Gesture,
   Hand: Hand,
   Pointable: Pointable,
-  Vector: Vector,
-  Matrix: Matrix,
   Connection: Connection,
   CircularBuffer: CircularBuffer,
   UI: UI
 }
 
 })()
-},{"./circular_buffer":5,"./connection":6,"./controller":7,"./frame":8,"./gesture":9,"./hand":10,"./matrix":11,"./pointable":12,"./ui":13,"./vector":14}],5:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./controller":7,"./frame":8,"./gesture":9,"./hand":10,"./pointable":11,"./ui":12}],5:[function(require,module,exports){
 var CircularBuffer = exports.CircularBuffer = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -499,9 +495,9 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],15:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 
-},{}],16:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -555,7 +551,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -741,558 +737,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":16}],9:[function(require,module,exports){
-var Vector = require("./vector").Vector
-
-/**
- * Constructs a new Gesture object.
- *
- * An uninitialized Gesture object is considered invalid. Get valid instances
- * of the Gesture class, which will be one of the Gesture subclasses, from a
- * Frame object.
- *
- * @class Gesture
- * @abstract
- * @memberof Leap
- * @classdesc
- * The Gesture class represents a recognized movement by the user.
- *
- * The Leap watches the activity within its field of view for certain movement
- * patterns typical of a user gesture or command. For example, a movement from side to
- * side with the hand can indicate a swipe gesture, while a finger poking forward
- * can indicate a screen tap gesture.
- *
- * When the Leap recognizes a gesture, it assigns an ID and adds a
- * Gesture object to the frame gesture list. For continuous gestures, which
- * occur over many frames, the Leap updates the gesture by adding
- * a Gesture object having the same ID and updated properties in each
- * subsequent frame.
- *
- * **Important:** Recognition for each type of gesture must be enabled;
- * otherwise **no gestures are recognized or reported**.
- *
- * Subclasses of Gesture define the properties for the specific movement patterns
- * recognized by the Leap.
- *
- * The Gesture subclasses for include:
- *
- * * CircleGesture -- A circular movement by a finger.
- * * SwipeGesture -- A straight line movement by the hand with fingers extended.
- * * ScreenTapGesture -- A forward tapping movement by a finger.
- * * KeyTapGesture -- A downward tapping movement by a finger.
- *
- * Circle and swipe gestures are continuous and these objects can have a
- * state of start, update, and stop.
- *
- * The screen tap gesture is a discrete gesture. The Leap only creates a single
- * ScreenTapGesture object appears for each tap and it always has a stop state.
- *
- * Get valid Gesture instances from a Frame object. You can get a list of gestures
- * from the Frame gestures array. You can also use the Frame gesture() method
- * to find a gesture in the current frame using an ID value obtained in a
- * previous frame.
- *
- * Gesture objects can be invalid. For example, when you get a gesture by ID
- * using Frame.gesture(), and there is no gesture with that ID in the current
- * frame, then gesture() returns an Invalid Gesture object (rather than a null
- * value). Always check object validity in situations where a gesture might be
- * invalid.
- */
-var Gesture = exports.Gesture = function(data) {
-  var gesture = undefined
-  switch (data.type) {
-    case 'circle':
-      gesture = new CircleGesture(data);
-      break;
-    case 'swipe':
-      gesture = new SwipeGesture(data);
-      break;
-    case 'screenTap':
-      gesture = new ScreenTapGesture(data);
-      break;
-    case 'keyTap':
-      gesture = new KeyTapGesture(data);
-      break;
-    default:
-      throw "unkown gesture type";
-  }
- /**
-  * The gesture ID.
-  *
-  * All Gesture objects belonging to the same recognized movement share the
-  * same ID value. Use the ID value with the Frame::gesture() method to
-  * find updates related to this Gesture object in subsequent frames.
-  *
-  * @member id
-  * @memberof Leap.Gesture.prototype
-  * @type {Number}
-  */
-  gesture.id = data.id;
- /**
-  * The list of hands associated with this Gesture, if any.
-  *
-  * If no hands are related to this gesture, the list is empty.
-  *
-  * @member handIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.handIds = data.handIds;
- /**
-  * The list of fingers and tools associated with this Gesture, if any.
-  *
-  * If no Pointable objects are related to this gesture, the list is empty.
-  *
-  * @member pointableIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.pointableIds = data.pointableIds;
- /**
-  * The elapsed duration of the recognized movement up to the
-  * frame containing this Gesture object, in microseconds.
-  *
-  * The duration reported for the first Gesture in the sequence (with the
-  * start state) will typically be a small positive number since
-  * the movement must progress far enough for the Leap to recognize it as
-  * an intentional gesture.
-  *
-  * @member duration
-  * @memberof Leap.Gesture.prototype
-  * @type {Number}
-  */
-  gesture.duration = data.duration;
- /**
-  * The gesture ID.
-  *
-  * Recognized movements occur over time and have a beginning, a middle,
-  * and an end. The 'state()' attribute reports where in that sequence this
-  * Gesture object falls.
-  *
-  * Possible values for the state field are:
-  *
-  * * start
-  * * update
-  * * stop
-  *
-  * @member state
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.state = data.state;
- /**
-  * The gesture type.
-  *
-  * Possible values for the type field are:
-  *
-  * * circle
-  * * swipe
-  * * screenTap
-  * * keyTap
-  *
-  * @member type
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.type = data.type;
-  return gesture;
-}
-
-/**
- * Constructs a new CircleGesture object.
- *
- * An uninitialized CircleGesture object is considered invalid. Get valid instances
- * of the CircleGesture class from a Frame object.
- *
- * @class CircleGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The CircleGesture classes represents a circular finger movement.
- *
- * A circle movement is recognized when the tip of a finger draws a circle
- * within the Leap field of view.
- *
- * ![CircleGesture](images/Leap_Gesture_Circle.png)
- *
- * Circle gestures are continuous. The CircleGesture objects for the gesture have
- * three possible states:
- *
- * * start -- The circle gesture has just started. The movement has
- *  progressed far enough for the recognizer to classify it as a circle.
- * * update -- The circle gesture is continuing.
- * * stop -- The circle gesture is finished.
- */
-var CircleGesture = function(data) {
- /**
-  * The center point of the circle within the Leap frame of reference.
-  *
-  * @member center
-  * @memberof Leap.CircleGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.center = new Vector(data.center);
- /**
-  * The normal vector for the circle being traced.
-  *
-  * If you draw the circle clockwise, the normal vector points in the same
-  * general direction as the pointable object drawing the circle. If you draw
-  * the circle counterclockwise, the normal points back toward the
-  * pointable. If the angle between the normal and the pointable object
-  * drawing the circle is less than 90 degrees, then the circle is clockwise.
-  *
-  * ```javascript
-  *    var clockwiseness;
-  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
-  *        clockwiseness = "clockwise";
-  *    }
-  *    else
-  *    {
-  *        clockwiseness = "counterclockwise";
-  *    }
-  * ```
-  *
-  * @member normal
-  * @memberof Leap.CircleGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.normal = new Vector(data.normal);
- /**
-  * The number of times the finger tip has traversed the circle.
-  *
-  * Progress is reported as a positive number of the number. For example,
-  * a progress value of .5 indicates that the finger has gone halfway
-  * around, while a value of 3 indicates that the finger has gone around
-  * the the circle three times.
-  *
-  * Progress starts where the circle gesture began. Since the circle
-  * must be partially formed before the Leap can recognize it, progress
-  * will be greater than zero when a circle gesture first appears in the
-  * frame.
-  *
-  * @member progress
-  * @memberof Leap.CircleGesture.prototype
-  * @type {Number}
-  */
-  this.progress = data.progress;
- /**
-  * The radius of the circle in mm.
-  *
-  * @member radius
-  * @memberof Leap.CircleGesture.prototype
-  * @type {Number}
-  */
-  this.radius = data.radius;
-}
-
-/**
- * Constructs a new SwipeGesture object.
- *
- * An uninitialized SwipeGesture object is considered invalid. Get valid instances
- * of the SwipeGesture class from a Frame object.
- *
- * @class SwipeGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The SwipeGesture class represents a swiping motion of a finger or tool.
- *
- * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
- *
- * Swipe gestures are continuous.
- */
-var SwipeGesture = function(data) {
- /**
-  * The starting position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member startPosition
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.startPosition = new Vector(data.startPosition);
- /**
-  * The current swipe position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member position
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.position = new Vector(data.position);
- /**
-  * The unit direction vector parallel to the swipe motion.
-  *
-  * You can compare the components of the vector to classify the swipe as
-  * appropriate for your application. For example, if you are using swipes
-  * for two dimensional scrolling, you can compare the x and y values to
-  * determine if the swipe is primarily horizontal or vertical.
-  *
-  * @member direction
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.direction = new Vector(data.direction);
- /**
-  * The speed of the finger performing the swipe gesture in
-  * millimeters per second.
-  *
-  * @member speed
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {Number}
-  */
-  this.speed = data.speed;
-}
-
-/**
- * Constructs a new ScreenTapGesture object.
- *
- * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
- * of the ScreenTapGesture class from a Frame object.
- *
- * @class ScreenTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A screen tap gesture is recognized when the tip of a finger pokes forward
- * and then springs back to approximately the original postion, as if
- * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
- *
- * ![ScreenTap](images/Leap_Gesture_Tap2.png)
- *
- * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
- * screen tap gesture recognized.
- */
-var ScreenTapGesture = function(data) {
- /**
-  * The position where the screen tap is registered.
-  *
-  * @member position
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.position = new Vector(data.position);
- /**
-  * The direction of finger tip motion.
-  *
-  * @member direction
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {Leap.Vector}
-  */
-  this.direction = new Vector(data.direction);
- /**
-  * The progess value is always 1.0 for a screen tap gesture.
-  *
-  * @member progress
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {Number}
-  */
-  this.progress = data.progress;
-}
-
-/**
- * Constructs a new KeyTapGesture object.
- *
- * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
- * of the KeyTapGesture class from a Frame object.
- *
- * @class KeyTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The KeyTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A key tap gesture is recognized when the tip of a finger rotates down toward the
- * palm and then springs back to approximately the original postion, as if
- * tapping. The tapping finger must pause briefly before beginning the tap.
- *
- * ![KeyTap](images/Leap_Gesture_Tap.png)
- *
- * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
- * key tap gesture recognized.
- */
-var KeyTapGesture = function(data) {
-    /**
-     * The position where the key tap is registered.
-     *
-     * @member position
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {Leap.Vector}
-     */
-    this.position = new Vector(data.position);
-    /**
-     * The direction of finger tip motion.
-     *
-     * @member direction
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {Leap.Vector}
-     */
-    this.direction = new Vector(data.direction);
-    /**
-     * The progess value is always 1.0 for a key tap gesture.
-     *
-     * @member progress
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {Number}
-     */
-    this.progress = data.progress;
-}
-
-},{"./vector":14}],12:[function(require,module,exports){
-var Vector = require("./vector").Vector
-
-/**
- * Constructs a Pointable object.
- *
- * An uninitialized pointable is considered invalid.
- * Get valid Pointable objects from a Frame or a Hand object.
- *
- * @class Pointable
- * @memberof Leap
- * @classdesc
- * The Pointable class reports the physical characteristics of a detected
- * finger or tool.
- *
- * Both fingers and tools are classified as Pointable objects. Use the
- * Pointable.tool property to determine whether a Pointable object represents a
- * tool or finger. The Leap classifies a detected entity as a tool when it is
- * thinner, straighter, and longer than a typical finger.
- *
- * Note that Pointable objects can be invalid, which means that they do not
- * contain valid tracking data and do not correspond to a physical entity.
- * Invalid Pointable objects can be the result of asking for a Pointable object
- * using an ID from an earlier frame when no Pointable objects with that ID
- * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid
- * property.
- */
-var Pointable = exports.Pointable = function(data) {
-  /**
-   * Indicates whether this is a valid Pointable object.
-   *
-   * @member valid
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.valid = true;
-  /**
-   * A unique ID assigned to this Pointable object, whose value remains the
-   * same across consecutive frames while the tracked finger or tool remains
-   * visible. If tracking is lost (for example, when a finger is occluded by
-   * another finger or when it is withdrawn from the Leap field of view), the
-   * Leap may assign a new ID when it detects the entity in a future frame.
-   *
-   * Use the ID value with the pointable() functions defined for the
-   * {@link Frame} and {@link Frame.Hand} classes to find this
-   * Pointable object in future frames.
-   *
-   * @member id
-   * @type {String}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.id = data.id;
-  this.handId = data.handId;
-  /**
-   * The estimated length of the finger or tool in millimeters.
-   *
-   * The reported length is the visible length of the finger or tool from the
-   * hand to tip. If the length isn't known, then a value of 0 is returned.
-   *
-   * @member length
-   * @type {Number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.length = data.length;
-  /**
-   * Whether or not the Pointable is believed to be a tool.
-   * Tools are generally longer, thinner, and straighter than fingers.
-   *
-   * If tool is false, then this Pointable must be a finger.
-   *
-   * @member tool
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tool = data.tool;
-  /**
-   * The estimated width of the tool in millimeters.
-   *
-   * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
-   * then a value of 0 is returned.
-   *
-   * Pointable objects representing fingers do not have a width property.
-   *
-   * @member width
-   * @type {Number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.width = data.width;
-  /**
-   * The direction in which this finger or tool is pointing.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the tip.
-   *
-   * ![Finger](images/Leap_Finger_Model.png)
-   * @member direction
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.direction = new Vector(data.direction);
-  /**
-   * The tip position in millimeters from the Leap origin.
-   *
-   * @member tipPosition
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipPosition = new Vector(data.tipPosition);
-  /**
-   * The rate of change of the tip position in millimeters/second.
-   *
-   * @member tipVelocity
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipVelocity = new Vector(data.tipVelocity);
-}
-
-/**
- * A string containing a brief, human readable description of the Pointable
- * object.
- *
- * @method toString
- * @memberof Leap.Pointable.prototype
- * @returns {String} A description of the Pointable object as a string.
- */
-Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
-}
-
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @static
- * @type {Leap.Pointable}
- * @name Invalid
- * @memberof Leap.Pointable
- */
-Pointable.Invalid = { valid: false };
-
-},{"./vector":14}],6:[function(require,module,exports){
+},{"__browserify_process":14}],6:[function(require,module,exports){
 var Connection = exports.Connection = require('./base_connection').Connection
 
 Connection.prototype.setupSocket = function() {
@@ -1344,12 +789,12 @@ Connection.prototype.startHeartbeat = function() {
   }, this.opts.heartbeatInterval);
 }
 
-},{"./base_connection":18}],13:[function(require,module,exports){
+},{"./base_connection":16}],12:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region").Region,
   Cursor: require("./ui/cursor").Cursor
 };
-},{"./ui/cursor":19,"./ui/region":20}],21:[function(require,module,exports){
+},{"./ui/cursor":17,"./ui/region":18}],19:[function(require,module,exports){
 var Pipeline = exports.Pipeline = function() {
   this.steps = [];
 }
@@ -1367,7 +812,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],19:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var Cursor = exports.Cursor = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -1477,7 +922,7 @@ Controller.prototype.disconnect = function() {
  *
  * @method frame
  * @memberof Leap.Controller.prototype
- * @param {Number} history The age of the frame to return, counting backwards from
+ * @param {number} history The age of the frame to return, counting backwards from
  * the most recent frame (0) into the past and up to the maximum age (59).
  * @returns {Leap.Frame} The specified frame; or, if no history
  * parameter is specified, the newest frame. If a frame is not available at
@@ -1573,12 +1018,13 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":15,"./pipeline":21,"__browserify_process":16,"events":17,"underscore":22}],8:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":20}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
-  , Vector = require("./vector").Vector
-  , Matrix = require("./matrix").Matrix
+  , glMatrix = require("gl-matrix")
+  , mat3 = glMatrix.mat3
+  , vec3 = glMatrix.vec3
   , _ = require("underscore");
 
 /**
@@ -1635,7 +1081,7 @@ var Frame = exports.Frame = function(data) {
    * The frame capture time in microseconds elapsed since the Leap started.
    * @member timestamp
    * @memberof Leap.Frame.prototype
-   * @type {Number}
+   * @type {number}
    */
   this.timestamp = data.timestamp;
   /**
@@ -1678,8 +1124,8 @@ var Frame = exports.Frame = function(data) {
   this.fingers = [];
   this.gestures = [];
   this.pointablesMap = {};
-  this._translation = new Vector(data.t);
-  this.rotation = new Matrix(data.r);
+  this._translation = data.t;
+  this._rotation = _.flatten(data.r);
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
@@ -1697,7 +1143,7 @@ var Frame = exports.Frame = function(data) {
     this.pointables.push(pointable);
     this.pointablesMap[pointable.id] = pointable;
     (pointable.tool ? this.tools : this.fingers).push(pointable);
-    if (pointable.handId && handMap.hasOwnProperty(pointable.handId)) {
+    if (pointable.handId !== undefined && handMap.hasOwnProperty(pointable.handId)) {
       var hand = this.hands[handMap[pointable.handId]];
       hand.pointables.push(pointable);
       (pointable.tool ? hand.tools : hand.fingers).push(pointable);
@@ -1819,140 +1265,135 @@ Frame.prototype.hand = function(id) {
 }
 
 /**
- * The angle of rotation around the rotation axis derived from the overall 
+ * The angle of rotation around the rotation axis derived from the overall
  * rotational motion between the current frame and the specified frame.
- * 
- * The returned angle is expressed in radians measured clockwise around 
- * the rotation axis (using the right-hand rule) between the start and end frames. 
+ *
+ * The returned angle is expressed in radians measured clockwise around
+ * the rotation axis (using the right-hand rule) between the start and end frames.
  * The value is always between 0 and pi radians (0 and 180 degrees).
- * 
- * The Leap derives frame rotation from the relative change in position and 
+ *
+ * The Leap derives frame rotation from the relative change in position and
  * orientation of all objects detected in the field of view.
- * 
- * If either this frame or sinceFrame is an invalid Frame object, then the 
+ *
+ * If either this frame or sinceFrame is an invalid Frame object, then the
  * angle of rotation is zero.
- * 
+ *
  * @method rotationAngle
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @param {Leap.Vector} [axis] The axis to measure rotation around.
- * @returns {Number} A positive value containing the heuristically determined 
+ * @param {number[]} [axis] The axis to measure rotation around.
+ * @returns {number} A positive value containing the heuristically determined
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.rotationAngle = function(sinceFrame, axis){
+Frame.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
+
   var rot = this.rotationMatrix(sinceFrame);
-  var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5
+  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5
   var angle = Math.acos(cs);
   angle = isNaN(angle) ? 0.0 : angle;
 
-  if(axis){
+  if (axis !== undefined) {
     var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= rotAxis.dot(axis.normalized());
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
   }
 
   return angle;
 }
 
 /**
- * The axis of rotation derived from the overall rotational motion between 
+ * The axis of rotation derived from the overall rotational motion between
  * the current frame and the specified frame.
- * 
+ *
  * The returned direction vector is normalized.
- * 
- * The Leap derives frame rotation from the relative change in position and 
+ *
+ * The Leap derives frame rotation from the relative change in position and
  * orientation of all objects detected in the field of view.
- * 
- * If either this frame or sinceFrame is an invalid Frame object, or if no 
+ *
+ * If either this frame or sinceFrame is an invalid Frame object, or if no
  * rotation is detected between the two frames, a zero vector is returned.
- * 
+ *
  * @method rotationAxis
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * @returns {number[]} A normalized direction vector representing the axis of the heuristically determined
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.rotationAxis = function(sinceFrame){
-  if (!this.valid || !sinceFrame.valid) return Vector.zero();
-  var x = this.rotation[2][1] - sinceFrame.rotation[1][2];
-  var y = this.rotation[0][2] - sinceFrame.rotation[2][0];
-  var z = this.rotation[1][0] - sinceFrame.rotation[0][1];
-  var vec = new Vector([x, y, z]);
-  return vec.normalized();
+Frame.prototype.rotationAxis = function(sinceFrame) {
+  if (!this.valid || !sinceFrame.valid) return vec3.create();
+  return vec3.normalize(vec3.create(), [
+    this._rotation[7] - sinceFrame._rotation[5],
+    this._rotation[2] - sinceFrame._rotation[6],
+    this._rotation[3] - sinceFrame._rotation[1]
+  ]);
 }
 
 /**
- * The transform matrix expressing the rotation derived from the overall 
+ * The transform matrix expressing the rotation derived from the overall
  * rotational motion between the current frame and the specified frame.
- * 
- * The Leap derives frame rotation from the relative change in position and 
+ *
+ * The Leap derives frame rotation from the relative change in position and
  * orientation of all objects detected in the field of view.
- * 
- * If either this frame or sinceFrame is an invalid Frame object, then 
+ *
+ * If either this frame or sinceFrame is an invalid Frame object, then
  * this method returns an identity matrix.
- * 
+ *
  * @method rotationMatrix
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Matrix} A transformation Matrix containing the heuristically determined 
+ * @returns {number[]} A transformation matrix containing the heuristically determined
  * rotational change between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.rotationMatrix = function(sinceFrame){
-  if (!this.valid || !sinceFrame.valid) return Matrix.identity();
-  var xBasis = new Vector([this.rotation[0][0], this.rotation[1][0], this.rotation[2][0]]);
-  var yBasis = new Vector([this.rotation[0][1], this.rotation[1][1], this.rotation[2][1]]);
-  var zBasis = new Vector([this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]]);
-  var transpose = new Matrix([xBasis, yBasis, zBasis]);
-  return sinceFrame.rotation.times(transpose);
+Frame.prototype.rotationMatrix = function(sinceFrame) {
+  if (!this.valid || !sinceFrame.valid) return mat3.create();
+  var transpose = mat3.transpose(mat3.create(), this._rotation)
+  return mat3.multiply(mat3.create(), sinceFrame._rotation, transpose);
 }
 
 /**
  * The scale factor derived from the overall motion between the current frame and the specified frame.
- * 
- * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ *
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place.
  * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
- * 
- * The Leap derives scaling from the relative inward or outward motion of all 
+ *
+ * The Leap derives scaling from the relative inward or outward motion of all
  * objects detected in the field of view (independent of translation and rotation).
- * 
+ *
  * If either this frame or sinceFrame is an invalid Frame object, then this method returns 1.0.
- * 
+ *
  * @method scaleFactor
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative scaling.
- * @returns {Number} A positive value representing the heuristically determined 
+ * @returns {number} A positive value representing the heuristically determined
  * scaling change ratio between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.scaleFactor = function(sinceFrame){
+Frame.prototype.scaleFactor = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return 1.0;
   return Math.exp(this._scaleFactor - sinceFrame._scaleFactor);
 }
 
 /**
- * The change of position derived from the overall linear motion between the 
+ * The change of position derived from the overall linear motion between the
  * current frame and the specified frame.
- * 
- * The returned translation vector provides the magnitude and direction of the 
+ *
+ * The returned translation vector provides the magnitude and direction of the
  * movement in millimeters.
- * 
- * The Leap derives frame translation from the linear motion of all objects 
+ *
+ * The Leap derives frame translation from the linear motion of all objects
  * detected in the field of view.
- * 
- * If either this frame or sinceFrame is an invalid Frame object, then this 
+ *
+ * If either this frame or sinceFrame is an invalid Frame object, then this
  * method returns a zero vector.
- * 
+ *
  * @method translation
  * @memberof Leap.Frame.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative translation.
- * @returns {Leap.Vector} A Vector representing the heuristically determined change in 
+ * @returns {number[]} A vector representing the heuristically determined change in
  * position of all objects between the current frame and that specified in the sinceFrame parameter.
  */
-Frame.prototype.translation = function(sinceFrame){
-  if (!this.valid || !sinceFrame.valid) return Vector.zero();
-  var x = this._translation[0] - sinceFrame._translation[0];
-  var y = this._translation[1] - sinceFrame._translation[1];
-  var z = this._translation[2] - sinceFrame._translation[2];
-  return new Vector([x, y, z]);
+Frame.prototype.translation = function(sinceFrame) {
+  if (!this.valid || !sinceFrame.valid) return vec3.create();
+  return vec3.subtract(vec3.create(), this._translation, sinceFrame._translation);
 }
 
 /**
@@ -2026,10 +1467,413 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":9,"./hand":10,"./matrix":11,"./pointable":12,"./vector":14,"underscore":22}],10:[function(require,module,exports){
+},{"./gesture":9,"./hand":10,"./pointable":11,"gl-matrix":21,"underscore":20}],9:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
+
+/**
+ * Constructs a new Gesture object.
+ *
+ * An uninitialized Gesture object is considered invalid. Get valid instances
+ * of the Gesture class, which will be one of the Gesture subclasses, from a
+ * Frame object.
+ *
+ * @class Gesture
+ * @abstract
+ * @memberof Leap
+ * @classdesc
+ * The Gesture class represents a recognized movement by the user.
+ *
+ * The Leap watches the activity within its field of view for certain movement
+ * patterns typical of a user gesture or command. For example, a movement from side to
+ * side with the hand can indicate a swipe gesture, while a finger poking forward
+ * can indicate a screen tap gesture.
+ *
+ * When the Leap recognizes a gesture, it assigns an ID and adds a
+ * Gesture object to the frame gesture list. For continuous gestures, which
+ * occur over many frames, the Leap updates the gesture by adding
+ * a Gesture object having the same ID and updated properties in each
+ * subsequent frame.
+ *
+ * **Important:** Recognition for each type of gesture must be enabled;
+ * otherwise **no gestures are recognized or reported**.
+ *
+ * Subclasses of Gesture define the properties for the specific movement patterns
+ * recognized by the Leap.
+ *
+ * The Gesture subclasses for include:
+ *
+ * * CircleGesture -- A circular movement by a finger.
+ * * SwipeGesture -- A straight line movement by the hand with fingers extended.
+ * * ScreenTapGesture -- A forward tapping movement by a finger.
+ * * KeyTapGesture -- A downward tapping movement by a finger.
+ *
+ * Circle and swipe gestures are continuous and these objects can have a
+ * state of start, update, and stop.
+ *
+ * The screen tap gesture is a discrete gesture. The Leap only creates a single
+ * ScreenTapGesture object appears for each tap and it always has a stop state.
+ *
+ * Get valid Gesture instances from a Frame object. You can get a list of gestures
+ * from the Frame gestures array. You can also use the Frame gesture() method
+ * to find a gesture in the current frame using an ID value obtained in a
+ * previous frame.
+ *
+ * Gesture objects can be invalid. For example, when you get a gesture by ID
+ * using Frame.gesture(), and there is no gesture with that ID in the current
+ * frame, then gesture() returns an Invalid Gesture object (rather than a null
+ * value). Always check object validity in situations where a gesture might be
+ * invalid.
+ */
+var Gesture = exports.Gesture = function(data) {
+  var gesture = undefined
+  switch (data.type) {
+    case 'circle':
+      gesture = new CircleGesture(data);
+      break;
+    case 'swipe':
+      gesture = new SwipeGesture(data);
+      break;
+    case 'screenTap':
+      gesture = new ScreenTapGesture(data);
+      break;
+    case 'keyTap':
+      gesture = new KeyTapGesture(data);
+      break;
+    default:
+      throw "unkown gesture type";
+  }
+ /**
+  * The gesture ID.
+  *
+  * All Gesture objects belonging to the same recognized movement share the
+  * same ID value. Use the ID value with the Frame::gesture() method to
+  * find updates related to this Gesture object in subsequent frames.
+  *
+  * @member id
+  * @memberof Leap.Gesture.prototype
+  * @type {number}
+  */
+  gesture.id = data.id;
+ /**
+  * The list of hands associated with this Gesture, if any.
+  *
+  * If no hands are related to this gesture, the list is empty.
+  *
+  * @member handIds
+  * @memberof Leap.Gesture.prototype
+  * @type {Array}
+  */
+  gesture.handIds = data.handIds;
+ /**
+  * The list of fingers and tools associated with this Gesture, if any.
+  *
+  * If no Pointable objects are related to this gesture, the list is empty.
+  *
+  * @member pointableIds
+  * @memberof Leap.Gesture.prototype
+  * @type {Array}
+  */
+  gesture.pointableIds = data.pointableIds;
+ /**
+  * The elapsed duration of the recognized movement up to the
+  * frame containing this Gesture object, in microseconds.
+  *
+  * The duration reported for the first Gesture in the sequence (with the
+  * start state) will typically be a small positive number since
+  * the movement must progress far enough for the Leap to recognize it as
+  * an intentional gesture.
+  *
+  * @member duration
+  * @memberof Leap.Gesture.prototype
+  * @type {number}
+  */
+  gesture.duration = data.duration;
+ /**
+  * The gesture ID.
+  *
+  * Recognized movements occur over time and have a beginning, a middle,
+  * and an end. The 'state()' attribute reports where in that sequence this
+  * Gesture object falls.
+  *
+  * Possible values for the state field are:
+  *
+  * * start
+  * * update
+  * * stop
+  *
+  * @member state
+  * @memberof Leap.Gesture.prototype
+  * @type {String}
+  */
+  gesture.state = data.state;
+ /**
+  * The gesture type.
+  *
+  * Possible values for the type field are:
+  *
+  * * circle
+  * * swipe
+  * * screenTap
+  * * keyTap
+  *
+  * @member type
+  * @memberof Leap.Gesture.prototype
+  * @type {String}
+  */
+  gesture.type = data.type;
+  return gesture;
+}
+
+/**
+ * Constructs a new CircleGesture object.
+ *
+ * An uninitialized CircleGesture object is considered invalid. Get valid instances
+ * of the CircleGesture class from a Frame object.
+ *
+ * @class CircleGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The CircleGesture classes represents a circular finger movement.
+ *
+ * A circle movement is recognized when the tip of a finger draws a circle
+ * within the Leap field of view.
+ *
+ * ![CircleGesture](images/Leap_Gesture_Circle.png)
+ *
+ * Circle gestures are continuous. The CircleGesture objects for the gesture have
+ * three possible states:
+ *
+ * * start -- The circle gesture has just started. The movement has
+ *  progressed far enough for the recognizer to classify it as a circle.
+ * * update -- The circle gesture is continuing.
+ * * stop -- The circle gesture is finished.
+ */
+var CircleGesture = function(data) {
+ /**
+  * The center point of the circle within the Leap frame of reference.
+  *
+  * @member center
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number[]}
+  */
+  this.center = data.center;
+ /**
+  * The normal vector for the circle being traced.
+  *
+  * If you draw the circle clockwise, the normal vector points in the same
+  * general direction as the pointable object drawing the circle. If you draw
+  * the circle counterclockwise, the normal points back toward the
+  * pointable. If the angle between the normal and the pointable object
+  * drawing the circle is less than 90 degrees, then the circle is clockwise.
+  *
+  * ```javascript
+  *    var clockwiseness;
+  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
+  *        clockwiseness = "clockwise";
+  *    }
+  *    else
+  *    {
+  *        clockwiseness = "counterclockwise";
+  *    }
+  * ```
+  *
+  * @member normal
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number[]}
+  */
+  this.normal = data.normal;
+ /**
+  * The number of times the finger tip has traversed the circle.
+  *
+  * Progress is reported as a positive number of the number. For example,
+  * a progress value of .5 indicates that the finger has gone halfway
+  * around, while a value of 3 indicates that the finger has gone around
+  * the the circle three times.
+  *
+  * Progress starts where the circle gesture began. Since the circle
+  * must be partially formed before the Leap can recognize it, progress
+  * will be greater than zero when a circle gesture first appears in the
+  * frame.
+  *
+  * @member progress
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number}
+  */
+  this.progress = data.progress;
+ /**
+  * The radius of the circle in mm.
+  *
+  * @member radius
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number}
+  */
+  this.radius = data.radius;
+}
+
+/**
+ * Constructs a new SwipeGesture object.
+ *
+ * An uninitialized SwipeGesture object is considered invalid. Get valid instances
+ * of the SwipeGesture class from a Frame object.
+ *
+ * @class SwipeGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The SwipeGesture class represents a swiping motion of a finger or tool.
+ *
+ * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
+ *
+ * Swipe gestures are continuous.
+ */
+var SwipeGesture = function(data) {
+ /**
+  * The starting position within the Leap frame of
+  * reference, in mm.
+  *
+  * @member startPosition
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.startPosition = data.startPosition;
+ /**
+  * The current swipe position within the Leap frame of
+  * reference, in mm.
+  *
+  * @member position
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.position = data.position;
+ /**
+  * The unit direction vector parallel to the swipe motion.
+  *
+  * You can compare the components of the vector to classify the swipe as
+  * appropriate for your application. For example, if you are using swipes
+  * for two dimensional scrolling, you can compare the x and y values to
+  * determine if the swipe is primarily horizontal or vertical.
+  *
+  * @member direction
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.direction = data.direction;
+ /**
+  * The speed of the finger performing the swipe gesture in
+  * millimeters per second.
+  *
+  * @member speed
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number}
+  */
+  this.speed = data.speed;
+}
+
+/**
+ * Constructs a new ScreenTapGesture object.
+ *
+ * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
+ * of the ScreenTapGesture class from a Frame object.
+ *
+ * @class ScreenTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
+ *
+ * A screen tap gesture is recognized when the tip of a finger pokes forward
+ * and then springs back to approximately the original postion, as if
+ * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
+ *
+ * ![ScreenTap](images/Leap_Gesture_Tap2.png)
+ *
+ * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
+ * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
+ * screen tap gesture recognized.
+ */
+var ScreenTapGesture = function(data) {
+ /**
+  * The position where the screen tap is registered.
+  *
+  * @member position
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number[]}
+  */
+  this.position = data.position;
+ /**
+  * The direction of finger tip motion.
+  *
+  * @member direction
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number[]}
+  */
+  this.direction = data.direction;
+ /**
+  * The progess value is always 1.0 for a screen tap gesture.
+  *
+  * @member progress
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number}
+  */
+  this.progress = data.progress;
+}
+
+/**
+ * Constructs a new KeyTapGesture object.
+ *
+ * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
+ * of the KeyTapGesture class from a Frame object.
+ *
+ * @class KeyTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The KeyTapGesture class represents a tapping gesture by a finger or tool.
+ *
+ * A key tap gesture is recognized when the tip of a finger rotates down toward the
+ * palm and then springs back to approximately the original postion, as if
+ * tapping. The tapping finger must pause briefly before beginning the tap.
+ *
+ * ![KeyTap](images/Leap_Gesture_Tap.png)
+ *
+ * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
+ * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
+ * key tap gesture recognized.
+ */
+var KeyTapGesture = function(data) {
+    /**
+     * The position where the key tap is registered.
+     *
+     * @member position
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number[]}
+     */
+    this.position = data.position;
+    /**
+     * The direction of finger tip motion.
+     *
+     * @member direction
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number[]}
+     */
+    this.direction = data.direction;
+    /**
+     * The progess value is always 1.0 for a key tap gesture.
+     *
+     * @member progress
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number}
+     */
+    this.progress = data.progress;
+}
+
+},{"gl-matrix":21}],10:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
-  , Vector = require("./vector").Vector
-  , Matrix = require("./matrix").Matrix
+  , glMatrix = require("gl-matrix")
+  , mat3 = glMatrix.mat3
+  , vec3 = glMatrix.vec3
   , _ = require("underscore");
 
 /**
@@ -2073,9 +1917,9 @@ var Hand = exports.Hand = function(data) {
    * The center position of the palm in millimeters from the Leap origin.
    * @member palmPosition
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
-  this.palmPosition = new Vector(data.palmPosition);
+  this.palmPosition = data.palmPosition;
   /**
    * The direction from the palm position toward the fingers.
    *
@@ -2084,17 +1928,17 @@ var Hand = exports.Hand = function(data) {
    *
    * @member direction
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
-  this.direction = new Vector(data.direction);
+  this.direction = data.direction;
   /**
    * The rate of change of the palm position in millimeters/second.
    *
    * @member palmVeclocity
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
-  this.palmVelocity = new Vector(data.palmVelocity);
+  this.palmVelocity = data.palmVelocity;
   /**
    * The normal vector to the palm. If your hand is flat, this vector will
    * point downward, or "out" of the front surface of your palm.
@@ -2105,9 +1949,9 @@ var Hand = exports.Hand = function(data) {
    * direction as the palm normal (that is, a vector orthogonal to the palm).
    * @member palmNormal
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
-  this.palmNormal = new Vector(data.palmNormal);
+  this.palmNormal = data.palmNormal;
   /**
    * The center of a sphere fit to the curvature of this hand.
    *
@@ -2116,9 +1960,9 @@ var Hand = exports.Hand = function(data) {
    * ![Hand Ball](images/Leap_Hand_Ball.png)
    * @member sphereCenter
    * @memberof Leap.Hand.prototype
-   * @type {Leap.Vector}
+   * @type {number[]}
    */
-  this.sphereCenter = new Vector(data.sphereCenter);
+  this.sphereCenter = data.sphereCenter;
   /**
    * The radius of a sphere fit to the curvature of this hand, in millimeters.
    *
@@ -2127,7 +1971,7 @@ var Hand = exports.Hand = function(data) {
    *
    * @member sphereRadius
    * @memberof Leap.Hand.prototype
-   * @type {Number}
+   * @type {number}
    */
   this.sphereRadius = data.sphereRadius;
   /**
@@ -2135,7 +1979,7 @@ var Hand = exports.Hand = function(data) {
    *
    * @member valid
    * @memberof Leap.Hand.prototype
-   * @type {Boolean}
+   * @type {boolean}
    */
   this.valid = true;
   /**
@@ -2175,8 +2019,8 @@ var Hand = exports.Hand = function(data) {
    * @type {Leap.Pointable}
    */
   this.tools = [];
-  this._translation = new Vector(data.t);
-  this.rotation = new Matrix(data.r);
+  this._translation = data.t;
+  this._rotation = _.flatten(data.r);
   this._scaleFactor = data.s;
 }
 
@@ -2207,147 +2051,139 @@ Hand.prototype.finger = function(id) {
 }
 
 /**
- * The angle of rotation around the rotation axis derived from the change in 
- * orientation of this hand, and any associated fingers and tools, between the 
+ * The angle of rotation around the rotation axis derived from the change in
+ * orientation of this hand, and any associated fingers and tools, between the
  * current frame and the specified frame.
- * 
- * The returned angle is expressed in radians measured clockwise around the 
- * rotation axis (using the right-hand rule) between the start and end frames. 
+ *
+ * The returned angle is expressed in radians measured clockwise around the
+ * rotation axis (using the right-hand rule) between the start and end frames.
  * The value is always between 0 and pi radians (0 and 180 degrees).
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either 
+ *
+ * If a corresponding Hand object is not found in sinceFrame, or if either
  * this frame or sinceFrame are invalid Frame objects, then the angle of rotation is zero.
- * 
+ *
  * @method rotationAngle
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @param {Leap.Vector} [axis] The axis to measure rotation around.
- * @returns {Number} A positive value representing the heuristically determined 
- * rotational change of the hand between the current frame and that specified in 
+ * @param {numnber[]} [axis] The axis to measure rotation around.
+ * @returns {number} A positive value representing the heuristically determined
+ * rotational change of the hand between the current frame and that specified in
  * the sinceFrame parameter.
  */
-Hand.prototype.rotationAngle = function(sinceFrame, axis){
+Hand.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 0.0;
-  
   var rot = this.rotationMatrix(sinceFrame);
-  var cs = (rot[0][0] + rot[1][1] + rot[2][2] - 1.0)*0.5
+  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5
   var angle = Math.acos(cs);
   angle = isNaN(angle) ? 0.0 : angle;
-
-  if(axis){
+  if (axis !== undefined) {
     var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= rotAxis.dot(axis.normalized());
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
   }
-
   return angle;
 }
 
 /**
- * The axis of rotation derived from the change in orientation of this hand, and 
+ * The axis of rotation derived from the change in orientation of this hand, and
  * any associated fingers and tools, between the current frame and the specified frame.
- * 
+ *
  * The returned direction vector is normalized.
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either 
+ *
+ * If a corresponding Hand object is not found in sinceFrame, or if either
  * this frame or sinceFrame are invalid Frame objects, then this method returns a zero vector.
- * 
+ *
  * @method rotationAxis
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Vector} A normalized direction Vector representing the axis of the heuristically determined 
+ * @returns {number[]} A normalized direction Vector representing the axis of the heuristically determined
  * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.rotationAxis = function(sinceFrame){
-  if (!this.valid || !sinceFrame.valid) return Vector.zero();
+Hand.prototype.rotationAxis = function(sinceFrame) {
+  if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
-  if(!sinceHand.valid) return Vector.zero();
-  
-  var x = this.rotation[2][1] - sinceHand.rotation[1][2];
-  var y = this.rotation[0][2] - sinceHand.rotation[2][0];
-  var z = this.rotation[1][0] - sinceHand.rotation[0][1];
-  var vec = new Vector([x, y, z]);
-  return vec.normalized();
+  return vec3.normalize(vec3.create(), [
+    this._rotation[7] - sinceHand._rotation[5],
+    this._rotation[2] - sinceHand._rotation[6],
+    this._rotation[3] - sinceHand._rotation[1]
+  ]);
 }
 
 /**
- * The transform matrix expressing the rotation derived from the change in 
- * orientation of this hand, and any associated fingers and tools, between 
+ * The transform matrix expressing the rotation derived from the change in
+ * orientation of this hand, and any associated fingers and tools, between
  * the current frame and the specified frame.
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either 
- * this frame or sinceFrame are invalid Frame objects, then this method returns 
+ *
+ * If a corresponding Hand object is not found in sinceFrame, or if either
+ * this frame or sinceFrame are invalid Frame objects, then this method returns
  * an identity matrix.
- * 
+ *
  * @method rotationMatrix
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative rotation.
- * @returns {Leap.Matrix} A transformation Matrix containing the heuristically determined 
+ * @returns {number[]} A transformation Matrix containing the heuristically determined
  * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.rotationMatrix = function(sinceFrame){
+Hand.prototype.rotationMatrix = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return Matrix.identity();
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return Matrix.identity();
-  
-  var xBasis = new Vector([this.rotation[0][0], this.rotation[1][0], this.rotation[2][0]]);
-  var yBasis = new Vector([this.rotation[0][1], this.rotation[1][1], this.rotation[2][1]]);
-  var zBasis = new Vector([this.rotation[0][2], this.rotation[1][2], this.rotation[2][2]]);
-  var transpose = new Matrix([xBasis, yBasis, zBasis]);
-  return sinceHand.rotation.times(transpose);
+  var transpose = mat3.transpose(mat3.create(), this._rotation);
+  var m = mat3.multiply(mat3.create(), sinceHand._rotation, transpose);
+  return m;
 }
 
 /**
  * The scale factor derived from the hand's motion between the current frame and the specified frame.
- * 
- * The scale factor is always positive. A value of 1.0 indicates no scaling took place. 
+ *
+ * The scale factor is always positive. A value of 1.0 indicates no scaling took place.
  * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
- * 
- * The Leap derives scaling from the relative inward or outward motion of a hand 
+ *
+ * The Leap derives scaling from the relative inward or outward motion of a hand
  * and its associated fingers and tools (independent of translation and rotation).
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame 
+ *
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame
  * are invalid Frame objects, then this method returns 1.0.
- * 
+ *
  * @method scaleFactor
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative scaling.
- * @returns {Number} A positive value representing the heuristically determined 
+ * @returns {number} A positive value representing the heuristically determined
  * scaling change ratio of the hand between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.scaleFactor = function(sinceFrame){
+Hand.prototype.scaleFactor = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return 1.0;
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 1.0;
-  
+
   return Math.exp(this._scaleFactor - sinceHand._scaleFactor);
 }
 
 /**
  * The change of position of this hand between the current frame and the specified frame
- * 
- * The returned translation vector provides the magnitude and direction of the 
+ *
+ * The returned translation vector provides the magnitude and direction of the
  * movement in millimeters.
- * 
- * If a corresponding Hand object is not found in sinceFrame, or if either this frame or 
+ *
+ * If a corresponding Hand object is not found in sinceFrame, or if either this frame or
  * sinceFrame are invalid Frame objects, then this method returns a zero vector.
- * 
+ *
  * @method translation
  * @memberof Leap.Hand.prototype
  * @param {Leap.Frame} sinceFrame The starting frame for computing the relative translation.
- * @returns {Leap.Vector} A Vector representing the heuristically determined change in hand 
+ * @returns {number[]} A Vector representing the heuristically determined change in hand
  * position between the current frame and that specified in the sinceFrame parameter.
  */
-Hand.prototype.translation = function(sinceFrame){
-  if (!this.valid || !sinceFrame.valid) return Vector.zero();
+Hand.prototype.translation = function(sinceFrame) {
+  if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
-  if(!sinceHand.valid) return Vector.zero();
-  
-  var x = this._translation[0] - sinceHand._translation[0];
-  var y = this._translation[1] - sinceHand._translation[1];
-  var z = this._translation[2] - sinceHand._translation[2];
-  return new Vector([x, y, z]);
+  if(!sinceHand.valid) return vec3.create();
+  return [
+    this._translation[0] - sinceHand._translation[0],
+    this._translation[1] - sinceHand._translation[1],
+    this._translation[2] - sinceHand._translation[2]
+  ];
 }
 
 /**
@@ -2374,777 +2210,158 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./matrix":11,"./pointable":12,"./vector":14,"underscore":22}],14:[function(require,module,exports){
-var _ = require('underscore');
+},{"./pointable":11,"gl-matrix":21,"underscore":20}],11:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
 
 /**
- * Constructs a Vector object.
+ * Constructs a Pointable object.
  *
- * Creates a new Vector from the specified Array or Vector.
- * The default constructor sets all components to zero.
+ * An uninitialized pointable is considered invalid.
+ * Get valid Pointable objects from a Frame or a Hand object.
  *
- * @class Vector
+ * @class Pointable
  * @memberof Leap
  * @classdesc
- * The Vector object represents a three-component mathematical vector or point
- * such as a direction or position in three-dimensional space.
+ * The Pointable class reports the physical characteristics of a detected
+ * finger or tool.
  *
- * The Leap software employs a right-handed Cartesian coordinate system.
- * Values given are in units of real-world millimeters. The origin is
- * centered at the center of the Leap device. The x- and z-axes lie in the
- * horizontal plane, with the x-axis running parallel to the long edge of
- * the device. The y-axis is vertical, with positive values increasing upwards
- * (in contrast to the downward orientation of most computer graphics
- * coordinate systems). The z-axis has positive values increasing away from the
- * computer screen.
+ * Both fingers and tools are classified as Pointable objects. Use the
+ * Pointable.tool property to determine whether a Pointable object represents a
+ * tool or finger. The Leap classifies a detected entity as a tool when it is
+ * thinner, straighter, and longer than a typical finger.
+ *
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
+ * exist in the current frame. A Pointable object created from the Pointable
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
  */
-var Vector = exports.Vector = function(data){
-
-	if(data == null){
-		this[0] = 0;
-		this[1] = 0;
-		this[2] = 0;
-	}
-	else if("x" in data){
-		this[0] = data[0];
-		this[1] = data[1];
-		this[2] = data[2];
-	}
-	else if("0" in data){
-		this[0] = (typeof(data[0]) == "number")?data[0]:0;
-		this[1] = (typeof(data[1]) == "number")?data[1]:0;
-		this[2] = (typeof(data[2]) == "number")?data[2]:0;
-	}
-
-	this.length = 3;
-	/**
-	 * The horizontal component.
-	 * @member x
-	 * @memberof Leap.Vector.prototype
-	 * @type {Float}
-	 */
-	/**
-	 * The horizontal component.
-	 * @member [0]
-	 * @memberof Leap.Vector.prototype
-	 * @type {Float}
-	 */
-	this.x = this[0];
-	/**
-	 * The vertical component.
-	 * @member y
-	 * @memberof Leap.Vector.prototype
-	 * @type {Float}
-	 */
-	/**
-	 * The vertical component.
-	 * @member [1]
-	 * @memberof Leap.Vector.prototype
-	 * @type {Float}
-	 */
-	this.y = this[1];
-	/**
-	 * The depth component.
-	 * @member z
-	 * @memberof Leap.Vector.prototype
-	 * @type {Float}
-	 */
-	/**
-	 * The depth component.
-	 * @member [2]
-	 * @memberof Leap.Vector.prototype
-	 * @type {Float}
-	 */
-	this.z = this[2];
-};
-
-var VectorPrototype = {
-	/**
-	 * The angle between this vector and the specified vector in radians.
-	 *
-	 * The angle is measured in the plane formed by the two vectors.
-	 * The angle returned is always the smaller of the two conjugate angles.
-	 * Thus A.angleTo(B) == B.angleTo(A) and is always a positive value less
-	 * than or equal to pi radians (180 degrees).
-	 *
-	 * If either vector has zero length, then this function returns zero.
-	 *
-	 * ![Vector AngleTo](images/Math_AngleTo.png)
-	 *
-	 * @method AngleTo
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Float} The angle between this vector and the specified
-	 * vector in radians.
-	 */
-	angleTo : function(other){
-		var denom = this.magnitude()*other.magnitude();
-		if(denom > 0) return Math.acos(this.dot(other)/denom);
-		else return 0;
-	},
-
-	/**
-	 * The cross product of this vector and the specified vector.
-	 *
-	 * The cross product is a vector orthogonal to both original vectors.
-	 * It has a magnitude equal to the area of a parallelogram having the
-	 * two vectors as sides. The direction of the returned vector is
-	 * determined by the right-hand rule. Thus A.cross(B) == -B.cross(A).
-	 *
-	 * ![Vector Cross](images/Math_Cross.png)
-	 *
-	 * @method Cross
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Leap.Vector} The cross product of this vector and the
-	 * specified vector.
-	 */
-	cross : function(other){
-		var x = this[1]*other[2] - other[1]*this[2];
-		var y = this[0]*other[2] - other[0]*this[2];
-		var z = this[0]*other[1] - other[0]*this[1];
-		return new Vector([x,y,z]);
-	},
-
-	/**
-	 * The distance between the point represented by this Vector object
-	 * and a point represented by the specified Vector object.
-	 *
-	 * @method distanceTo
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Float} The distance from this point to the specified point.
-	 */
-	distanceTo : function(other){
-		return this.minus(other).magnitude();
-	},
-
-	/**
-	 * The dot product of this vector with another vector.
-	 *
-	 * The dot product is the magnitude of the projection of this vector onto
-	 * the specified vector.
-	 *
-	 * ![Vector Dot](images/Math_Dot.png)
-	 *
-	 * @method dot
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Float} The dot product of this vector and the specified vector.
-	 */
-	dot : function(other){
-		return this[0]*other[0] + this[1]*other[1] + this[2]*other[2];
-	},
-
-	/**
-	 * Add vectors component-wise.
-	 *
-	 * @method plus
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Leap.Vector}
-	 */
-	plus : function(other){
-		return new Vector([this[0] + other[0],this[1] + other[1],this[2] + other[2]]);
-	},
-
-	/**
-	 * Subtract vectors component-wise.
-	 *
-	 * @method minus
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Leap.Vector}
-	 */
-	minus : function(other){
-		return new Vector([this[0] - other[0],this[1] - other[1],this[2] - other[2]]);
-	},
-
-	/**
-	 * Multiply vector by a scalar.
-	 *
-	 * @method multiply
-	 * @memberof Leap.Vector.prototype
-	 * @param {Float} scalar
-	 * @returns {Leap.Vector}
-	 */
-	multiply : function(scalar){
-		return new Vector([this[0]*scalar,this[1]*scalar,this[2]*scalar]);
-	},
-
-	/**
-	 * Divide vector by a scalar.
-	 *
-	 * @method dividedBy
-	 * @memberof Leap.Vector.prototype
-	 * @param {Float} scalar
-	 * @returns {Leap.Vector}
-	 */
-	dividedBy : function(scalar){
-		return new Vector([this[0]/scalar,this[1]/scalar,this[2]/scalar]);
-	},
-
-	/**
-	 * The magnitude, or length, of this vector.
-	 *
-	 * The magnitude is the L2 norm, or Euclidean distance between the
-	 * origin and the point represented by the (x, y, z) components of
-	 * this Vector object.
-	 *
-	 * @method magnitude
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Float} The length of this vector.
-	 */
-	magnitude : function(){
-		return Math.sqrt(this.magnitudeSquared());
-	},
-
-	/**
-	 * The square of the magnitude, or length, of this vector.
-	 *
-	 * @method magnitudeSquared
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Float} The square of the length of this vector.
-	 */
-	magnitudeSquared : function(){
-		return Math.pow(this[0],2) + Math.pow(this[1],2) + Math.pow(this[2],2);
-	},
-
-	/**
-	 * A normalized copy of this vector.
-	 *
-	 * A normalized vector has the same direction as the original
-	 * vector, but with a length of one.
-	 *
-	 * @method normalized
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Leap.Vector} A Vector object with a length of one,
-	 * pointing in the same direction as this Vector object.
-	 */
-	normalized : function(){
-		var magnitude = this.magnitude();
-		if(magnitude > 0) return this.dividedBy(magnitude);
-		else return new Vector();
-	},
-
-	/**
-	 * The pitch angle in radians.
-	 *
-	 * Pitch is the angle between the negative z-axis and the projection
-	 * of the vector onto the y-z plane. In other words, pitch represents
-	 * rotation around the x-axis. If the vector points upward, the
-	 * returned angle is between 0 and pi radians (180 degrees); if it
-	 * points downward, the angle is between 0 and -pi radians.
-	 *
-	 * ![Vector Pitch](images/Math_Pitch_Angle.png)
-	 *
-	 * @method pitch
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Float} The angle of this vector above or below the
-	 * horizon (x-z plane).
-	 */
-	pitch : function(){
-		return Math.atan2(this[1], -this[2]);
-	},
-
-	/**
-	 * The roll angle in radians.
-	 *
-	 * Roll is the angle between the y-axis and the projection of
-	 * the vector onto the x-y plane. In other words, roll represents
-	 * rotation around the z-axis. If the vector points to the left
-	 * of the y-axis, then the returned angle is between 0 and pi
-	 * radians (180 degrees); if it points to the right, the angle is
-	 * between 0 and -pi radians.
-	 *
-	 * ![Vector Roll](images/Math_Roll_Angle.png)
-	 *
-	 * Use this function to get roll angle of the plane to which this
-	 * vector is a normal. For example, if this vector represents the
-	 * normal to the palm, then this function returns the tilt or roll
-	 * of the palm plane compared to the horizontal (x-z) plane.
-	 *
-	 * @method roll
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Float} The angle of this vector above or below the
-	 * horizon (x-z plane).
-	 */
-	roll : function(){
-		return Math.atan2(this[0], -this[1]);
-	},
-
-	/**
-	 * The yaw angle in radians.
-	 *
-	 * Yaw is the angle between the negative z-axis and the projection
-	 * of the vector onto the x-z plane. In other words, yaw represents
-	 * rotation around the y-axis. If the vector points to the right
-	 * of the negative z-axis, then the returned angle is between 0 and
-	 * pi radians (180 degrees); if it points to the left, the angle
-	 * is between 0 and -pi radians.
-	 *
-	 * ![Vector Roll](images/Math_Yaw_Angle.png)
-	 *
-	 * @method yaw
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Float} The angle of this vector to the right or left
-	 * of the negative z-axis.
-	 */
-	yaw : function(){
-		return Math.atan2(this[0], -this[2]);
-	},
-
-	/**
-	 * Returns the vector as a float array.
-	 *
-	 * @method toArray
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Float[]}
-	 */
-	toArray : function(){
-		return [this[0], this[1], this[2]];
-	},
-
-	/**
-	 * Returns a string containing this vector in a human readable
-	 * format: (x, y, z).
-	 *
-	 * @method toString
-	 * @memberof Leap.Vector.prototype
-	 * @returns {String}
-	 */
-	toString : function(){
-		return "{x:"+this[0]+",y:"+this[1]+",z:"+this[2]+"}";
-	},
-
-	toSource : function(){ this.toString(); },
-
-	/**
-	 * Compare Vector equality component-wise.
-	 *
-	 * @method compare
-	 * @memberof Leap.Vector.prototype
-	 * @param {Leap.Vector} other A Vector object.
-	 * @returns {Boolean}
-	 */
-	compare : function(other){
-		return this[0]==other[0] && this[1]==other[1] && this[2]==other[2];
-	},
-
-	/**
-	 * Returns true if all of the vector's components are finite.
-	 *
-	 * If any component is NaN or infinite, then this returns false.
-	 *
-	 * @method isValid
-	 * @memberof Leap.Vector.prototype
-	 * @returns {Boolean}
-	 */
-	isValid : function(){
-		return (this[0] != NaN && this[0] > -Infinity && this[0] < Infinity) &&
-				 (this[1] != NaN && this[1] > -Infinity && this[1] < Infinity) &&
-			   (this[2] != NaN && this[2] > -Infinity && this[2] < Infinity);
-	}
-};
-
-Vector.prototype = new Array;
-_.extend(Vector.prototype, VectorPrototype);
+var Pointable = exports.Pointable = function(data) {
+  /**
+   * Indicates whether this is a valid Pointable object.
+   *
+   * @member valid
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.valid = true;
+  /**
+   * A unique ID assigned to this Pointable object, whose value remains the
+   * same across consecutive frames while the tracked finger or tool remains
+   * visible. If tracking is lost (for example, when a finger is occluded by
+   * another finger or when it is withdrawn from the Leap field of view), the
+   * Leap may assign a new ID when it detects the entity in a future frame.
+   *
+   * Use the ID value with the pointable() functions defined for the
+   * {@link Frame} and {@link Frame.Hand} classes to find this
+   * Pointable object in future frames.
+   *
+   * @member id
+   * @type {String}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.id = data.id;
+  this.handId = data.handId;
+  /**
+   * The estimated length of the finger or tool in millimeters.
+   *
+   * The reported length is the visible length of the finger or tool from the
+   * hand to tip. If the length isn't known, then a value of 0 is returned.
+   *
+   * @member length
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.length = data.length;
+  /**
+   * Whether or not the Pointable is believed to be a tool.
+   * Tools are generally longer, thinner, and straighter than fingers.
+   *
+   * If tool is false, then this Pointable must be a finger.
+   *
+   * @member tool
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tool = data.tool;
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member width
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.width = data.width;
+  /**
+   * The direction in which this finger or tool is pointing.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the tip.
+   *
+   * ![Finger](images/Leap_Finger_Model.png)
+   * @member direction
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.direction = data.direction;
+  /**
+   * The tip position in millimeters from the Leap origin.
+   *
+   * @member tipPosition
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipPosition = data.tipPosition;
+  /**
+   * The rate of change of the tip position in millimeters/second.
+   *
+   * @member tipVelocity
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipVelocity = data.tipVelocity;
+}
 
 /**
- * The unit vector pointing backward along the positive z-axis: (0, 0, 1)
+ * A string containing a brief, human readable description of the Pointable
+ * object.
  *
+ * @method toString
+ * @memberof Leap.Pointable.prototype
+ * @returns {String} A description of the Pointable object as a string.
+ */
+Pointable.prototype.toString = function() {
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
+}
+
+/**
+ * An invalid Pointable object.
+ *
+ * You can use this Pointable instance in comparisons testing
+ * whether a given Pointable instance is valid or invalid. (You can also use the
+ * Pointable.valid property.)
+
  * @static
- * @type {Leap.Vector}
- * @name backward
- * @memberof Leap.Vector
+ * @type {Leap.Pointable}
+ * @name Invalid
+ * @memberof Leap.Pointable
  */
-Vector.backward = function(){ return new Vector([0,0,1]); };
-/**
- * The unit vector pointing down along the negative y-axis: (0, -1, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name down
- * @memberof Leap.Vector
- */
-Vector.down = function(){ return new Vector([0,-1,0]); };
-/**
- * The unit vector pointing forward along the negative z-axis: (0, 0, -1)
- *
- * @static
- * @type {Leap.Vector}
- * @name forward
- * @memberof Leap.Vector
- */
-Vector.forward = function(){ return new Vector([0,0,-1]); };
-/**
- * The unit vector pointing left along the negative x-axis: (-1, 0, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name left
- * @memberof Leap.Vector
- */
-Vector.left = function(){ return new Vector([-1,0,0]); };
-/**
- * The unit vector pointing right along the positive x-axis: (1, 0, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name right
- * @memberof Leap.Vector
- */
-Vector.right = function(){ return new Vector([1,0,0]); };
-/**
- * The unit vector pointing up along the positive y-axis: (0, 1, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name up
- * @memberof Leap.Vector
- */
-Vector.up = function(){ return new Vector([0,1,0]); };
-/**
- * The x-axis unit vector: (1, 0, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name xAxis
- * @memberof Leap.Vector
- */
-Vector.xAxis = function(){ return new Vector([1,0,0]); };
-/**
- * The y-axis unit vector: (0, 1, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name yAxis
- * @memberof Leap.Vector
- */
-Vector.yAxis = function(){ return new Vector([0,1,0]); };
-/**
- * The z-axis unit vector: (0, 0, 1)
- *
- * @static
- * @type {Leap.Vector}
- * @name zAxis
- * @memberof Leap.Vector
- */
-Vector.zAxis = function(){ return new Vector([0,0,1]); };
-/**
- * The zero vector: (0, 0, 0)
- *
- * @static
- * @type {Leap.Vector}
- * @name zero
- * @memberof Leap.Vector
- */
-Vector.zero = function(){ return new Vector([0,0,0]); };
+Pointable.Invalid = { valid: false };
 
-},{"underscore":22}],11:[function(require,module,exports){
-var Vector = require("./vector").Vector,
-    _ = require('underscore');
-
-/**
- * Constructs a Matrix object.
- *
- * Creates a new Matrix from the specified Array of Vectors or Matrix. 
- * The default constructor creates an identity matrix.
- *
- * @class Matrix
- * @memberof Leap
- * @classdesc
- * The Matrix object represents a transformation matrix. 
- * 
- * To use this object to transform a Vector, construct a matrix 
- * containing the desired transformation and then use the 
- * [Matrix.transformPoint]{@link Leap.Matrix#transformPoint}() or 
- * [Matrix.transformDirection]{@link Leap.Matrix#transformDirection}() functions 
- * to apply the transform.
- * 
- * Transforms can be combined by multiplying two or more transform 
- * matrices using the times function. 
- */
-var Matrix = exports.Matrix = function(data){
-	
-	if(data instanceof Matrix){
-		this[0] = new Vector(data.xBasis);
-		this[1] = new Vector(data.yBasis);
-		this[2] = new Vector(data.zBasis);
-		this[3] = new Vector(data.origin);
-	}
-	else if(data instanceof Array){
-		if(data[0] instanceof Vector && typeof(data[1]) == "number"){
-			this.setRotation(data[0],data[1]);
-			this[3] = new Vector(data[2]);
-		}
-		else{
-			this[0] = new Vector(data[0]);
-			this[1] = new Vector(data[1]);
-			this[2] = new Vector(data[2]);
-			this[3] = new Vector(data[3]);
-		}
-	}
-	else{
-		this[0] = new Vector([1,0,0]);
-		this[1] = new Vector([0,1,0]);
-		this[2] = new Vector([0,0,1]);
-		this[3] = new Vector([0,0,0]);
-	}
-	
-	this.length = 4;
-
-	/**
-	 * The rotation and scale factors for the x-axis.
-	 * @member xBasis
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	/**
-	 * The rotation and scale factors for the x-axis.
-	 * @member [0]
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	this.xBasis = this[0];
-
-	/**
-	 * The rotation and scale factors for the y-axis.
-	 * @member yBasis
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	/**
-	 * The rotation and scale factors for the y-axis.
-	 * @member [1]
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	this.yBasis = this[1];
-
-	/**
-	 * The rotation and scale factors for the z-axis.
-	 * @member zBasis
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	/**
-	 * The rotation and scale factors for the z-axis.
-	 * @member [2]
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	this.zBasis = this[2];
-
-	/**
-	 * The translation factors for all three axes. 
-	 * @member origin
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	/**
-	 * The translation factors for all three axes. 
-	 * @member [3]
-	 * @memberof Leap.Matrix.prototype
-	 * @type {Leap.Vector}
-	 */
-	this.origin = this[3];
-};
-
-var MatrixPrototype = {
-	
-	/**
-	 * Sets this transformation matrix to represent a rotation around 
-	 * the specified vector.
-	 * 
-	 * This function erases any previous rotation and scale transforms 
-	 * applied to this matrix, but does not affect translation.
-	 * 
-	 * @method setRotation
-	 * @memberof Leap.Matrix.prototype
-	 * @param {Leap.Vector} _axis A Vector specifying the axis of rotation.
-	 * @param {float} angleRadians The amount of rotation in radians. 
-	 */
-	setRotation : function(_axis, angle){
-		var axis = _axis.normalized();
-		var s = Math.sin(angle);
-		var c = Math.cos(angle);
-		var C = 1-c;
-		
-		this[0] = new Vector([axis[0]*axis[0]*C + c, axis[0]*axis[1]*C - axis[2]*s, axis[0]*axis[2]*C + axis[1]*s]);
-		this[1] = new Vector([axis[1]*axis[0]*C + axis[2]*s, axis[1]*axis[1]*C + c, axis[1]*axis[2]*C - axis[0]*s]);
-		this[2] = new Vector([axis[2]*axis[0]*C - axis[1]*s, axis[2]*axis[1]*C + axis[0]*s, axis[2]*axis[2]*C + c]);
-	},
-	
-	/**
-	 * Transforms a vector with this matrix by transforming its 
-	 * rotation, scale, and translation. 
-	 * 
-	 * Translation is applied after rotation and scale.
-	 * 
-	 * @method transformPoint
-	 * @memberof Leap.Matrix.prototype
-	 * @param {Leap.Vector} in The Vector to transform.  
-	 * @returns {Leap.Vector} A new Vector representing the transformed original.
-	 */
-	transformPoint : function(data){
-		return this[3].plus(this.transformDirection(data));
-	},
-
-	/**
-	 * Transforms a vector with this matrix by transforming its 
-	 * rotation and scale only.
-	 * 
-	 * @method transformDirection
-	 * @memberof Leap.Matrix.prototype
-	 * @param {Leap.Vector} in The Vector to transform.  
-	 * @returns {Leap.Vector} A new Vector representing the transformed original.
-	 */
-	transformDirection : function(data){
-		var x = this[0].multiply(data[0]);
-		var y = this[1].multiply(data[1]);
-		var z = this[2].multiply(data[2]);
-		return x.plus(y).plus(z);
-	},
-	
-	/**
-	 * Multiply transform matrices.
-	 * 
-	 * Combines two transformations into a single equivalent transformation.
-	 * 
-	 * @method times
-	 * @memberof Leap.Matrix.prototype
-	 * @param {Matrix} other A Matrix to multiply on the right hand side. 
-	 * @returns {Leap.Matrix} A new Matrix representing the transformation 
-	 * equivalent to applying the other transformation followed by this transformation.
-	 */
-	times : function(other){
-		var x = this.transformDirection(other[0]);
-		var y = this.transformDirection(other[1]);
-		var z = this.transformDirection(other[2]);
-		var o = this.transformPoint(other[3]);
-		return new Matrix([x,y,z,o]);
-	},
-	
-	/**
-	 * Performs a matrix inverse if the matrix consists entirely of 
-	 * rigid transformations (translations and rotations). 
-	 * 
-	 * If the matrix is not rigid, this operation will not represent an inverse.
-	 * 
-	 * Note that all matricies that are directly returned by the API are rigid.
-	 * 
-	 * @method rigidInverse
-	 * @memberof Leap.Matrix.prototype
-	 * @returns {Leap.Matrix} The rigid inverse of the matrix.
-	 */
-	rigidInverse : function(){
-		var x = new Vector([this[0][0], this[1][0], this[2][0]]);
-		var y = new Vector([this[0][1], this[1][1], this[2][1]]);
-		var z = new Vector([this[0][2], this[1][2], this[2][2]]);
-		var rotInverse = new Matrix([x,y,z]);
-		rotInverse[3] = rotInverse.transformDirection(Vector.zero().minus(this[3]));
-		return rotInverse;
-	},
-	
-	/**
-	 * Writes the 3x3 Matrix object to a 9 element row-major float array. 
-	 * 
-	 * Translation factors are discarded.
-	 * 
-	 * @method toArray3x3
-	 * @memberof Leap.Matrix.prototype
-	 * @returns {Array} The rotation Matrix as a flattened array.
-	 */
-	toArray3x3 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this[0][0];
-		output[1] = this[0][1];
-		output[2] = this[0][2];
-		output[3] = this[1][0];
-		output[4] = this[1][1];
-		output[5] = this[1][2];
-		output[6] = this[2][0];
-		output[7] = this[2][1];
-		output[8] = this[2][2];
-		return output;
-	},
-	
-	/**
-	 * Convert a 4x4 Matrix object to a 16 element row-major float array. 
-	 * 
-	 * Translation factors are discarded.
-	 * 
-	 * @method toArray4x4
-	 * @memberof Leap.Matrix.prototype
-	 * @returns {Array} The entire Matrix as a flattened array.
-	 */
-	toArray4x4 : function(output){
-		if(output == null) output = [];
-		else output.length = 0;
-		output[0] = this[0][0];
-		output[1] = this[0][1];
-		output[2] = this[0][2];
-		output[3] = 0;
-		output[4] = this[1][0];
-		output[5] = this[1][1];
-		output[6] = this[1][2];
-		output[7] = 0;
-		output[8] = this[2][0];
-		output[9] = this[2][1];
-		output[10] = this[2][2];
-		output[11] = 0;
-		output[12] = this[3][0];
-		output[13] = this[3][1];
-		output[14] = this[3][2];
-		output[15] = 1;
-		return output;
-	},
-	
-	/**
-	 * Write the matrix to a string in a human readable format. 
-	 * 
-	 * @method toString
-	 * @memberof Leap.Matrix.prototype
-	 * @returns {String}
-	 */
-	toString : function(){
-		return "{xBasis:"+this[0]+",yBasis:"+this[1]+
-		",zBasis:"+this[2]+",origin:"+this[3]+"}";
-	},
-	
-	toSource : function(){ this.toString(); },
-	
-	/**
-	 * Compare Matrix equality component-wise. 
-	 * 
-	 * @method compare
-	 * @memberof Leap.Matrix.prototype
-	 * @returns {Boolean}
-	 */
-	compare : function(other){
-		return this[0].compare(other[0]) && 
-		this[1].compare(other[1]) && 
-		this[2].compare(other[2]) && 
-		this[3].compare(other[3]);
-	}
-};
-
-Matrix.prototype = new Array;
-_.extend(Matrix.prototype, MatrixPrototype);
-
-/**
- * Returns the identity matrix specifying no translation, rotation, and scale.
- *
- * @static
- * @type {Leap.Matrix}
- * @name identity
- * @memberof Leap.Matrix
- */
-Matrix.identity = function(){ return new Matrix(); };
-
-},{"./vector":14,"underscore":22}],22:[function(require,module,exports){
+},{"gl-matrix":21}],20:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -4373,101 +3590,3081 @@ Matrix.identity = function(){ return new Matrix(); };
 }).call(this);
 
 })()
-},{}],18:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
+},{}],21:[function(require,module,exports){
+(function(){/**
+ * @fileoverview gl-matrix - High performance matrix and vector operations
+ * @author Brandon Jones
+ * @author Colin MacKenzie IV
+ * @version 2.0.0
+ */
 
-var Connection = exports.Connection = function(opts) {
-  this.opts = _.defaults(opts || {}, {
-    host : '127.0.0.1',
-    enableGestures: false,
-    port: 6437,
-    enableHeartbeat: true,
-    heartbeatInterval: 100
-  });
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(this.opts.enableGestures);
-    if (this.opts.enableHeartbeat) this.startHeartbeat();
-  });
-  this.on('disconnect', function() {
-    if (this.opts.enableHeartbeat) this.stopHeartbeat();
-  });
-  this.heartbeatTimer = null;
-}
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
 
-Connection.prototype.sendHeartbeat = function() {
-  this.setHeartbeatState(true);
-  this.protocol.sendHeartbeat(this);
-}
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
 
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-Connection.prototype.handleClose = function() {
-  this.disconnect();
-  this.startReconnection();
-  this.emit('disconnect');
-}
 
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
+(function() {
+  "use strict";
 
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  delete this.socket;
-  delete this.protocol;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
+  var shim = {};
+  if (typeof(exports) === 'undefined') {
+    if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+      shim.exports = {};
+      define(function() {
+        return shim.exports;
+      });
+    } else {
+      // gl-matrix lives in a browser, define its namespaces in global
+      shim.exports = window;
+    }    
   }
-  this.emit(messageEvent.type, messageEvent);
-}
+  else {
+    // gl-matrix lives in commonjs, define its namespaces in exports
+    shim.exports = exports;
+  }
 
-Connection.prototype.connect = function() {
-  if (this.socket) return;
-  this.socket = this.setupSocket();
-  return true;
-}
+  (function(exports) {
+    /* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
 
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
-Connection.prototype.stopHeartbeat = function() {
-  if (!this.heartbeatTimer) return;
-  clearInterval(this.heartbeatTimer);
-  delete this.heartbeatTimer;
-  this.setHeartbeatState(false);
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class 2 Dimensional Vector
+ * @name vec2
+ */
+
+var vec2 = {};
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+ 
+/**
+ * Creates a new, empty vec2
+ *
+ * @returns {vec2} a new 2D vector
+ */
+vec2.create = function() {
+    return new Float32Array(2);
 };
 
-Connection.prototype.setHeartbeatState = function(state) {
-  if (this.heartbeatState === state) return;
-  this.heartbeatState = state;
-  this.emit(this.heartbeatState ? 'focus' : 'blur');
+/**
+ * Creates a new vec2 initialized with values from an existing vector
+ *
+ * @param {vec2} a vector to clone
+ * @returns {vec2} a new 2D vector
+ */
+vec2.clone = function(a) {
+    var out = new Float32Array(2);
+    out[0] = a[0];
+    out[1] = a[1];
+    return out;
 };
 
-_.extend(Connection.prototype, EventEmitter.prototype);
+/**
+ * Creates a new vec2 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @returns {vec2} a new 2D vector
+ */
+vec2.fromValues = function(x, y) {
+    var out = new Float32Array(2);
+    out[0] = x;
+    out[1] = y;
+    return out;
+};
 
-},{"./protocol":23,"events":17,"underscore":22}],24:[function(require,module,exports){
+/**
+ * Copy the values from one vec2 to another
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the source vector
+ * @returns {vec2} out
+ */
+vec2.copy = function(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    return out;
+};
+
+/**
+ * Set the components of a vec2 to the given values
+ *
+ * @param {vec2} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @returns {vec2} out
+ */
+vec2.set = function(out, x, y) {
+    out[0] = x;
+    out[1] = y;
+    return out;
+};
+
+/**
+ * Adds two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+vec2.add = function(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    return out;
+};
+
+/**
+ * Subtracts two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+vec2.sub = vec2.subtract = function(out, a, b) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    return out;
+};
+
+/**
+ * Multiplies two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+vec2.mul = vec2.multiply = function(out, a, b) {
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    return out;
+};
+
+/**
+ * Divides two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+vec2.div = vec2.divide = function(out, a, b) {
+    out[0] = a[0] / b[0];
+    out[1] = a[1] / b[1];
+    return out;
+};
+
+/**
+ * Returns the minimum of two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+vec2.min = function(out, a, b) {
+    out[0] = Math.min(a[0], b[0]);
+    out[1] = Math.min(a[1], b[1]);
+    return out;
+};
+
+/**
+ * Returns the maximum of two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+vec2.max = function(out, a, b) {
+    out[0] = Math.max(a[0], b[0]);
+    out[1] = Math.max(a[1], b[1]);
+    return out;
+};
+
+/**
+ * Scales a vec2 by a scalar number
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to scale
+ * @param {vec2} b amount to scale the vector by
+ * @returns {vec2} out
+ */
+vec2.scale = function(out, a, b) {
+    out[0] = a[0] * b;
+    out[1] = a[1] * b;
+    return out;
+};
+
+/**
+ * Calculates the euclidian distance between two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} distance between a and b
+ */
+vec2.dist = vec2.distance = function(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1];
+    return Math.sqrt(x*x + y*y);
+};
+
+/**
+ * Calculates the squared euclidian distance between two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} squared distance between a and b
+ */
+vec2.sqrDist = vec2.squaredDistance = function(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1];
+    return x*x + y*y;
+};
+
+/**
+ * Caclulates the length of a vec2
+ *
+ * @param {vec2} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+vec2.len = vec2.length = function (a) {
+    var x = a[0],
+        y = a[1];
+    return Math.sqrt(x*x + y*y);
+};
+
+/**
+ * Caclulates the squared length of a vec2
+ *
+ * @param {vec2} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+vec2.sqrLen = vec2.squaredLength = function (a) {
+    var x = a[0],
+        y = a[1];
+    return x*x + y*y;
+};
+
+/**
+ * Negates the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to negate
+ * @returns {vec2} out
+ */
+vec2.negate = function(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    return out;
+};
+
+/**
+ * Normalize a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to normalize
+ * @returns {vec2} out
+ */
+vec2.normalize = function(out, a) {
+    var x = a[0],
+        y = a[1];
+    var len = x*x + y*y;
+    if (len > 0) {
+        //TODO: evaluate use of glm_invsqrt here?
+        len = 1 / Math.sqrt(len);
+        out[0] = a[0] * len;
+        out[1] = a[1] * len;
+    }
+    return out;
+};
+
+/**
+ * Caclulates the dot product of two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+vec2.dot = function (a, b) {
+    return a[0] * b[0] + a[1] * b[1];
+};
+
+/**
+ * Computes the cross product of two vec2's
+ * Note that the cross product must by definition produce a 3D vector
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec3} out
+ */
+vec2.cross = function(out, a, b) {
+    var z = a[0] * b[1] - a[1] * b[0];
+    out[0] = out[1] = 0;
+    out[2] = z;
+    return out;
+};
+
+/**
+ * Performs a linear interpolation between two vec2's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec2} out
+ */
+vec2.lerp = function (out, a, b, t) {
+    var ax = a[0],
+        ay = a[1];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    return out;
+};
+
+/**
+ * Transforms the vec2 with a mat2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat2} m matrix to transform with
+ * @returns {vec2} out
+ */
+vec2.transformMat2 = function(out, a, m) {
+    var x = a[0],
+        y = a[1];
+    out[0] = x * m[0] + y * m[1];
+    out[1] = x * m[2] + y * m[3];
+    return out;
+};
+
+/**
+ * Perform some operation over an array of vec2s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec2. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec2s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ */
+vec2.forEach = (function() {
+    var vec = new Float32Array(2);
+
+    return function(a, stride, offset, count, fn, arg) {
+        var i, l;
+        if(!stride) {
+            stride = 2;
+        }
+
+        if(!offset) {
+            offset = 0;
+        }
+        
+        if(count) {
+            l = Math.min((count * stride) + offset, a.length);
+        } else {
+            l = a.length;
+        }
+
+        for(i = offset; i < l; i += stride) {
+            vec[0] = a[i]; vec[1] = a[i+1];
+            fn(vec, vec, arg);
+            a[i] = vec[0]; a[i+1] = vec[1];
+        }
+        
+        return a;
+    };
+})();
+
+/**
+ * Returns a string representation of a vector
+ *
+ * @param {vec2} vec vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+vec2.str = function (a) {
+    return 'vec2(' + a[0] + ', ' + a[1] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.vec2 = vec2;
+}
+;
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class 3 Dimensional Vector
+ * @name vec3
+ */
+
+var vec3 = {};
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+ 
+/**
+ * Creates a new, empty vec3
+ *
+ * @returns {vec3} a new 3D vector
+ */
+vec3.create = function() {
+    return new Float32Array(3);
+};
+
+/**
+ * Creates a new vec3 initialized with values from an existing vector
+ *
+ * @param {vec3} a vector to clone
+ * @returns {vec3} a new 3D vector
+ */
+vec3.clone = function(a) {
+    var out = new Float32Array(3);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+};
+
+/**
+ * Creates a new vec3 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @returns {vec3} a new 3D vector
+ */
+vec3.fromValues = function(x, y, z) {
+    var out = new Float32Array(3);
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    return out;
+};
+
+/**
+ * Copy the values from one vec3 to another
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the source vector
+ * @returns {vec3} out
+ */
+vec3.copy = function(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+};
+
+/**
+ * Set the components of a vec3 to the given values
+ *
+ * @param {vec3} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @returns {vec3} out
+ */
+vec3.set = function(out, x, y, z) {
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    return out;
+};
+
+/**
+ * Adds two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.add = function(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    return out;
+};
+
+/**
+ * Subtracts two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.sub = vec3.subtract = function(out, a, b) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    return out;
+};
+
+/**
+ * Multiplies two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.mul = vec3.multiply = function(out, a, b) {
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    out[2] = a[2] * b[2];
+    return out;
+};
+
+/**
+ * Divides two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.div = vec3.divide = function(out, a, b) {
+    out[0] = a[0] / b[0];
+    out[1] = a[1] / b[1];
+    out[2] = a[2] / b[2];
+    return out;
+};
+
+/**
+ * Returns the minimum of two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.min = function(out, a, b) {
+    out[0] = Math.min(a[0], b[0]);
+    out[1] = Math.min(a[1], b[1]);
+    out[2] = Math.min(a[2], b[2]);
+    return out;
+};
+
+/**
+ * Returns the maximum of two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.max = function(out, a, b) {
+    out[0] = Math.max(a[0], b[0]);
+    out[1] = Math.max(a[1], b[1]);
+    out[2] = Math.max(a[2], b[2]);
+    return out;
+};
+
+/**
+ * Scales a vec3 by a scalar number
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to scale
+ * @param {vec3} b amount to scale the vector by
+ * @returns {vec3} out
+ */
+vec3.scale = function(out, a, b) {
+    out[0] = a[0] * b;
+    out[1] = a[1] * b;
+    out[2] = a[2] * b;
+    return out;
+};
+
+/**
+ * Calculates the euclidian distance between two vec3's
+ *
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {Number} distance between a and b
+ */
+vec3.dist = vec3.distance = function(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1],
+        z = b[2] - a[2];
+    return Math.sqrt(x*x + y*y + z*z);
+};
+
+/**
+ * Calculates the squared euclidian distance between two vec3's
+ *
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {Number} squared distance between a and b
+ */
+vec3.sqrDist = vec3.squaredDistance = function(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1],
+        z = b[2] - a[2];
+    return x*x + y*y + z*z;
+};
+
+/**
+ * Caclulates the length of a vec3
+ *
+ * @param {vec3} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+vec3.len = vec3.length = function (a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    return Math.sqrt(x*x + y*y + z*z);
+};
+
+/**
+ * Caclulates the squared length of a vec3
+ *
+ * @param {vec3} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+vec3.sqrLen = vec3.squaredLength = function (a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    return x*x + y*y + z*z;
+};
+
+/**
+ * Negates the components of a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to negate
+ * @returns {vec3} out
+ */
+vec3.negate = function(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    return out;
+};
+
+/**
+ * Normalize a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to normalize
+ * @returns {vec3} out
+ */
+vec3.normalize = function(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    var len = x*x + y*y + z*z;
+    if (len > 0) {
+        //TODO: evaluate use of glm_invsqrt here?
+        len = 1 / Math.sqrt(len);
+        out[0] = a[0] * len;
+        out[1] = a[1] * len;
+        out[2] = a[2] * len;
+    }
+    return out;
+};
+
+/**
+ * Caclulates the dot product of two vec3's
+ *
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+vec3.dot = function (a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+};
+
+/**
+ * Computes the cross product of two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+vec3.cross = function(out, a, b) {
+    var ax = a[0], ay = a[1], az = a[2],
+        bx = b[0], by = b[1], bz = b[2];
+
+    out[0] = ay * bz - az * by;
+    out[1] = az * bx - ax * bz;
+    out[2] = ax * by - ay * bx;
+    return out;
+};
+
+/**
+ * Performs a linear interpolation between two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec3} out
+ */
+vec3.lerp = function (out, a, b, t) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    out[2] = az + t * (b[2] - az);
+    return out;
+};
+
+/**
+ * Transforms the vec3 with a mat4.
+ * 4th vector component is implicitly '1'
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to transform
+ * @param {mat4} m matrix to transform with
+ * @returns {vec3} out
+ */
+vec3.transformMat4 = function(out, a, m) {
+    var x = a[0], y = a[1], z = a[2];
+    out[0] = m[0] * x + m[4] * y + m[8] * z + m[12];
+    out[1] = m[1] * x + m[5] * y + m[9] * z + m[13];
+    out[2] = m[2] * x + m[6] * y + m[10] * z + m[14];
+    return out;
+};
+
+/**
+ * Transforms the vec3 with a quat
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to transform
+ * @param {quat} q quaternion to transform with
+ * @returns {vec3} out
+ */
+vec3.transformQuat = function(out, a, q) {
+    var x = a[0], y = a[1], z = a[2],
+        qx = q[0], qy = q[1], qz = q[2], qw = q[3],
+
+        // calculate quat * vec
+        ix = qw * x + qy * z - qz * y,
+        iy = qw * y + qz * x - qx * z,
+        iz = qw * z + qx * y - qy * x,
+        iw = -qx * x - qy * y - qz * z;
+
+    // calculate result * inverse quat
+    out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+    out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+    out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+    return out;
+};
+
+/**
+ * Perform some operation over an array of vec3s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec3. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec3s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ */
+vec3.forEach = (function() {
+    var vec = new Float32Array(3);
+
+    return function(a, stride, offset, count, fn, arg) {
+        var i, l;
+        if(!stride) {
+            stride = 3;
+        }
+
+        if(!offset) {
+            offset = 0;
+        }
+        
+        if(count) {
+            l = Math.min((count * stride) + offset, a.length);
+        } else {
+            l = a.length;
+        }
+
+        for(i = offset; i < l; i += stride) {
+            vec[0] = a[i]; vec[1] = a[i+1]; vec[2] = a[i+2];
+            fn(vec, vec, arg);
+            a[i] = vec[0]; a[i+1] = vec[1]; a[i+2] = vec[2];
+        }
+        
+        return a;
+    };
+})();
+
+/**
+ * Returns a string representation of a vector
+ *
+ * @param {vec3} vec vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+vec3.str = function (a) {
+    return 'vec3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.vec3 = vec3;
+}
+;
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class 4 Dimensional Vector
+ * @name vec4
+ */
+
+var vec4 = {};
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+
+/**
+ * Creates a new, empty vec4
+ *
+ * @returns {vec4} a new 4D vector
+ */
+vec4.create = function() {
+    return new Float32Array(4);
+};
+
+/**
+ * Creates a new vec4 initialized with values from an existing vector
+ *
+ * @param {vec4} a vector to clone
+ * @returns {vec4} a new 4D vector
+ */
+vec4.clone = function(a) {
+    var out = new Float32Array(4);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    return out;
+};
+
+/**
+ * Creates a new vec4 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {vec4} a new 4D vector
+ */
+vec4.fromValues = function(x, y, z, w) {
+    var out = new Float32Array(4);
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+    return out;
+};
+
+/**
+ * Copy the values from one vec4 to another
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the source vector
+ * @returns {vec4} out
+ */
+vec4.copy = function(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    return out;
+};
+
+/**
+ * Set the components of a vec4 to the given values
+ *
+ * @param {vec4} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {vec4} out
+ */
+vec4.set = function(out, x, y, z, w) {
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+    return out;
+};
+
+/**
+ * Adds two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+vec4.add = function(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    out[3] = a[3] + b[3];
+    return out;
+};
+
+/**
+ * Subtracts two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+vec4.sub = vec4.subtract = function(out, a, b) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    out[3] = a[3] - b[3];
+    return out;
+};
+
+/**
+ * Multiplies two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+vec4.mul = vec4.multiply = function(out, a, b) {
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    out[2] = a[2] * b[2];
+    out[3] = a[3] * b[3];
+    return out;
+};
+
+/**
+ * Divides two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+vec4.div = vec4.divide = function(out, a, b) {
+    out[0] = a[0] / b[0];
+    out[1] = a[1] / b[1];
+    out[2] = a[2] / b[2];
+    out[3] = a[3] / b[3];
+    return out;
+};
+
+/**
+ * Returns the minimum of two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+vec4.min = function(out, a, b) {
+    out[0] = Math.min(a[0], b[0]);
+    out[1] = Math.min(a[1], b[1]);
+    out[2] = Math.min(a[2], b[2]);
+    out[3] = Math.min(a[3], b[3]);
+    return out;
+};
+
+/**
+ * Returns the maximum of two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+vec4.max = function(out, a, b) {
+    out[0] = Math.max(a[0], b[0]);
+    out[1] = Math.max(a[1], b[1]);
+    out[2] = Math.max(a[2], b[2]);
+    out[3] = Math.max(a[3], b[3]);
+    return out;
+};
+
+/**
+ * Scales a vec4 by a scalar number
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the vector to scale
+ * @param {vec4} b amount to scale the vector by
+ * @returns {vec4} out
+ */
+vec4.scale = function(out, a, b) {
+    out[0] = a[0] * b;
+    out[1] = a[1] * b;
+    out[2] = a[2] * b;
+    out[3] = a[3] * b;
+    return out;
+};
+
+/**
+ * Calculates the euclidian distance between two vec4's
+ *
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {Number} distance between a and b
+ */
+vec4.dist = vec4.distance = function(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1],
+        z = b[2] - a[2],
+        w = b[3] - a[3];
+    return Math.sqrt(x*x + y*y + z*z + w*w);
+};
+
+/**
+ * Calculates the squared euclidian distance between two vec4's
+ *
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {Number} squared distance between a and b
+ */
+vec4.sqrDist = vec4.squaredDistance = function(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1],
+        z = b[2] - a[2],
+        w = b[3] - a[3];
+    return x*x + y*y + z*z + w*w;
+};
+
+/**
+ * Caclulates the length of a vec4
+ *
+ * @param {vec4} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+vec4.len = vec4.length = function (a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+    return Math.sqrt(x*x + y*y + z*z + w*w);
+};
+
+/**
+ * Caclulates the squared length of a vec4
+ *
+ * @param {vec4} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+vec4.sqrLen = vec4.squaredLength = function (a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+    return x*x + y*y + z*z + w*w;
+};
+
+/**
+ * Negates the components of a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to negate
+ * @returns {vec4} out
+ */
+vec4.negate = function(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    out[3] = -a[3];
+    return out;
+};
+
+/**
+ * Normalize a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to normalize
+ * @returns {vec4} out
+ */
+vec4.normalize = function(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+    var len = x*x + y*y + z*z + w*w;
+    if (len > 0) {
+        len = 1 / Math.sqrt(len);
+        out[0] = a[0] * len;
+        out[1] = a[1] * len;
+        out[2] = a[2] * len;
+        out[3] = a[3] * len;
+    }
+    return out;
+};
+
+/**
+ * Caclulates the dot product of two vec4's
+ *
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+vec4.dot = function (a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+};
+
+/**
+ * Performs a linear interpolation between two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec4} out
+ */
+vec4.lerp = function (out, a, b, t) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    out[2] = az + t * (b[2] - az);
+    out[3] = aw + t * (b[3] - aw);
+    return out;
+};
+
+/**
+ * Transforms the vec4 with a mat4.
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the vector to transform
+ * @param {mat4} m matrix to transform with
+ * @returns {vec4} out
+ */
+vec4.transformMat4 = function(out, a, m) {
+    var x = a[0], y = a[1], z = a[2], w = a[3];
+    out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
+    out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
+    out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
+    out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
+    return out;
+};
+
+/**
+ * Transforms the vec4 with a quat
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the vector to transform
+ * @param {quat} q quaternion to transform with
+ * @returns {vec4} out
+ */
+vec4.transformQuat = function(out, a, q) {
+    var x = a[0], y = a[1], z = a[2],
+        qx = q[0], qy = q[1], qz = q[2], qw = q[3],
+
+        // calculate quat * vec
+        ix = qw * x + qy * z - qz * y,
+        iy = qw * y + qz * x - qx * z,
+        iz = qw * z + qx * y - qy * x,
+        iw = -qx * x - qy * y - qz * z;
+
+    // calculate result * inverse quat
+    out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+    out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+    out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+    return out;
+};
+
+/**
+ * Perform some operation over an array of vec4s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec4. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec2s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ */
+vec4.forEach = (function() {
+    var vec = new Float32Array(4);
+
+    return function(a, stride, offset, count, fn, arg) {
+        var i, l;
+        if(!stride) {
+            stride = 4;
+        }
+
+        if(!offset) {
+            offset = 0;
+        }
+        
+        if(count) {
+            l = Math.min((count * stride) + offset, a.length);
+        } else {
+            l = a.length;
+        }
+
+        for(i = offset; i < l; i += stride) {
+            vec[0] = a[i]; vec[1] = a[i+1]; vec[2] = a[i+2]; vec[3] = a[i+3];
+            fn(vec, vec, arg);
+            a[i] = vec[0]; a[i+1] = vec[1]; a[i+2] = vec[2]; a[i+3] = vec[3];
+        }
+        
+        return a;
+    };
+})();
+
+/**
+ * Returns a string representation of a vector
+ *
+ * @param {vec4} vec vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+vec4.str = function (a) {
+    return 'vec4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.vec4 = vec4;
+}
+;
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class 2x2 Matrix
+ * @name mat2
+ */
+
+var mat2 = {};
+
+var mat2Identity = new Float32Array([
+    1, 0,
+    0, 1
+]);
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+
+/**
+ * Creates a new identity mat2
+ *
+ * @returns {mat2} a new 2x2 matrix
+ */
+mat2.create = function() {
+    return new Float32Array(mat2Identity);
+};
+
+/**
+ * Creates a new mat2 initialized with values from an existing matrix
+ *
+ * @param {mat2} a matrix to clone
+ * @returns {mat2} a new 2x2 matrix
+ */
+mat2.clone = function(a) {
+    var out = new Float32Array(4);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    return out;
+};
+
+/**
+ * Copy the values from one mat2 to another
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+mat2.copy = function(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    return out;
+};
+
+/**
+ * Set a mat2 to the identity matrix
+ *
+ * @param {mat2} out the receiving matrix
+ * @returns {mat2} out
+ */
+mat2.identity = function(out) {
+    out[0] = 1;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 1;
+    return out;
+};
+
+/**
+ * Transpose the values of a mat2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+mat2.transpose = function(out, a) {
+    // If we are transposing ourselves we can skip a few steps but have to cache some values
+    if (out === a) {
+        var a1 = a[1];
+        out[1] = a[2];
+        out[2] = a1;
+    } else {
+        out[0] = a[0];
+        out[1] = a[2];
+        out[2] = a[1];
+        out[3] = a[3];
+    }
+    
+    return out;
+};
+
+/**
+ * Inverts a mat2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+mat2.invert = function(out, a) {
+    var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
+
+        // Calculate the determinant
+        det = a0 * a3 - a2 * a1;
+
+    if (!det) {
+        return null;
+    }
+    det = 1.0 / det;
+    
+    out[0] =  a3 * det;
+    out[1] = -a1 * det;
+    out[2] = -a2 * det;
+    out[3] =  a0 * det;
+
+    return out;
+};
+
+/**
+ * Caclulates the adjugate of a mat2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+mat2.adjoint = function(out, a) {
+    // Caching this value is nessecary if out == a
+    var a0 = a[0];
+    out[0] =  a[3];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    out[3] =  a0;
+
+    return out;
+};
+
+/**
+ * Calculates the determinant of a mat2
+ *
+ * @param {mat2} a the source matrix
+ * @returns {Number} determinant of a
+ */
+mat2.determinant = function (a) {
+    return a[0] * a[3] - a[2] * a[1];
+};
+
+/**
+ * Multiplies two mat2's
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the first operand
+ * @param {mat2} b the second operand
+ * @returns {mat2} out
+ */
+mat2.mul = mat2.multiply = function (out, a, b) {
+    var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3];
+    var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+    out[0] = a0 * b0 + a1 * b2;
+    out[1] = a0 * b1 + a1 * b3;
+    out[2] = a2 * b0 + a3 * b2;
+    out[3] = a2 * b1 + a3 * b3;
+    return out;
+};
+
+/**
+ * Rotates a mat2 by the given angle
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the matrix to rotate
+ * @param {mat2} rad the angle to rotate the matrix by
+ * @returns {mat2} out
+ */
+mat2.rotate = function (out, a, rad) {
+    var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
+        s = Math.sin(rad),
+        c = Math.cos(rad);
+    out[0] = a0 *  c + a1 * s;
+    out[1] = a0 * -s + a1 * c;
+    out[2] = a2 *  c + a3 * s;
+    out[3] = a2 * -s + a3 * c;
+    return out;
+};
+
+/**
+ * Scales the mat2 by the dimensions in the given vec2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the matrix to rotate
+ * @param {mat2} v the vec2 to scale the matrix by
+ * @returns {mat2} out
+ **/
+mat2.scale = function(out, a, v) {
+    var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
+        v0 = v[0], v1 = v[1];
+    out[0] = a0 * v0;
+    out[1] = a1 * v1;
+    out[2] = a2 * v0;
+    out[3] = a3 * v1;
+    return out;
+};
+
+/**
+ * Returns a string representation of a mat2
+ *
+ * @param {mat2} mat matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+mat2.str = function (a) {
+    return 'mat2(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.mat2 = mat2;
+}
+;
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class 3x3 Matrix
+ * @name mat3
+ */
+
+var mat3 = {};
+
+var mat3Identity = new Float32Array([
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1
+]);
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+
+/**
+ * Creates a new identity mat3
+ *
+ * @returns {mat3} a new 3x3 matrix
+ */
+mat3.create = function() {
+    return new Float32Array(mat3Identity);
+};
+
+/**
+ * Creates a new mat3 initialized with values from an existing matrix
+ *
+ * @param {mat3} a matrix to clone
+ * @returns {mat3} a new 3x3 matrix
+ */
+mat3.clone = function(a) {
+    var out = new Float32Array(9);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    out[4] = a[4];
+    out[5] = a[5];
+    out[6] = a[6];
+    out[7] = a[7];
+    out[8] = a[8];
+    return out;
+};
+
+/**
+ * Copy the values from one mat3 to another
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+mat3.copy = function(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    out[4] = a[4];
+    out[5] = a[5];
+    out[6] = a[6];
+    out[7] = a[7];
+    out[8] = a[8];
+    return out;
+};
+
+/**
+ * Set a mat3 to the identity matrix
+ *
+ * @param {mat3} out the receiving matrix
+ * @returns {mat3} out
+ */
+mat3.identity = function(out) {
+    out[0] = 1;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 1;
+    out[5] = 0;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 1;
+    return out;
+};
+
+/**
+ * Transpose the values of a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+mat3.transpose = function(out, a) {
+    // If we are transposing ourselves we can skip a few steps but have to cache some values
+    if (out === a) {
+        var a01 = a[1], a02 = a[2], a12 = a[5];
+        out[1] = a[3];
+        out[2] = a[6];
+        out[3] = a01;
+        out[5] = a[7];
+        out[6] = a02;
+        out[7] = a12;
+    } else {
+        out[0] = a[0];
+        out[1] = a[3];
+        out[2] = a[6];
+        out[3] = a[1];
+        out[4] = a[4];
+        out[5] = a[7];
+        out[6] = a[2];
+        out[7] = a[5];
+        out[8] = a[8];
+    }
+    
+    return out;
+};
+
+/**
+ * Inverts a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+mat3.invert = function(out, a) {
+    var a00 = a[0], a01 = a[1], a02 = a[2],
+        a10 = a[3], a11 = a[4], a12 = a[5],
+        a20 = a[6], a21 = a[7], a22 = a[8],
+
+        b01 = a22 * a11 - a12 * a21,
+        b11 = -a22 * a10 + a12 * a20,
+        b21 = a21 * a10 - a11 * a20,
+
+        // Calculate the determinant
+        det = a00 * b01 + a01 * b11 + a02 * b21;
+
+    if (!det) { 
+        return null; 
+    }
+    det = 1.0 / det;
+
+    out[0] = b01 * det;
+    out[1] = (-a22 * a01 + a02 * a21) * det;
+    out[2] = (a12 * a01 - a02 * a11) * det;
+    out[3] = b11 * det;
+    out[4] = (a22 * a00 - a02 * a20) * det;
+    out[5] = (-a12 * a00 + a02 * a10) * det;
+    out[6] = b21 * det;
+    out[7] = (-a21 * a00 + a01 * a20) * det;
+    out[8] = (a11 * a00 - a01 * a10) * det;
+    return out;
+};
+
+/**
+ * Caclulates the adjugate of a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+mat3.adjoint = function(out, a) {
+    var a00 = a[0], a01 = a[1], a02 = a[2],
+        a10 = a[3], a11 = a[4], a12 = a[5],
+        a20 = a[6], a21 = a[7], a22 = a[8];
+
+    out[0] = (a11 * a22 - a12 * a21);
+    out[1] = (a02 * a21 - a01 * a22);
+    out[2] = (a01 * a12 - a02 * a11);
+    out[3] = (a12 * a20 - a10 * a22);
+    out[4] = (a00 * a22 - a02 * a20);
+    out[5] = (a02 * a10 - a00 * a12);
+    out[6] = (a10 * a21 - a11 * a20);
+    out[7] = (a01 * a20 - a00 * a21);
+    out[8] = (a00 * a11 - a01 * a10);
+    return out;
+};
+
+/**
+ * Calculates the determinant of a mat3
+ *
+ * @param {mat3} a the source matrix
+ * @returns {Number} determinant of a
+ */
+mat3.determinant = function (a) {
+    var a00 = a[0], a01 = a[1], a02 = a[2],
+        a10 = a[3], a11 = a[4], a12 = a[5],
+        a20 = a[6], a21 = a[7], a22 = a[8];
+
+    return a00 * (a22 * a11 - a12 * a21) + a01 * (-a22 * a10 + a12 * a20) + a02 * (a21 * a10 - a11 * a20);
+};
+
+/**
+ * Multiplies two mat3's
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the first operand
+ * @param {mat3} b the second operand
+ * @returns {mat3} out
+ */
+mat3.mul = mat3.multiply = function (out, a, b) {
+    var a00 = a[0], a01 = a[1], a02 = a[2],
+        a10 = a[3], a11 = a[4], a12 = a[5],
+        a20 = a[6], a21 = a[7], a22 = a[8],
+
+        b00 = b[0], b01 = b[1], b02 = b[2],
+        b10 = b[3], b11 = b[4], b12 = b[5],
+        b20 = b[6], b21 = b[7], b22 = b[8];
+
+    out[0] = b00 * a00 + b01 * a10 + b02 * a20;
+    out[1] = b00 * a01 + b01 * a11 + b02 * a21;
+    out[2] = b00 * a02 + b01 * a12 + b02 * a22;
+
+    out[3] = b10 * a00 + b11 * a10 + b12 * a20;
+    out[4] = b10 * a01 + b11 * a11 + b12 * a21;
+    out[5] = b10 * a02 + b11 * a12 + b12 * a22;
+
+    out[6] = b20 * a00 + b21 * a10 + b22 * a20;
+    out[7] = b20 * a01 + b21 * a11 + b22 * a21;
+    out[8] = b20 * a02 + b21 * a12 + b22 * a22;
+    return out;
+};
+
+/**
+ * Returns a string representation of a mat3
+ *
+ * @param {mat3} mat matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+mat3.str = function (a) {
+    return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + 
+                    a[3] + ', ' + a[4] + ', ' + a[5] + ', ' + 
+                    a[6] + ', ' + a[7] + ', ' + a[8] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.mat3 = mat3;
+}
+;
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class 4x4 Matrix
+ * @name mat4
+ */
+
+var mat4 = {};
+
+var mat4Identity = new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+]);
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+
+/**
+ * Creates a new identity mat4
+ *
+ * @returns {mat4} a new 4x4 matrix
+ */
+mat4.create = function() {
+    return new Float32Array(mat4Identity);
+};
+
+/**
+ * Creates a new mat4 initialized with values from an existing matrix
+ *
+ * @param {mat4} a matrix to clone
+ * @returns {mat4} a new 4x4 matrix
+ */
+mat4.clone = function(a) {
+    var out = new Float32Array(16);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    out[4] = a[4];
+    out[5] = a[5];
+    out[6] = a[6];
+    out[7] = a[7];
+    out[8] = a[8];
+    out[9] = a[9];
+    out[10] = a[10];
+    out[11] = a[11];
+    out[12] = a[12];
+    out[13] = a[13];
+    out[14] = a[14];
+    out[15] = a[15];
+    return out;
+};
+
+/**
+ * Copy the values from one mat4 to another
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+mat4.copy = function(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    out[4] = a[4];
+    out[5] = a[5];
+    out[6] = a[6];
+    out[7] = a[7];
+    out[8] = a[8];
+    out[9] = a[9];
+    out[10] = a[10];
+    out[11] = a[11];
+    out[12] = a[12];
+    out[13] = a[13];
+    out[14] = a[14];
+    out[15] = a[15];
+    return out;
+};
+
+/**
+ * Set a mat4 to the identity matrix
+ *
+ * @param {mat4} out the receiving matrix
+ * @returns {mat4} out
+ */
+mat4.identity = function(out) {
+    out[0] = 1;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = 1;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = 1;
+    out[11] = 0;
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = 0;
+    out[15] = 1;
+    return out;
+};
+
+/**
+ * Transpose the values of a mat4
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+mat4.transpose = function(out, a) {
+    // If we are transposing ourselves we can skip a few steps but have to cache some values
+    if (out === a) {
+        var a01 = a[1], a02 = a[2], a03 = a[3],
+            a12 = a[6], a13 = a[7],
+            a23 = a[11];
+
+        out[1] = a[4];
+        out[2] = a[8];
+        out[3] = a[12];
+        out[4] = a01;
+        out[6] = a[9];
+        out[7] = a[13];
+        out[8] = a02;
+        out[9] = a12;
+        out[11] = a[14];
+        out[12] = a03;
+        out[13] = a13;
+        out[14] = a23;
+    } else {
+        out[0] = a[0];
+        out[1] = a[4];
+        out[2] = a[8];
+        out[3] = a[12];
+        out[4] = a[1];
+        out[5] = a[5];
+        out[6] = a[9];
+        out[7] = a[13];
+        out[8] = a[2];
+        out[9] = a[6];
+        out[10] = a[10];
+        out[11] = a[14];
+        out[12] = a[3];
+        out[13] = a[7];
+        out[14] = a[11];
+        out[15] = a[15];
+    }
+    
+    return out;
+};
+
+/**
+ * Inverts a mat4
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+mat4.invert = function(out, a) {
+    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
+
+        b00 = a00 * a11 - a01 * a10,
+        b01 = a00 * a12 - a02 * a10,
+        b02 = a00 * a13 - a03 * a10,
+        b03 = a01 * a12 - a02 * a11,
+        b04 = a01 * a13 - a03 * a11,
+        b05 = a02 * a13 - a03 * a12,
+        b06 = a20 * a31 - a21 * a30,
+        b07 = a20 * a32 - a22 * a30,
+        b08 = a20 * a33 - a23 * a30,
+        b09 = a21 * a32 - a22 * a31,
+        b10 = a21 * a33 - a23 * a31,
+        b11 = a22 * a33 - a23 * a32,
+
+        // Calculate the determinant
+        det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+    if (!det) { 
+        return null; 
+    }
+    det = 1.0 / det;
+
+    out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+    out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+    out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+    out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+    out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+    out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+    out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+    out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+    out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+    out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+    out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+    out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+    out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+    out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+    out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+    out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+
+    return out;
+};
+
+/**
+ * Caclulates the adjugate of a mat4
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+mat4.adjoint = function(out, a) {
+    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+    out[0]  =  (a11 * (a22 * a33 - a23 * a32) - a21 * (a12 * a33 - a13 * a32) + a31 * (a12 * a23 - a13 * a22));
+    out[1]  = -(a01 * (a22 * a33 - a23 * a32) - a21 * (a02 * a33 - a03 * a32) + a31 * (a02 * a23 - a03 * a22));
+    out[2]  =  (a01 * (a12 * a33 - a13 * a32) - a11 * (a02 * a33 - a03 * a32) + a31 * (a02 * a13 - a03 * a12));
+    out[3]  = -(a01 * (a12 * a23 - a13 * a22) - a11 * (a02 * a23 - a03 * a22) + a21 * (a02 * a13 - a03 * a12));
+    out[4]  = -(a10 * (a22 * a33 - a23 * a32) - a20 * (a12 * a33 - a13 * a32) + a30 * (a12 * a23 - a13 * a22));
+    out[5]  =  (a00 * (a22 * a33 - a23 * a32) - a20 * (a02 * a33 - a03 * a32) + a30 * (a02 * a23 - a03 * a22));
+    out[6]  = -(a00 * (a12 * a33 - a13 * a32) - a10 * (a02 * a33 - a03 * a32) + a30 * (a02 * a13 - a03 * a12));
+    out[7]  =  (a00 * (a12 * a23 - a13 * a22) - a10 * (a02 * a23 - a03 * a22) + a20 * (a02 * a13 - a03 * a12));
+    out[8]  =  (a10 * (a21 * a33 - a23 * a31) - a20 * (a11 * a33 - a13 * a31) + a30 * (a11 * a23 - a13 * a21));
+    out[9]  = -(a00 * (a21 * a33 - a23 * a31) - a20 * (a01 * a33 - a03 * a31) + a30 * (a01 * a23 - a03 * a21));
+    out[10] =  (a00 * (a11 * a33 - a13 * a31) - a10 * (a01 * a33 - a03 * a31) + a30 * (a01 * a13 - a03 * a11));
+    out[11] = -(a00 * (a11 * a23 - a13 * a21) - a10 * (a01 * a23 - a03 * a21) + a20 * (a01 * a13 - a03 * a11));
+    out[12] = -(a10 * (a21 * a32 - a22 * a31) - a20 * (a11 * a32 - a12 * a31) + a30 * (a11 * a22 - a12 * a21));
+    out[13] =  (a00 * (a21 * a32 - a22 * a31) - a20 * (a01 * a32 - a02 * a31) + a30 * (a01 * a22 - a02 * a21));
+    out[14] = -(a00 * (a11 * a32 - a12 * a31) - a10 * (a01 * a32 - a02 * a31) + a30 * (a01 * a12 - a02 * a11));
+    out[15] =  (a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11));
+    return out;
+};
+
+/**
+ * Calculates the determinant of a mat4
+ *
+ * @param {mat4} a the source matrix
+ * @returns {Number} determinant of a
+ */
+mat4.determinant = function (a) {
+    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
+
+        b00 = a00 * a11 - a01 * a10,
+        b01 = a00 * a12 - a02 * a10,
+        b02 = a00 * a13 - a03 * a10,
+        b03 = a01 * a12 - a02 * a11,
+        b04 = a01 * a13 - a03 * a11,
+        b05 = a02 * a13 - a03 * a12,
+        b06 = a20 * a31 - a21 * a30,
+        b07 = a20 * a32 - a22 * a30,
+        b08 = a20 * a33 - a23 * a30,
+        b09 = a21 * a32 - a22 * a31,
+        b10 = a21 * a33 - a23 * a31,
+        b11 = a22 * a33 - a23 * a32;
+
+    // Calculate the determinant
+    return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+};
+
+/**
+ * Multiplies two mat4's
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the first operand
+ * @param {mat4} b the second operand
+ * @returns {mat4} out
+ */
+mat4.mul = mat4.multiply = function (out, a, b) {
+    var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+        a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+        a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+        a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+    // Cache only the current line of the second matrix
+    var b0  = b[0], b1 = b[1], b2 = b[2], b3 = b[3];  
+    out[0] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+    out[1] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+    out[2] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+    out[3] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+
+    b0 = b[4]; b1 = b[5]; b2 = b[6]; b3 = b[7];
+    out[4] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+    out[5] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+    out[6] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+    out[7] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+
+    b0 = b[8]; b1 = b[9]; b2 = b[10]; b3 = b[11];
+    out[8] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+    out[9] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+    out[10] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+    out[11] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+
+    b0 = b[12]; b1 = b[13]; b2 = b[14]; b3 = b[15];
+    out[12] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+    out[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+    out[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+    out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+    return out;
+};
+
+/**
+ * Translate a mat4 by the given vector
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to translate
+ * @param {vec3} v vector to translate by
+ * @returns {mat4} out
+ */
+mat4.translate = function (out, a, v) {
+    var x = v[0], y = v[1], z = v[2],
+        a00, a01, a02, a03,
+        a10, a11, a12, a13,
+        a20, a21, a22, a23;
+
+    if (a === out) {
+        out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+        out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+        out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+        out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+    } else {
+        a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
+        a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
+        a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
+
+        out[0] = a00; out[1] = a01; out[2] = a02; out[3] = a03;
+        out[4] = a10; out[5] = a11; out[6] = a12; out[7] = a13;
+        out[8] = a20; out[9] = a21; out[10] = a22; out[11] = a23;
+
+        out[12] = a00 * x + a10 * y + a20 * z + a[12];
+        out[13] = a01 * x + a11 * y + a21 * z + a[13];
+        out[14] = a02 * x + a12 * y + a22 * z + a[14];
+        out[15] = a03 * x + a13 * y + a23 * z + a[15];
+    }
+
+    return out;
+};
+
+/**
+ * Scales the mat4 by the dimensions in the given vec3
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to scale
+ * @param {vec3} v the vec3 to scale the matrix by
+ * @returns {mat4} out
+ **/
+mat4.scale = function(out, a, v) {
+    var x = v[0], y = v[1], z = v[2];
+
+    out[0] = a[0] * x;
+    out[1] = a[1] * x;
+    out[2] = a[2] * x;
+    out[3] = a[3] * x;
+    out[4] = a[4] * y;
+    out[5] = a[5] * y;
+    out[6] = a[6] * y;
+    out[7] = a[7] * y;
+    out[8] = a[8] * z;
+    out[9] = a[9] * z;
+    out[10] = a[10] * z;
+    out[11] = a[11] * z;
+    out[12] = a[12];
+    out[13] = a[13];
+    out[14] = a[14];
+    out[15] = a[15];
+    return out;
+};
+
+/**
+ * Rotates a mat4 by the given angle
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @param {vec3} axis the axis to rotate around
+ * @returns {mat4} out
+ */
+mat4.rotate = function (out, a, rad, axis) {
+    var x = axis[0], y = axis[1], z = axis[2],
+        len = Math.sqrt(x * x + y * y + z * z),
+        s, c, t,
+        a00, a01, a02, a03,
+        a10, a11, a12, a13,
+        a20, a21, a22, a23,
+        b00, b01, b02,
+        b10, b11, b12,
+        b20, b21, b22;
+
+    if (Math.abs(len) < GLMAT_EPSILON) { return null; }
+    
+    len = 1 / len;
+    x *= len;
+    y *= len;
+    z *= len;
+
+    s = Math.sin(rad);
+    c = Math.cos(rad);
+    t = 1 - c;
+
+    a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
+    a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
+    a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
+
+    // Construct the elements of the rotation matrix
+    b00 = x * x * t + c; b01 = y * x * t + z * s; b02 = z * x * t - y * s;
+    b10 = x * y * t - z * s; b11 = y * y * t + c; b12 = z * y * t + x * s;
+    b20 = x * z * t + y * s; b21 = y * z * t - x * s; b22 = z * z * t + c;
+
+    // Perform rotation-specific matrix multiplication
+    out[0] = a00 * b00 + a10 * b01 + a20 * b02;
+    out[1] = a01 * b00 + a11 * b01 + a21 * b02;
+    out[2] = a02 * b00 + a12 * b01 + a22 * b02;
+    out[3] = a03 * b00 + a13 * b01 + a23 * b02;
+    out[4] = a00 * b10 + a10 * b11 + a20 * b12;
+    out[5] = a01 * b10 + a11 * b11 + a21 * b12;
+    out[6] = a02 * b10 + a12 * b11 + a22 * b12;
+    out[7] = a03 * b10 + a13 * b11 + a23 * b12;
+    out[8] = a00 * b20 + a10 * b21 + a20 * b22;
+    out[9] = a01 * b20 + a11 * b21 + a21 * b22;
+    out[10] = a02 * b20 + a12 * b21 + a22 * b22;
+    out[11] = a03 * b20 + a13 * b21 + a23 * b22;
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged last row
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+    return out;
+};
+
+/**
+ * Rotates a matrix by the given angle around the X axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+mat4.rotateX = function (out, a, rad) {
+    var s = Math.sin(rad),
+        c = Math.cos(rad),
+        a10 = a[4],
+        a11 = a[5],
+        a12 = a[6],
+        a13 = a[7],
+        a20 = a[8],
+        a21 = a[9],
+        a22 = a[10],
+        a23 = a[11];
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged rows
+        out[0]  = a[0];
+        out[1]  = a[1];
+        out[2]  = a[2];
+        out[3]  = a[3];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+
+    // Perform axis-specific matrix multiplication
+    out[4] = a10 * c + a20 * s;
+    out[5] = a11 * c + a21 * s;
+    out[6] = a12 * c + a22 * s;
+    out[7] = a13 * c + a23 * s;
+    out[8] = a20 * c - a10 * s;
+    out[9] = a21 * c - a11 * s;
+    out[10] = a22 * c - a12 * s;
+    out[11] = a23 * c - a13 * s;
+    return out;
+};
+
+/**
+ * Rotates a matrix by the given angle around the Y axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+mat4.rotateY = function (out, a, rad) {
+    var s = Math.sin(rad),
+        c = Math.cos(rad),
+        a00 = a[0],
+        a01 = a[1],
+        a02 = a[2],
+        a03 = a[3],
+        a20 = a[8],
+        a21 = a[9],
+        a22 = a[10],
+        a23 = a[11];
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged rows
+        out[4]  = a[4];
+        out[5]  = a[5];
+        out[6]  = a[6];
+        out[7]  = a[7];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+
+    // Perform axis-specific matrix multiplication
+    out[0] = a00 * c - a20 * s;
+    out[1] = a01 * c - a21 * s;
+    out[2] = a02 * c - a22 * s;
+    out[3] = a03 * c - a23 * s;
+    out[8] = a00 * s + a20 * c;
+    out[9] = a01 * s + a21 * c;
+    out[10] = a02 * s + a22 * c;
+    out[11] = a03 * s + a23 * c;
+    return out;
+};
+
+/**
+ * Rotates a matrix by the given angle around the Z axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+mat4.rotateZ = function (out, a, rad) {
+    var s = Math.sin(rad),
+        c = Math.cos(rad),
+        a00 = a[0],
+        a01 = a[1],
+        a02 = a[2],
+        a03 = a[3],
+        a10 = a[4],
+        a11 = a[5],
+        a12 = a[6],
+        a13 = a[7];
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged last row
+        out[8]  = a[8];
+        out[9]  = a[9];
+        out[10] = a[10];
+        out[11] = a[11];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+
+    // Perform axis-specific matrix multiplication
+    out[0] = a00 * c + a10 * s;
+    out[1] = a01 * c + a11 * s;
+    out[2] = a02 * c + a12 * s;
+    out[3] = a03 * c + a13 * s;
+    out[4] = a10 * c - a00 * s;
+    out[5] = a11 * c - a01 * s;
+    out[6] = a12 * c - a02 * s;
+    out[7] = a13 * c - a03 * s;
+    return out;
+};
+
+/**
+ * Creates a matrix from a quaternion rotation and vector translation
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.translate(dest, vec);
+ *     var quatMat = mat4.create();
+ *     quat4.toMat4(quat, quatMat);
+ *     mat4.multiply(dest, quatMat);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {quat4} q Rotation quaternion
+ * @param {vec3} v Translation vector
+ * @returns {mat4} out
+ */
+mat4.fromRotationTranslation = function (out, q, v) {
+    // Quaternion math
+    var x = q[0], y = q[1], z = q[2], w = q[3],
+        x2 = x + x,
+        y2 = y + y,
+        z2 = z + z,
+
+        xx = x * x2,
+        xy = x * y2,
+        xz = x * z2,
+        yy = y * y2,
+        yz = y * z2,
+        zz = z * z2,
+        wx = w * x2,
+        wy = w * y2,
+        wz = w * z2;
+
+    out[0] = 1 - (yy + zz);
+    out[1] = xy + wz;
+    out[2] = xz - wy;
+    out[3] = 0;
+    out[4] = xy - wz;
+    out[5] = 1 - (xx + zz);
+    out[6] = yz + wx;
+    out[7] = 0;
+    out[8] = xz + wy;
+    out[9] = yz - wx;
+    out[10] = 1 - (xx + yy);
+    out[11] = 0;
+    out[12] = v[0];
+    out[13] = v[1];
+    out[14] = v[2];
+    out[15] = 1;
+    
+    return out;
+};
+
+/**
+ * Generates a frustum matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {Number} left Left bound of the frustum
+ * @param {Number} right Right bound of the frustum
+ * @param {Number} bottom Bottom bound of the frustum
+ * @param {Number} top Top bound of the frustum
+ * @param {Number} near Near bound of the frustum
+ * @param {Number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+mat4.frustum = function (out, left, right, bottom, top, near, far) {
+    var rl = 1 / (right - left),
+        tb = 1 / (top - bottom),
+        nf = 1 / (near - far);
+    out[0] = (near * 2) * rl;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = (near * 2) * tb;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = (right + left) * rl;
+    out[9] = (top + bottom) * tb;
+    out[10] = (far + near) * nf;
+    out[11] = -1;
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = (far * near * 2) * nf;
+    out[15] = 0;
+    return out;
+};
+
+/**
+ * Generates a perspective projection matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {number} fovy Vertical field of view in radians
+ * @param {number} aspect Aspect ratio. typically viewport width/height
+ * @param {number} near Near bound of the frustum
+ * @param {number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+mat4.perspective = function (out, fovy, aspect, near, far) {
+    var f = 1.0 / Math.tan(fovy / 2),
+        nf = 1 / (near - far);
+    out[0] = f / aspect;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = f;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = (far + near) * nf;
+    out[11] = -1;
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = (2 * far * near) * nf;
+    out[15] = 0;
+    return out;
+};
+
+/**
+ * Generates a orthogonal projection matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {number} left Left bound of the frustum
+ * @param {number} right Right bound of the frustum
+ * @param {number} bottom Bottom bound of the frustum
+ * @param {number} top Top bound of the frustum
+ * @param {number} near Near bound of the frustum
+ * @param {number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+mat4.ortho = function (out, left, right, bottom, top, near, far) {
+    var lr = 1 / (left - right),
+        bt = 1 / (bottom - top),
+        nf = 1 / (near - far);
+    out[0] = -2 * lr;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = -2 * bt;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = 2 * nf;
+    out[11] = 0;
+    out[12] = (left + right) * lr;
+    out[13] = (top + bottom) * bt;
+    out[14] = (far + near) * nf;
+    out[15] = 1;
+    return out;
+};
+
+/**
+ * Generates a look-at matrix with the given eye position, focal point, and up axis
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {vec3} eye Position of the viewer
+ * @param {vec3} center Point the viewer is looking at
+ * @param {vec3} up vec3 pointing up
+ * @returns {mat4} out
+ */
+mat4.lookAt = function (out, eye, center, up) {
+    var x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
+        eyex = eye[0],
+        eyey = eye[1],
+        eyez = eye[2],
+        upx = up[0],
+        upy = up[1],
+        upz = up[2],
+        centerx = center[0],
+        centery = center[1],
+        centerz = center[2];
+
+    if (Math.abs(eyex - centerx) < GLMAT_EPSILON &&
+        Math.abs(eyey - centery) < GLMAT_EPSILON &&
+        Math.abs(eyez - centerz) < GLMAT_EPSILON) {
+        return mat4.identity(out);
+    }
+
+    z0 = eyex - centerx;
+    z1 = eyey - centery;
+    z2 = eyez - centerz;
+
+    len = 1 / Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+    z0 *= len;
+    z1 *= len;
+    z2 *= len;
+
+    x0 = upy * z2 - upz * z1;
+    x1 = upz * z0 - upx * z2;
+    x2 = upx * z1 - upy * z0;
+    len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+    if (!len) {
+        x0 = 0;
+        x1 = 0;
+        x2 = 0;
+    } else {
+        len = 1 / len;
+        x0 *= len;
+        x1 *= len;
+        x2 *= len;
+    }
+
+    y0 = z1 * x2 - z2 * x1;
+    y1 = z2 * x0 - z0 * x2;
+    y2 = z0 * x1 - z1 * x0;
+
+    len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+    if (!len) {
+        y0 = 0;
+        y1 = 0;
+        y2 = 0;
+    } else {
+        len = 1 / len;
+        y0 *= len;
+        y1 *= len;
+        y2 *= len;
+    }
+
+    out[0] = x0;
+    out[1] = y0;
+    out[2] = z0;
+    out[3] = 0;
+    out[4] = x1;
+    out[5] = y1;
+    out[6] = z1;
+    out[7] = 0;
+    out[8] = x2;
+    out[9] = y2;
+    out[10] = z2;
+    out[11] = 0;
+    out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
+    out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
+    out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
+    out[15] = 1;
+
+    return out;
+};
+
+/**
+ * Returns a string representation of a mat4
+ *
+ * @param {mat4} mat matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+mat4.str = function (a) {
+    return 'mat4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
+                    a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' +
+                    a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + 
+                    a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.mat4 = mat4;
+}
+;
+/* Copyright (c) 2012, Brandon Jones, Colin MacKenzie IV. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation 
+    and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @class Quaternion
+ * @name quat
+ */
+
+var quat = {};
+
+var quatIdentity = new Float32Array([0, 0, 0, 1]);
+
+if(!GLMAT_EPSILON) {
+    var GLMAT_EPSILON = 0.000001;
+}
+
+/**
+ * Creates a new identity quat
+ *
+ * @returns {quat} a new quaternion
+ */
+quat.create = function() {
+    return new Float32Array(quatIdentity);
+};
+
+/**
+ * Creates a new quat initialized with values from an existing quaternion
+ *
+ * @param {quat} a quaternion to clone
+ * @returns {quat} a new quaternion
+ */
+quat.clone = vec4.clone;
+
+/**
+ * Creates a new quat initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {quat} a new quaternion
+ */
+quat.fromValues = vec4.fromValues;
+
+/**
+ * Copy the values from one quat to another
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the source quaternion
+ * @returns {quat} out
+ */
+quat.copy = vec4.copy;
+
+/**
+ * Set the components of a quat to the given values
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {quat} out
+ */
+quat.set = vec4.set;
+
+/**
+ * Set a quat to the identity quaternion
+ *
+ * @param {quat} out the receiving quaternion
+ * @returns {quat} out
+ */
+quat.identity = function(out) {
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 1;
+    return out;
+};
+
+/**
+ * Sets a quat from the given angle and rotation axis,
+ * then returns it.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {vec3} axis the axis around which to rotate
+ * @param {Number} rad the angle in radians
+ * @returns {quat} out
+ **/
+quat.setAxisAngle = function(out, axis, rad) {
+    rad = rad * 0.5;
+    var s = Math.sin(rad);
+    out[0] = s * axis[0];
+    out[1] = s * axis[1];
+    out[2] = s * axis[2];
+    out[3] = Math.cos(rad);
+    return out;
+};
+
+/**
+ * Adds two quat's
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @returns {quat} out
+ */
+quat.add = vec4.add;
+
+/**
+ * Multiplies two quat's
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @returns {quat} out
+ */
+quat.mul = quat.multiply = function(out, a, b) {
+    var ax = a[0], ay = a[1], az = a[2], aw = a[3],
+        bx = b[0], by = b[1], bz = b[2], bw = b[3];
+
+    out[0] = ax * bw + aw * bx + ay * bz - az * by;
+    out[1] = ay * bw + aw * by + az * bx - ax * bz;
+    out[2] = az * bw + aw * bz + ax * by - ay * bx;
+    out[3] = aw * bw - ax * bx - ay * by - az * bz;
+    return out;
+};
+
+/**
+ * Scales a quat by a scalar number
+ *
+ * @param {quat} out the receiving vector
+ * @param {quat} a the vector to scale
+ * @param {quat} b amount to scale the vector by
+ * @returns {quat} out
+ */
+quat.scale = vec4.scale;
+
+/**
+ * Rotates a quaternion by the given angle around the X axis
+ *
+ * @param {quat} out quat receiving operation result
+ * @param {quat} a quat to rotate
+ * @param {number} rad angle (in radians) to rotate
+ * @returns {quat} out
+ */
+quat.rotateX = function (out, a, rad) {
+    rad *= 0.5; 
+
+    var ax = a[0], ay = a[1], az = a[2], aw = a[3],
+        bx = Math.sin(rad), bw = Math.cos(rad);
+
+    out[0] = ax * bw + aw * bx;
+    out[1] = ay * bw + az * bx;
+    out[2] = az * bw - ay * bx;
+    out[3] = aw * bw - ax * bx;
+    return out;
+};
+
+/**
+ * Rotates a quaternion by the given angle around the X axis
+ *
+ * @param {quat} out quat receiving operation result
+ * @param {quat} a quat to rotate
+ * @param {number} rad angle (in radians) to rotate
+ * @returns {quat} out
+ */
+quat.rotateY = function (out, a, rad) {
+    rad *= 0.5; 
+
+    var ax = a[0], ay = a[1], az = a[2], aw = a[3],
+        by = Math.sin(rad), bw = Math.cos(rad);
+
+    out[0] = ax * bw - az * by;
+    out[1] = ay * bw + aw * by;
+    out[2] = az * bw + ax * by;
+    out[3] = aw * bw - ay * by;
+    return out;
+};
+
+/**
+ * Rotates a quaternion by the given angle around the X axis
+ *
+ * @param {quat} out quat receiving operation result
+ * @param {quat} a quat to rotate
+ * @param {number} rad angle (in radians) to rotate
+ * @returns {quat} out
+ */
+quat.rotateZ = function (out, a, rad) {
+    rad *= 0.5; 
+
+    var ax = a[0], ay = a[1], az = a[2], aw = a[3],
+        bz = Math.sin(rad), bw = Math.cos(rad);
+
+    out[0] = ax * bw + ay * bz;
+    out[1] = ay * bw - ax * bz;
+    out[2] = az * bw + aw * bz;
+    out[3] = aw * bw - az * bz;
+    return out;
+};
+
+/**
+ * Calculates the W component of a quat from the X, Y, and Z components.
+ * Assumes that quaternion is 1 unit in length.
+ * Any existing W component will be ignored.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quat to calculate W component of
+ * @returns {quat} out
+ */
+quat.calculateW = function (out, a) {
+    var x = a[0], y = a[1], z = a[2];
+
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = -Math.sqrt(Math.abs(1.0 - x * x - y * y - z * z));
+    return out;
+};
+
+/**
+ * Caclulates the dot product of two quat's
+ *
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+quat.dot = vec4.dot;
+
+/**
+ * Performs a linear interpolation between two quat's
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {quat} out
+ */
+quat.lerp = vec4.lerp;
+
+/**
+ * Performs a spherical linear interpolation between two quat
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {quat} out
+ */
+quat.slerp = function (out, a, b, t) {
+    var ax = a[0], ay = a[1], az = a[2], aw = a[3],
+        bx = b[0], by = b[1], bz = b[2], bw = a[3];
+
+    var cosHalfTheta = ax * bx + ay * by + az * bz + aw * bw,
+        halfTheta,
+        sinHalfTheta,
+        ratioA,
+        ratioB;
+
+    if (Math.abs(cosHalfTheta) >= 1.0) {
+        if (out !== a) {
+            out[0] = ax;
+            out[1] = ay;
+            out[2] = az;
+            out[3] = aw;
+        }
+        return out;
+    }
+
+    halfTheta = Math.acos(cosHalfTheta);
+    sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+
+    if (Math.abs(sinHalfTheta) < 0.001) {
+        out[0] = (ax * 0.5 + bx * 0.5);
+        out[1] = (ay * 0.5 + by * 0.5);
+        out[2] = (az * 0.5 + bz * 0.5);
+        out[3] = (aw * 0.5 + bw * 0.5);
+        return out;
+    }
+
+    ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
+    ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+
+    out[0] = (ax * ratioA + bx * ratioB);
+    out[1] = (ay * ratioA + by * ratioB);
+    out[2] = (az * ratioA + bz * ratioB);
+    out[3] = (aw * ratioA + bw * ratioB);
+
+    return out;
+};
+
+/**
+ * Calculates the inverse of a quat
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quat to calculate inverse of
+ * @returns {quat} out
+ */
+quat.invert = function(out, a) {
+    var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
+        dot = a0*a0 + a1*a1 + a2*a2 + a3*a3,
+        invDot = dot ? 1.0/dot : 0;
+    
+    // TODO: Would be faster to return [0,0,0,0] immediately if dot == 0
+
+    out[0] = -a0*invDot;
+    out[1] = -a1*invDot;
+    out[2] = -a2*invDot;
+    out[3] = a3*invDot;
+    return out;
+};
+
+/**
+ * Calculates the conjugate of a quat
+ * If the quaternion is normalized, this function is faster than quat.inverse and produces the same result.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quat to calculate conjugate of
+ * @returns {quat} out
+ */
+quat.conjugate = function (out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    out[3] = a[3];
+    return out;
+};
+
+/**
+ * Caclulates the length of a quat
+ *
+ * @param {quat} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+quat.len = quat.length = vec4.length;
+
+/**
+ * Caclulates the squared length of a quat
+ *
+ * @param {quat} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+quat.sqrLen = quat.squaredLength = vec4.squaredLength;
+
+/**
+ * Normalize a quat
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quaternion to normalize
+ * @returns {quat} out
+ */
+quat.normalize = vec4.normalize;
+
+/**
+ * Returns a string representation of a quatenion
+ *
+ * @param {quat} vec vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+quat.str = function (a) {
+    return 'quat(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ')';
+};
+
+if(typeof(exports) !== 'undefined') {
+    exports.quat = quat;
+}
+;
+
+
+
+
+
+
+
+
+
+
+  })(shim.exports);
+})();
+
+})()
+},{}],22:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -4820,7 +7017,101 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":17}],23:[function(require,module,exports){
+},{"events":15}],16:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Connection = exports.Connection = function(opts) {
+  this.opts = _.defaults(opts || {}, {
+    host : '127.0.0.1',
+    enableGestures: false,
+    port: 6437,
+    enableHeartbeat: true,
+    heartbeatInterval: 100
+  });
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(this.opts.enableGestures);
+    if (this.opts.enableHeartbeat) this.startHeartbeat();
+  });
+  this.on('disconnect', function() {
+    if (this.opts.enableHeartbeat) this.stopHeartbeat();
+  });
+  this.heartbeatTimer = null;
+}
+
+Connection.prototype.sendHeartbeat = function() {
+  this.setHeartbeatState(true);
+  this.protocol.sendHeartbeat(this);
+}
+
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.disconnect();
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this;
+  setTimeout(function() { connection.connect() }, 1000);
+}
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  delete this.socket;
+  delete this.protocol;
+}
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) return;
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+Connection.prototype.stopHeartbeat = function() {
+  if (!this.heartbeatTimer) return;
+  clearInterval(this.heartbeatTimer);
+  delete this.heartbeatTimer;
+  this.setHeartbeatState(false);
+};
+
+Connection.prototype.setHeartbeatState = function(state) {
+  if (this.heartbeatState === state) return;
+  this.heartbeatState = state;
+  this.emit(this.heartbeatState ? 'focus' : 'blur');
+};
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"./protocol":23,"events":15,"underscore":20}],23:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -4855,9 +7146,9 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-},{"./frame":8,"util":24}],20:[function(require,module,exports){
+},{"./frame":8,"util":22}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
-  , Vector = require('../vector').Vector
+//  , Vector = require('../vector').Vector
   , _ = require('underscore')
 
 var Region = exports.Region = function(start, end) {
@@ -4944,5 +7235,5 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"../vector":14,"events":17,"underscore":22}]},{},[1,2,3])
+},{"events":15,"underscore":20}]},{},[1,2,3])
 ;
