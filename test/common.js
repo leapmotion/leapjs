@@ -50,8 +50,8 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     timestamp: frameId,
     pointables: _(opts.fingers || 0).times(function() { return fakeFinger() }),
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
-    r: opts.rotation || new Leap.Matrix([[0,1,2], [2,3,4], [2,3,4]]),
-    t: opts.translation || new Leap.Vector([1, 2, 3]),
+    r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
+    t: opts.translation || [1, 2, 3],
   };
   if (opts.gestures) {
     frame.gestures = opts.gestures;
@@ -60,21 +60,29 @@ var fakeFrame = exports.fakeFrame = function(opts) {
 };
 
 var fakeGesture = exports.fakeGesture = function(opts) {
-  if (opts === undefined) opts = {};
-  var gesture = {
-    type: 'circle'
+  if (opts === undefined) opts = {
+    type:"circle",
+    center:[2,3,4],
+    normal:[5,6,7],
+    progress: 10,
+    radius: 20
   };
-  return gesture;
+  return opts;
 };
 
 var fakeHand = exports.fakeHand = function(opts) {
+  if (opts === undefined) opts = {};
   handId++
   return {
     id: handId - 1,
     valid: true,
-    palm: [],
-    r: (opts && opts.rotation) || new Leap.Matrix([[0,1,2], [2,3,4], [2,3,4]]),
-    t: (opts && opts.translation) || new Leap.Vector([1, 2, 3])
+    palmPosition: [1,2,3],
+    direction: [1,2,3],
+    palmVelocity: [1,2,3],
+    palmNormal: [1,2,3],
+    sphereCenter:[1,2,3],
+    r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
+    t: (opts && opts.translation) || [1, 2, 3]
   }
 }
 
@@ -82,14 +90,12 @@ var fakeFinger = exports.fakeFinger = function() {
   fingerId++
   return {
     id: fingerId - 1,
+    handId: 0,
     length: 5,
     tool: false,
     width: 5,
-
-    tip: {
-      direction: new Leap.Vector([10, 10, 10]),
-      position: new Leap.Vector([10, 10, 10]),
-      direction: new Leap.Vector([10, 10, 10])
-    }
+    direction: [10, 10, 10],
+    tipPosition: [10, 10, 10],
+    tipVelocity: [10, 10, 10]
   }
 }
