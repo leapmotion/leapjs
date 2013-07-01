@@ -1379,7 +1379,7 @@ var Cursor = exports.Cursor = function() {
 }
 
 },{}],7:[function(require,module,exports){
-var inNode = typeof(window) === 'undefined';
+(function(process){var inNode = typeof(process) !== 'undefined' && process.title === 'node';
 
 var Frame = require('./frame').Frame
   , CircularBuffer = require("./circular_buffer").CircularBuffer
@@ -1417,44 +1417,24 @@ var Frame = require('./frame').Frame
  * intrinsic update loop, such as a game.
  */
 var Controller = exports.Controller = function(opts) {
-  this.opts = _.defaults(opts || {}, {
-    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'connectionFrame'
+  opts = _.defaults(opts || {}, {
+    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
+    supressAnimationLoop: false
   });
+  this.supressAnimationLoop = opts.supressAnimationLoop;
+  this.frameEventName = opts.frameEventName;
   this.history = new CircularBuffer(200);
-  var controller = this;
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
   this.lastConnectionFrame = Frame.Invalid;
-  var connectionType = this.opts.connectionType || this.connectionType();
-  this.connection = new connectionType(this.opts);
   this.accumulatedGestures = [];
-  this.connection.on('frame', function(frame) {
-    if (frame.gestures) {
-      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
-    }
-    controller.processFrame(frame);
-  });
-  this.on(this.opts.frameEventName, function(frame) {
-    controller.processFinishedFrame(frame);
-  });
-
-  // Delegate connection events
-  this.connection.on('ready', function() {
-    var heartbeatFrame = controller.lastFrame;
-    controller.deviceReadyTimer = setInterval(function() {
-      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
-      heartbeatFrame = controller.lastFrame;
-    }, 100);
-    controller.emit('ready');
-  });
-  this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('disconnect', function() {
-    controller.updateDevicePresent(false);
-    clearTimeout(controller.deviceReadyTimer);
-    controller.emit('disconnect');
-  });
-  this.connection.on('focus', function() { controller.emit('focus') });
-  this.connection.on('blur', function() { controller.emit('blur') });
+  if (opts.connectionType === undefined) {
+    this.connectionType = (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
+  } else {
+    this.connectionType = opts.connectionType;
+  }
+  this.connection = new this.connectionType(opts);
+  this.setupConnectionEvents();
 }
 
 Controller.prototype.updateDevicePresent = function(newState) {
@@ -1472,20 +1452,14 @@ Controller.prototype.useAnimationLoop = function() {
   return this.inBrowser() && typeof(chrome) === "undefined";
 }
 
-Controller.prototype.connectionType = function() {
-  return (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
-}
-
 Controller.prototype.connect = function() {
   var controller = this;
-  if (this.connection.connect() && this.inBrowser()) {
+  if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
     var callback = function() {
       controller.emit('animationFrame', controller.lastConnectionFrame);
-      if (controller.opts.supressAnimationLoop !== true) window.requestAnimFrame(callback);
-    }
-    if (controller.opts.supressAnimationLoop !== true) {
       window.requestAnimFrame(callback);
-    };
+    }
+    window.requestAnimFrame(callback);
   }
 }
 
@@ -1516,7 +1490,7 @@ Controller.prototype.frame = function(num) {
 Controller.prototype.loop = function(callback) {
   switch (callback.length) {
     case 1:
-      this.on(this.opts.frameEventName, callback);
+      this.on(this.frameEventName, callback);
       break;
     case 2:
       var controller = this;
@@ -1526,11 +1500,11 @@ Controller.prototype.loop = function(callback) {
           if (controller.lastFrame != frame) {
             immediateRunnerCallback(controller.lastFrame);
           } else {
-            controller.once(controller.opts.frameEventName, immediateRunnerCallback);
+            controller.once(controller.frameEventName, immediateRunnerCallback);
           }
         });
       }
-      this.once(this.opts.frameEventName, immediateRunnerCallback);
+      this.once(this.frameEventName, immediateRunnerCallback);
       break;
   }
   this.connect();
@@ -1547,7 +1521,7 @@ Controller.prototype.processFrame = function(frame) {
     if (!frame) frame = Frame.Invalid;
   }
   this.lastConnectionFrame = frame;
-  this.emit('connectionFrame', frame);
+  this.emit('deviceFrame', frame);
 }
 
 Controller.prototype.processFinishedFrame = function(frame) {
@@ -1564,9 +1538,42 @@ Controller.prototype.processFinishedFrame = function(frame) {
   this.emit('frame', frame);
 }
 
+Controller.prototype.setupConnectionEvents = function() {
+  var controller = this;
+  this.connection.on('frame', function(frame) {
+    if (frame.gestures) {
+      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
+    }
+    controller.processFrame(frame);
+  });
+  this.on(this.frameEventName, function(frame) {
+    controller.processFinishedFrame(frame);
+  });
+
+  // Delegate connection events
+  this.connection.on('ready', function() {
+    var heartbeatFrame = controller.lastFrame;
+    controller.deviceReadyTimer = setInterval(function() {
+      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
+      heartbeatFrame = controller.lastFrame;
+    }, 100);
+    controller.emit('ready');
+  });
+  this.connection.on('connect', function() { controller.emit('connect'); });
+  this.connection.on('disconnect', function() {
+    controller.updateDevicePresent(false);
+    clearTimeout(controller.deviceReadyTimer);
+    controller.emit('disconnect');
+  });
+  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('blur', function() { controller.emit('blur') });
+  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+}
+
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":15,"./pipeline":21,"events":17,"underscore":22}],8:[function(require,module,exports){
+})(require("__browserify_process"))
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":15,"./pipeline":21,"__browserify_process":16,"events":17,"underscore":22}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -4826,7 +4833,7 @@ var JSONProtocol = function(version) {
   }
   protocol.version = version;
   protocol.versionLong = 'Version ' + version;
-  protocol.type = 'version';
+  protocol.type = 'protocol';
   return protocol;
 };
 
