@@ -6691,7 +6691,7 @@ var Connection = exports.Connection = function(opts) {
 }
 
 Connection.prototype.getUrl = function() {
-  return "ws://" + this.host + ":" + this.port + "/" + this.opts.requestProtocolVersion;
+  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
 }
 
 Connection.prototype.sendHeartbeat = function() {
@@ -6763,42 +6763,7 @@ Connection.prototype.setHeartbeatState = function(state) {
 
 _.extend(Connection.prototype, EventEmitter.prototype);
 
-},{"./protocol":22,"events":15,"underscore":20}],22:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var JSONProtocol = function(version) {
-  var protocol = function(data) {
-    return new Frame(data);
-  }
-  protocol.encode = function(message) {
-    return util.format("%j", message);
-  }
-  protocol.version = version;
-  protocol.versionLong = 'Version ' + version;
-  protocol.type = 'protocol';
-  return protocol;
-};
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  var protocol;
-  switch(header.version) {
-    case 1:
-      protocol = JSONProtocol(1);
-      break;
-    case 2:
-      protocol = JSONProtocol(2);
-      protocol.sendHeartbeat = function(connection) {
-        connection.send(protocol.encode({heartbeat: true}));
-      }
-      break;
-    default:
-      throw "unrecognized version";
-  }
-  return protocol;
-}
-
-},{"./frame":8,"util":23}],23:[function(require,module,exports){
+},{"./protocol":22,"events":15,"underscore":20}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7151,7 +7116,42 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":15}],18:[function(require,module,exports){
+},{"events":15}],22:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , util = require('util');
+
+var JSONProtocol = function(version) {
+  var protocol = function(data) {
+    return new Frame(data);
+  }
+  protocol.encode = function(message) {
+    return util.format("%j", message);
+  }
+  protocol.version = version;
+  protocol.versionLong = 'Version ' + version;
+  protocol.type = 'protocol';
+  return protocol;
+};
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  var protocol;
+  switch(header.version) {
+    case 1:
+      protocol = JSONProtocol(1);
+      break;
+    case 2:
+      protocol = JSONProtocol(2);
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
+      break;
+    default:
+      throw "unrecognized version";
+  }
+  return protocol;
+}
+
+},{"./frame":8,"util":23}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
 //  , Vector = require('../vector').Vector
   , _ = require('underscore')
