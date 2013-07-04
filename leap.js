@@ -3901,202 +3901,721 @@ var Cursor = exports.Cursor = function() {
   }
 }
 
-},{}],10:[function(require,module,exports){
-(function(process){var inNode = typeof(process) !== 'undefined' && process.title === 'node';
-
-var Frame = require('./frame').Frame
-  , CircularBuffer = require("./circular_buffer").CircularBuffer
-  , Pipeline = require("./pipeline").Pipeline
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
+},{}],12:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
 
 /**
- * Constructs a Controller object.
+ * Constructs a new Gesture object.
  *
- * When creating a Controller object, you may optionally pass in options
- * to set the host , set the port, enable gestures, or select the frame event type.
+ * An uninitialized Gesture object is considered invalid. Get valid instances
+ * of the Gesture class, which will be one of the Gesture subclasses, from a
+ * Frame object.
  *
- * ```javascript
- * var controller = new Leap.Controller({
- *   host: '127.0.0.1',
- *   port: 6437,
- *   enableGestures: true,
- *   frameEventName: 'animationFrame'
- * });
- * ```
- *
- * @class Controller
+ * @class Gesture
+ * @abstract
  * @memberof Leap
  * @classdesc
- * The Controller class is your main interface to the Leap Motion Controller.
+ * The Gesture class represents a recognized movement by the user.
  *
- * Create an instance of this Controller class to access frames of tracking data
- * and configuration information. Frame data can be polled at any time using the
- * [Controller.frame]{@link Leap.Controller#frame}() function. Call frame() or frame(0) to get the most recent
- * frame. Set the history parameter to a positive integer to access previous frames.
- * A controller stores up to 60 frames in its frame history.
+ * The Leap watches the activity within its field of view for certain movement
+ * patterns typical of a user gesture or command. For example, a movement from side to
+ * side with the hand can indicate a swipe gesture, while a finger poking forward
+ * can indicate a screen tap gesture.
  *
- * Polling is an appropriate strategy for applications which already have an
- * intrinsic update loop, such as a game.
+ * When the Leap recognizes a gesture, it assigns an ID and adds a
+ * Gesture object to the frame gesture list. For continuous gestures, which
+ * occur over many frames, the Leap updates the gesture by adding
+ * a Gesture object having the same ID and updated properties in each
+ * subsequent frame.
+ *
+ * **Important:** Recognition for each type of gesture must be enabled;
+ * otherwise **no gestures are recognized or reported**.
+ *
+ * Subclasses of Gesture define the properties for the specific movement patterns
+ * recognized by the Leap.
+ *
+ * The Gesture subclasses for include:
+ *
+ * * CircleGesture -- A circular movement by a finger.
+ * * SwipeGesture -- A straight line movement by the hand with fingers extended.
+ * * ScreenTapGesture -- A forward tapping movement by a finger.
+ * * KeyTapGesture -- A downward tapping movement by a finger.
+ *
+ * Circle and swipe gestures are continuous and these objects can have a
+ * state of start, update, and stop.
+ *
+ * The screen tap gesture is a discrete gesture. The Leap only creates a single
+ * ScreenTapGesture object appears for each tap and it always has a stop state.
+ *
+ * Get valid Gesture instances from a Frame object. You can get a list of gestures
+ * from the Frame gestures array. You can also use the Frame gesture() method
+ * to find a gesture in the current frame using an ID value obtained in a
+ * previous frame.
+ *
+ * Gesture objects can be invalid. For example, when you get a gesture by ID
+ * using Frame.gesture(), and there is no gesture with that ID in the current
+ * frame, then gesture() returns an Invalid Gesture object (rather than a null
+ * value). Always check object validity in situations where a gesture might be
+ * invalid.
  */
-var Controller = exports.Controller = function(opts) {
-  opts = _.defaults(opts || {}, {
-    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    supressAnimationLoop: false
-  });
-  this.supressAnimationLoop = opts.supressAnimationLoop;
-  this.frameEventName = opts.frameEventName;
-  this.history = new CircularBuffer(200);
-  this.lastFrame = Frame.Invalid;
-  this.lastValidFrame = Frame.Invalid;
-  this.lastConnectionFrame = Frame.Invalid;
-  this.accumulatedGestures = [];
-  if (opts.connectionType === undefined) {
-    this.connectionType = (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
-  } else {
-    this.connectionType = opts.connectionType;
+var Gesture = exports.Gesture = function(data) {
+  var gesture = undefined
+  switch (data.type) {
+    case 'circle':
+      gesture = new CircleGesture(data);
+      break;
+    case 'swipe':
+      gesture = new SwipeGesture(data);
+      break;
+    case 'screenTap':
+      gesture = new ScreenTapGesture(data);
+      break;
+    case 'keyTap':
+      gesture = new KeyTapGesture(data);
+      break;
+    default:
+      throw "unkown gesture type";
   }
-  this.connection = new this.connectionType(opts);
-  this.setupConnectionEvents();
-}
-
-Controller.prototype.updateDevicePresent = function(newState) {
-  if (this.devicePresent !== newState) {
-    this.devicePresent = newState;
-    this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
-  }
-};
-
-Controller.prototype.inBrowser = function() {
-  return !inNode;
-}
-
-Controller.prototype.useAnimationLoop = function() {
-  return this.inBrowser() && typeof(chrome) === "undefined";
-}
-
-Controller.prototype.connect = function() {
-  var controller = this;
-  if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastConnectionFrame);
-      window.requestAnimFrame(callback);
-    }
-    window.requestAnimFrame(callback);
-  }
-}
-
-Controller.prototype.disconnect = function() {
-  this.connection.disconnect();
+ /**
+  * The gesture ID.
+  *
+  * All Gesture objects belonging to the same recognized movement share the
+  * same ID value. Use the ID value with the Frame::gesture() method to
+  * find updates related to this Gesture object in subsequent frames.
+  *
+  * @member id
+  * @memberof Leap.Gesture.prototype
+  * @type {number}
+  */
+  gesture.id = data.id;
+ /**
+  * The list of hands associated with this Gesture, if any.
+  *
+  * If no hands are related to this gesture, the list is empty.
+  *
+  * @member handIds
+  * @memberof Leap.Gesture.prototype
+  * @type {Array}
+  */
+  gesture.handIds = data.handIds;
+ /**
+  * The list of fingers and tools associated with this Gesture, if any.
+  *
+  * If no Pointable objects are related to this gesture, the list is empty.
+  *
+  * @member pointableIds
+  * @memberof Leap.Gesture.prototype
+  * @type {Array}
+  */
+  gesture.pointableIds = data.pointableIds;
+ /**
+  * The elapsed duration of the recognized movement up to the
+  * frame containing this Gesture object, in microseconds.
+  *
+  * The duration reported for the first Gesture in the sequence (with the
+  * start state) will typically be a small positive number since
+  * the movement must progress far enough for the Leap to recognize it as
+  * an intentional gesture.
+  *
+  * @member duration
+  * @memberof Leap.Gesture.prototype
+  * @type {number}
+  */
+  gesture.duration = data.duration;
+ /**
+  * The gesture ID.
+  *
+  * Recognized movements occur over time and have a beginning, a middle,
+  * and an end. The 'state()' attribute reports where in that sequence this
+  * Gesture object falls.
+  *
+  * Possible values for the state field are:
+  *
+  * * start
+  * * update
+  * * stop
+  *
+  * @member state
+  * @memberof Leap.Gesture.prototype
+  * @type {String}
+  */
+  gesture.state = data.state;
+ /**
+  * The gesture type.
+  *
+  * Possible values for the type field are:
+  *
+  * * circle
+  * * swipe
+  * * screenTap
+  * * keyTap
+  *
+  * @member type
+  * @memberof Leap.Gesture.prototype
+  * @type {String}
+  */
+  gesture.type = data.type;
+  return gesture;
 }
 
 /**
- * Returns a frame of tracking data from the Leap.
+ * Constructs a new CircleGesture object.
  *
- * Use the optional history parameter to specify which frame to retrieve.
- * Call frame() or frame(0) to access the most recent frame; call frame(1) to
- * access the previous frame, and so on. If you use a history value greater
- * than the number of stored frames, then the controller returns an invalid frame.
+ * An uninitialized CircleGesture object is considered invalid. Get valid instances
+ * of the CircleGesture class from a Frame object.
  *
- * @method frame
- * @memberof Leap.Controller.prototype
- * @param {number} history The age of the frame to return, counting backwards from
- * the most recent frame (0) into the past and up to the maximum age (59).
- * @returns {Leap.Frame} The specified frame; or, if no history
- * parameter is specified, the newest frame. If a frame is not available at
- * the specified history position, an invalid Frame is returned.
+ * @class CircleGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The CircleGesture classes represents a circular finger movement.
+ *
+ * A circle movement is recognized when the tip of a finger draws a circle
+ * within the Leap field of view.
+ *
+ * ![CircleGesture](images/Leap_Gesture_Circle.png)
+ *
+ * Circle gestures are continuous. The CircleGesture objects for the gesture have
+ * three possible states:
+ *
+ * * start -- The circle gesture has just started. The movement has
+ *  progressed far enough for the recognizer to classify it as a circle.
+ * * update -- The circle gesture is continuing.
+ * * stop -- The circle gesture is finished.
  */
-Controller.prototype.frame = function(num) {
-  return this.history.get(num) || Frame.Invalid;
+var CircleGesture = function(data) {
+ /**
+  * The center point of the circle within the Leap frame of reference.
+  *
+  * @member center
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number[]}
+  */
+  this.center = data.center;
+ /**
+  * The normal vector for the circle being traced.
+  *
+  * If you draw the circle clockwise, the normal vector points in the same
+  * general direction as the pointable object drawing the circle. If you draw
+  * the circle counterclockwise, the normal points back toward the
+  * pointable. If the angle between the normal and the pointable object
+  * drawing the circle is less than 90 degrees, then the circle is clockwise.
+  *
+  * ```javascript
+  *    var clockwiseness;
+  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
+  *        clockwiseness = "clockwise";
+  *    }
+  *    else
+  *    {
+  *        clockwiseness = "counterclockwise";
+  *    }
+  * ```
+  *
+  * @member normal
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number[]}
+  */
+  this.normal = data.normal;
+ /**
+  * The number of times the finger tip has traversed the circle.
+  *
+  * Progress is reported as a positive number of the number. For example,
+  * a progress value of .5 indicates that the finger has gone halfway
+  * around, while a value of 3 indicates that the finger has gone around
+  * the the circle three times.
+  *
+  * Progress starts where the circle gesture began. Since the circle
+  * must be partially formed before the Leap can recognize it, progress
+  * will be greater than zero when a circle gesture first appears in the
+  * frame.
+  *
+  * @member progress
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number}
+  */
+  this.progress = data.progress;
+ /**
+  * The radius of the circle in mm.
+  *
+  * @member radius
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number}
+  */
+  this.radius = data.radius;
 }
 
-Controller.prototype.loop = function(callback) {
-  switch (callback.length) {
-    case 1:
-      this.on(this.frameEventName, callback);
-      break;
-    case 2:
-      var controller = this;
-      var scheduler = null;
-      var immediateRunnerCallback = function(frame) {
-        callback(frame, function() {
-          if (controller.lastFrame != frame) {
-            immediateRunnerCallback(controller.lastFrame);
-          } else {
-            controller.once(controller.frameEventName, immediateRunnerCallback);
-          }
-        });
-      }
-      this.once(this.frameEventName, immediateRunnerCallback);
-      break;
+/**
+ * Constructs a new SwipeGesture object.
+ *
+ * An uninitialized SwipeGesture object is considered invalid. Get valid instances
+ * of the SwipeGesture class from a Frame object.
+ *
+ * @class SwipeGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The SwipeGesture class represents a swiping motion of a finger or tool.
+ *
+ * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
+ *
+ * Swipe gestures are continuous.
+ */
+var SwipeGesture = function(data) {
+ /**
+  * The starting position within the Leap frame of
+  * reference, in mm.
+  *
+  * @member startPosition
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.startPosition = data.startPosition;
+ /**
+  * The current swipe position within the Leap frame of
+  * reference, in mm.
+  *
+  * @member position
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.position = data.position;
+ /**
+  * The unit direction vector parallel to the swipe motion.
+  *
+  * You can compare the components of the vector to classify the swipe as
+  * appropriate for your application. For example, if you are using swipes
+  * for two dimensional scrolling, you can compare the x and y values to
+  * determine if the swipe is primarily horizontal or vertical.
+  *
+  * @member direction
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.direction = data.direction;
+ /**
+  * The speed of the finger performing the swipe gesture in
+  * millimeters per second.
+  *
+  * @member speed
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number}
+  */
+  this.speed = data.speed;
+}
+
+/**
+ * Constructs a new ScreenTapGesture object.
+ *
+ * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
+ * of the ScreenTapGesture class from a Frame object.
+ *
+ * @class ScreenTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
+ *
+ * A screen tap gesture is recognized when the tip of a finger pokes forward
+ * and then springs back to approximately the original postion, as if
+ * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
+ *
+ * ![ScreenTap](images/Leap_Gesture_Tap2.png)
+ *
+ * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
+ * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
+ * screen tap gesture recognized.
+ */
+var ScreenTapGesture = function(data) {
+ /**
+  * The position where the screen tap is registered.
+  *
+  * @member position
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number[]}
+  */
+  this.position = data.position;
+ /**
+  * The direction of finger tip motion.
+  *
+  * @member direction
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number[]}
+  */
+  this.direction = data.direction;
+ /**
+  * The progess value is always 1.0 for a screen tap gesture.
+  *
+  * @member progress
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number}
+  */
+  this.progress = data.progress;
+}
+
+/**
+ * Constructs a new KeyTapGesture object.
+ *
+ * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
+ * of the KeyTapGesture class from a Frame object.
+ *
+ * @class KeyTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The KeyTapGesture class represents a tapping gesture by a finger or tool.
+ *
+ * A key tap gesture is recognized when the tip of a finger rotates down toward the
+ * palm and then springs back to approximately the original postion, as if
+ * tapping. The tapping finger must pause briefly before beginning the tap.
+ *
+ * ![KeyTap](images/Leap_Gesture_Tap.png)
+ *
+ * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
+ * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
+ * key tap gesture recognized.
+ */
+var KeyTapGesture = function(data) {
+    /**
+     * The position where the key tap is registered.
+     *
+     * @member position
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number[]}
+     */
+    this.position = data.position;
+    /**
+     * The direction of finger tip motion.
+     *
+     * @member direction
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number[]}
+     */
+    this.direction = data.direction;
+    /**
+     * The progess value is always 1.0 for a key tap gesture.
+     *
+     * @member progress
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number}
+     */
+    this.progress = data.progress;
+}
+
+},{"gl-matrix":17}],15:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
+
+/**
+ * Constructs a Pointable object.
+ *
+ * An uninitialized pointable is considered invalid.
+ * Get valid Pointable objects from a Frame or a Hand object.
+ *
+ * @class Pointable
+ * @memberof Leap
+ * @classdesc
+ * The Pointable class reports the physical characteristics of a detected
+ * finger or tool.
+ *
+ * Both fingers and tools are classified as Pointable objects. Use the
+ * Pointable.tool property to determine whether a Pointable object represents a
+ * tool or finger. The Leap classifies a detected entity as a tool when it is
+ * thinner, straighter, and longer than a typical finger.
+ *
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
+ * exist in the current frame. A Pointable object created from the Pointable
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
+ */
+var Pointable = exports.Pointable = function(data) {
+  /**
+   * Indicates whether this is a valid Pointable object.
+   *
+   * @member valid
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.valid = true;
+  /**
+   * A unique ID assigned to this Pointable object, whose value remains the
+   * same across consecutive frames while the tracked finger or tool remains
+   * visible. If tracking is lost (for example, when a finger is occluded by
+   * another finger or when it is withdrawn from the Leap field of view), the
+   * Leap may assign a new ID when it detects the entity in a future frame.
+   *
+   * Use the ID value with the pointable() functions defined for the
+   * {@link Frame} and {@link Frame.Hand} classes to find this
+   * Pointable object in future frames.
+   *
+   * @member id
+   * @type {String}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.id = data.id;
+  this.handId = data.handId;
+  /**
+   * The estimated length of the finger or tool in millimeters.
+   *
+   * The reported length is the visible length of the finger or tool from the
+   * hand to tip. If the length isn't known, then a value of 0 is returned.
+   *
+   * @member length
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.length = data.length;
+  /**
+   * Whether or not the Pointable is believed to be a tool.
+   * Tools are generally longer, thinner, and straighter than fingers.
+   *
+   * If tool is false, then this Pointable must be a finger.
+   *
+   * @member tool
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tool = data.tool;
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member width
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.width = data.width;
+  /**
+   * The direction in which this finger or tool is pointing.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the tip.
+   *
+   * ![Finger](images/Leap_Finger_Model.png)
+   * @member direction
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.direction = data.direction;
+  /**
+   * The tip position in millimeters from the Leap origin.
+   * Stabilized
+   *
+   * @member stabilizedTipPosition
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.stabilizedTipPosition = data.stabilizedTipPosition;
+  /**
+   * The tip position in millimeters from the Leap origin.
+   *
+   * @member tipPosition
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipPosition = data.tipPosition;
+  /**
+   * The rate of change of the tip position in millimeters/second.
+   *
+   * @member tipVelocity
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipVelocity = data.tipVelocity;
+  /**
+   * Human readable string describing the 'Touch Zone' of this pointable
+   *
+   * @member Pointable.prototype.touchZone {String}
+   */
+  this.touchZone = data.touchZone;
+  /**
+   * Distance from 'Touch Plane'
+   *
+   * @member Pointable.prototype.touchDistance {number}
+   */
+  this.touchDistance = data.touchDistance;
+}
+
+/**
+ * A string containing a brief, human readable description of the Pointable
+ * object.
+ *
+ * @method toString
+ * @memberof Leap.Pointable.prototype
+ * @returns {String} A description of the Pointable object as a string.
+ */
+Pointable.prototype.toString = function() {
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
   }
-  this.connect();
 }
 
-Controller.prototype.addStep = function(step) {
-  if (!this.pipeline) this.pipeline = new Pipeline(this);
-  this.pipeline.addStep(step);
+/**
+ * An invalid Pointable object.
+ *
+ * You can use this Pointable instance in comparisons testing
+ * whether a given Pointable instance is valid or invalid. (You can also use the
+ * Pointable.valid property.)
+
+ * @static
+ * @type {Leap.Pointable}
+ * @name Invalid
+ * @memberof Leap.Pointable
+ */
+Pointable.Invalid = { valid: false };
+
+},{"gl-matrix":17}],14:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
+
+/**
+ * Constructs a InteractionBox object.
+ *
+ * @class InteractionBox
+ * @memberof Leap
+ * @classdesc
+ * The InteractionBox class represents a box-shaped region completely within
+ * the field of view of the Leap Motion controller.
+ *
+ * The interaction box is an axis-aligned rectangular prism and provides
+ * normalized coordinates for hands, fingers, and tools within this box.
+ * The InteractionBox class can make it easier to map positions in the
+ * Leap Motion coordinate system to 2D or 3D coordinate systems used
+ * for application drawing.
+ *
+ * The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.
+ */
+var InteractionBox = exports.InteractionBox = function(data) {
+  /**
+   * Indicates whether this is a valid InteractionBox object.
+   *
+   * @member valid
+   * @type {Boolean}
+   * @memberof Leap.InteractionBox.prototype
+   */
+  this.valid = true;
+  /**
+   * The center of the InteractionBox in device coordinates (millimeters).
+   * This point is equidistant from all sides of the box.
+   *
+   * @member center
+   * @type {number[]}
+   * @memberof Leap.InteractionBox.prototype
+   */
+  this.center = data.center;
+
+  this.size = data.size;
+  /**
+   * The width of the InteractionBox in millimeters, measured along the x-axis.
+   *
+   * @member width
+   * @type {number}
+   * @memberof Leap.InteractionBox.prototype
+   */
+  this.width = data.size[0];
+  /**
+   * The height of the InteractionBox in millimeters, measured along the y-axis.
+   *
+   * @member height
+   * @type {number}
+   * @memberof Leap.InteractionBox.prototype
+   */
+  this.height = data.size[1];
+  /**
+   * The depth of the InteractionBox in millimeters, measured along the z-axis.
+   *
+   * @member depth
+   * @type {number}
+   * @memberof Leap.InteractionBox.prototype
+   */
+  this.depth = data.size[2];
 }
 
-Controller.prototype.processFrame = function(frame) {
-  if (this.pipeline) {
-    frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
+/**
+ * Converts a position defined by normalized InteractionBox coordinates
+ * into device coordinates in millimeters.
+ *
+ * This function performs the inverse of normalizePoint().
+ *
+ * @method denormalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
+ * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
+ */
+InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
+  return vec3.fromValues(
+    (normalizedPosition[0] - 0.5) * this.size[0] + this.center[0],
+    (normalizedPosition[1] - 0.5) * this.size[1] + this.center[1],
+    (normalizedPosition[2] - 0.5) * this.size[2] + this.center[2]
+  );
+}
+
+/**
+ * Normalizes the coordinates of a point using the interaction box.
+ *
+ * Coordinates from the Leap Motion frame of reference (millimeters) are
+ * converted to a range of [0..1] such that the minimum value of the
+ * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.
+ *
+ * @method normalizePoint
+ * @memberof Leap.InteractionBox.prototype
+ * @param {Leap.Vector} position The input position in device coordinates.
+ * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
+ * when the input position is outside the InteractionBox. Defaults to true.
+ * @returns {Leap.Vector} The normalized position.
+ */
+InteractionBox.prototype.normalizePoint = function(position, clamp) {
+  var vec = vec3.fromValues(
+    ((position[0] - this.center[0]) / this.size[0]) + 0.5,
+    ((position[1] - this.center[1]) / this.size[1]) + 0.5,
+    ((position[2] - this.center[2]) / this.size[2]) + 0.5
+  );
+
+  if (clamp) {
+    vec[0] = Math.min(Math.max(vec[0], 0), 1);
+    vec[1] = Math.min(Math.max(vec[1], 0), 1);
+    vec[2] = Math.min(Math.max(vec[2], 0), 1);
   }
-  this.lastConnectionFrame = frame;
-  this.emit('deviceFrame', frame);
+  return vec;
 }
 
-Controller.prototype.processFinishedFrame = function(frame) {
-  this.lastFrame = frame;
-  if (frame.valid) {
-    this.lastValidFrame = frame;
-  }
-  if (frame.gestures) {
-    frame.gestures = this.accumulatedGestures;
-    this.accumulatedGestures = [];
-  }
-  frame.controller = this;
-  frame.historyIdx = this.history.push(frame);
-  this.emit('frame', frame);
+/**
+ * Writes a brief, human readable description of the InteractionBox object.
+ *
+ * @method toString
+ * @memberof Leap.InteractionBox.prototype
+ * @returns {String} A description of the InteractionBox object as a string.
+ */
+InteractionBox.prototype.toString = function() {
+  return "InteractionBox [ width:" + this.width + " | height:" + this.height + " | depth:" + this.depth + " ]";
 }
 
-Controller.prototype.setupConnectionEvents = function() {
-  var controller = this;
-  this.connection.on('frame', function(frame) {
-    if (frame.gestures) {
-      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
-    }
-    controller.processFrame(frame);
-  });
-  this.on(this.frameEventName, function(frame) {
-    controller.processFinishedFrame(frame);
-  });
+/**
+ * An invalid InteractionBox object.
+ *
+ * You can use this InteractionBox instance in comparisons testing
+ * whether a given InteractionBox instance is valid or invalid. (You can also use the
+ * InteractionBox.valid property.)
+ *
+ * @static
+ * @type {Leap.InteractionBox}
+ * @name Invalid
+ * @memberof Leap.InteractionBox
+ */
+InteractionBox.Invalid = { valid: false };
 
-  // Delegate connection events
-  this.connection.on('ready', function() {
-    var heartbeatFrame = controller.lastFrame;
-    controller.deviceReadyTimer = setInterval(function() {
-      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
-      heartbeatFrame = controller.lastFrame;
-    }, 100);
-    controller.emit('ready');
-  });
-  this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('disconnect', function() {
-    controller.updateDevicePresent(false);
-    clearTimeout(controller.deviceReadyTimer);
-    controller.emit('disconnect');
-  });
-  this.connection.on('focus', function() { controller.emit('focus') });
-  this.connection.on('blur', function() { controller.emit('blur') });
-  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
-}
-
-_.extend(Controller.prototype, EventEmitter.prototype);
-
-})(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":9,"./frame":11,"./node_connection":6,"./pipeline":21,"__browserify_process":7,"events":8,"underscore":22}],11:[function(require,module,exports){
+},{"gl-matrix":17}],11:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
   , Gesture = require("./gesture").Gesture
@@ -4547,409 +5066,202 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":12,"./hand":13,"./interaction_box":14,"./pointable":15,"gl-matrix":17,"underscore":22}],12:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
+},{"./gesture":12,"./hand":13,"./interaction_box":14,"./pointable":15,"gl-matrix":17,"underscore":22}],10:[function(require,module,exports){
+(function(process){var inNode = typeof(process) !== 'undefined' && process.title === 'node';
+
+var Frame = require('./frame').Frame
+  , CircularBuffer = require("./circular_buffer").CircularBuffer
+  , Pipeline = require("./pipeline").Pipeline
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
 
 /**
- * Constructs a new Gesture object.
+ * Constructs a Controller object.
  *
- * An uninitialized Gesture object is considered invalid. Get valid instances
- * of the Gesture class, which will be one of the Gesture subclasses, from a
- * Frame object.
+ * When creating a Controller object, you may optionally pass in options
+ * to set the host , set the port, enable gestures, or select the frame event type.
  *
- * @class Gesture
- * @abstract
+ * ```javascript
+ * var controller = new Leap.Controller({
+ *   host: '127.0.0.1',
+ *   port: 6437,
+ *   enableGestures: true,
+ *   frameEventName: 'animationFrame'
+ * });
+ * ```
+ *
+ * @class Controller
  * @memberof Leap
  * @classdesc
- * The Gesture class represents a recognized movement by the user.
+ * The Controller class is your main interface to the Leap Motion Controller.
  *
- * The Leap watches the activity within its field of view for certain movement
- * patterns typical of a user gesture or command. For example, a movement from side to
- * side with the hand can indicate a swipe gesture, while a finger poking forward
- * can indicate a screen tap gesture.
+ * Create an instance of this Controller class to access frames of tracking data
+ * and configuration information. Frame data can be polled at any time using the
+ * [Controller.frame]{@link Leap.Controller#frame}() function. Call frame() or frame(0) to get the most recent
+ * frame. Set the history parameter to a positive integer to access previous frames.
+ * A controller stores up to 60 frames in its frame history.
  *
- * When the Leap recognizes a gesture, it assigns an ID and adds a
- * Gesture object to the frame gesture list. For continuous gestures, which
- * occur over many frames, the Leap updates the gesture by adding
- * a Gesture object having the same ID and updated properties in each
- * subsequent frame.
- *
- * **Important:** Recognition for each type of gesture must be enabled;
- * otherwise **no gestures are recognized or reported**.
- *
- * Subclasses of Gesture define the properties for the specific movement patterns
- * recognized by the Leap.
- *
- * The Gesture subclasses for include:
- *
- * * CircleGesture -- A circular movement by a finger.
- * * SwipeGesture -- A straight line movement by the hand with fingers extended.
- * * ScreenTapGesture -- A forward tapping movement by a finger.
- * * KeyTapGesture -- A downward tapping movement by a finger.
- *
- * Circle and swipe gestures are continuous and these objects can have a
- * state of start, update, and stop.
- *
- * The screen tap gesture is a discrete gesture. The Leap only creates a single
- * ScreenTapGesture object appears for each tap and it always has a stop state.
- *
- * Get valid Gesture instances from a Frame object. You can get a list of gestures
- * from the Frame gestures array. You can also use the Frame gesture() method
- * to find a gesture in the current frame using an ID value obtained in a
- * previous frame.
- *
- * Gesture objects can be invalid. For example, when you get a gesture by ID
- * using Frame.gesture(), and there is no gesture with that ID in the current
- * frame, then gesture() returns an Invalid Gesture object (rather than a null
- * value). Always check object validity in situations where a gesture might be
- * invalid.
+ * Polling is an appropriate strategy for applications which already have an
+ * intrinsic update loop, such as a game.
  */
-var Gesture = exports.Gesture = function(data) {
-  var gesture = undefined
-  switch (data.type) {
-    case 'circle':
-      gesture = new CircleGesture(data);
-      break;
-    case 'swipe':
-      gesture = new SwipeGesture(data);
-      break;
-    case 'screenTap':
-      gesture = new ScreenTapGesture(data);
-      break;
-    case 'keyTap':
-      gesture = new KeyTapGesture(data);
-      break;
-    default:
-      throw "unkown gesture type";
+var Controller = exports.Controller = function(opts) {
+  opts = _.defaults(opts || {}, {
+    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
+    supressAnimationLoop: false
+  });
+  this.supressAnimationLoop = opts.supressAnimationLoop;
+  this.frameEventName = opts.frameEventName;
+  this.history = new CircularBuffer(200);
+  this.lastFrame = Frame.Invalid;
+  this.lastValidFrame = Frame.Invalid;
+  this.lastConnectionFrame = Frame.Invalid;
+  this.accumulatedGestures = [];
+  if (opts.connectionType === undefined) {
+    this.connectionType = (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
+  } else {
+    this.connectionType = opts.connectionType;
   }
- /**
-  * The gesture ID.
-  *
-  * All Gesture objects belonging to the same recognized movement share the
-  * same ID value. Use the ID value with the Frame::gesture() method to
-  * find updates related to this Gesture object in subsequent frames.
-  *
-  * @member id
-  * @memberof Leap.Gesture.prototype
-  * @type {number}
-  */
-  gesture.id = data.id;
- /**
-  * The list of hands associated with this Gesture, if any.
-  *
-  * If no hands are related to this gesture, the list is empty.
-  *
-  * @member handIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.handIds = data.handIds;
- /**
-  * The list of fingers and tools associated with this Gesture, if any.
-  *
-  * If no Pointable objects are related to this gesture, the list is empty.
-  *
-  * @member pointableIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.pointableIds = data.pointableIds;
- /**
-  * The elapsed duration of the recognized movement up to the
-  * frame containing this Gesture object, in microseconds.
-  *
-  * The duration reported for the first Gesture in the sequence (with the
-  * start state) will typically be a small positive number since
-  * the movement must progress far enough for the Leap to recognize it as
-  * an intentional gesture.
-  *
-  * @member duration
-  * @memberof Leap.Gesture.prototype
-  * @type {number}
-  */
-  gesture.duration = data.duration;
- /**
-  * The gesture ID.
-  *
-  * Recognized movements occur over time and have a beginning, a middle,
-  * and an end. The 'state()' attribute reports where in that sequence this
-  * Gesture object falls.
-  *
-  * Possible values for the state field are:
-  *
-  * * start
-  * * update
-  * * stop
-  *
-  * @member state
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.state = data.state;
- /**
-  * The gesture type.
-  *
-  * Possible values for the type field are:
-  *
-  * * circle
-  * * swipe
-  * * screenTap
-  * * keyTap
-  *
-  * @member type
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.type = data.type;
-  return gesture;
+  this.connection = new this.connectionType(opts);
+  this.setupConnectionEvents();
+}
+
+Controller.prototype.updateDevicePresent = function(newState) {
+  if (this.devicePresent !== newState) {
+    this.devicePresent = newState;
+    this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
+  }
+};
+
+Controller.prototype.inBrowser = function() {
+  return !inNode;
+}
+
+Controller.prototype.useAnimationLoop = function() {
+  return this.inBrowser() && typeof(chrome) === "undefined";
+}
+
+Controller.prototype.connect = function() {
+  var controller = this;
+  if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
+    var callback = function() {
+      controller.emit('animationFrame', controller.lastConnectionFrame);
+      window.requestAnimFrame(callback);
+    }
+    window.requestAnimFrame(callback);
+  }
+}
+
+Controller.prototype.disconnect = function() {
+  this.connection.disconnect();
 }
 
 /**
- * Constructs a new CircleGesture object.
+ * Returns a frame of tracking data from the Leap.
  *
- * An uninitialized CircleGesture object is considered invalid. Get valid instances
- * of the CircleGesture class from a Frame object.
+ * Use the optional history parameter to specify which frame to retrieve.
+ * Call frame() or frame(0) to access the most recent frame; call frame(1) to
+ * access the previous frame, and so on. If you use a history value greater
+ * than the number of stored frames, then the controller returns an invalid frame.
  *
- * @class CircleGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The CircleGesture classes represents a circular finger movement.
- *
- * A circle movement is recognized when the tip of a finger draws a circle
- * within the Leap field of view.
- *
- * ![CircleGesture](images/Leap_Gesture_Circle.png)
- *
- * Circle gestures are continuous. The CircleGesture objects for the gesture have
- * three possible states:
- *
- * * start -- The circle gesture has just started. The movement has
- *  progressed far enough for the recognizer to classify it as a circle.
- * * update -- The circle gesture is continuing.
- * * stop -- The circle gesture is finished.
+ * @method frame
+ * @memberof Leap.Controller.prototype
+ * @param {number} history The age of the frame to return, counting backwards from
+ * the most recent frame (0) into the past and up to the maximum age (59).
+ * @returns {Leap.Frame} The specified frame; or, if no history
+ * parameter is specified, the newest frame. If a frame is not available at
+ * the specified history position, an invalid Frame is returned.
  */
-var CircleGesture = function(data) {
- /**
-  * The center point of the circle within the Leap frame of reference.
-  *
-  * @member center
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number[]}
-  */
-  this.center = data.center;
- /**
-  * The normal vector for the circle being traced.
-  *
-  * If you draw the circle clockwise, the normal vector points in the same
-  * general direction as the pointable object drawing the circle. If you draw
-  * the circle counterclockwise, the normal points back toward the
-  * pointable. If the angle between the normal and the pointable object
-  * drawing the circle is less than 90 degrees, then the circle is clockwise.
-  *
-  * ```javascript
-  *    var clockwiseness;
-  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
-  *        clockwiseness = "clockwise";
-  *    }
-  *    else
-  *    {
-  *        clockwiseness = "counterclockwise";
-  *    }
-  * ```
-  *
-  * @member normal
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number[]}
-  */
-  this.normal = data.normal;
- /**
-  * The number of times the finger tip has traversed the circle.
-  *
-  * Progress is reported as a positive number of the number. For example,
-  * a progress value of .5 indicates that the finger has gone halfway
-  * around, while a value of 3 indicates that the finger has gone around
-  * the the circle three times.
-  *
-  * Progress starts where the circle gesture began. Since the circle
-  * must be partially formed before the Leap can recognize it, progress
-  * will be greater than zero when a circle gesture first appears in the
-  * frame.
-  *
-  * @member progress
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number}
-  */
-  this.progress = data.progress;
- /**
-  * The radius of the circle in mm.
-  *
-  * @member radius
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number}
-  */
-  this.radius = data.radius;
+Controller.prototype.frame = function(num) {
+  return this.history.get(num) || Frame.Invalid;
 }
 
-/**
- * Constructs a new SwipeGesture object.
- *
- * An uninitialized SwipeGesture object is considered invalid. Get valid instances
- * of the SwipeGesture class from a Frame object.
- *
- * @class SwipeGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The SwipeGesture class represents a swiping motion of a finger or tool.
- *
- * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
- *
- * Swipe gestures are continuous.
- */
-var SwipeGesture = function(data) {
- /**
-  * The starting position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member startPosition
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.startPosition = data.startPosition;
- /**
-  * The current swipe position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member position
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.position = data.position;
- /**
-  * The unit direction vector parallel to the swipe motion.
-  *
-  * You can compare the components of the vector to classify the swipe as
-  * appropriate for your application. For example, if you are using swipes
-  * for two dimensional scrolling, you can compare the x and y values to
-  * determine if the swipe is primarily horizontal or vertical.
-  *
-  * @member direction
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.direction = data.direction;
- /**
-  * The speed of the finger performing the swipe gesture in
-  * millimeters per second.
-  *
-  * @member speed
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number}
-  */
-  this.speed = data.speed;
+Controller.prototype.loop = function(callback) {
+  switch (callback.length) {
+    case 1:
+      this.on(this.frameEventName, callback);
+      break;
+    case 2:
+      var controller = this;
+      var scheduler = null;
+      var immediateRunnerCallback = function(frame) {
+        callback(frame, function() {
+          if (controller.lastFrame != frame) {
+            immediateRunnerCallback(controller.lastFrame);
+          } else {
+            controller.once(controller.frameEventName, immediateRunnerCallback);
+          }
+        });
+      }
+      this.once(this.frameEventName, immediateRunnerCallback);
+      break;
+  }
+  this.connect();
 }
 
-/**
- * Constructs a new ScreenTapGesture object.
- *
- * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
- * of the ScreenTapGesture class from a Frame object.
- *
- * @class ScreenTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A screen tap gesture is recognized when the tip of a finger pokes forward
- * and then springs back to approximately the original postion, as if
- * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
- *
- * ![ScreenTap](images/Leap_Gesture_Tap2.png)
- *
- * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
- * screen tap gesture recognized.
- */
-var ScreenTapGesture = function(data) {
- /**
-  * The position where the screen tap is registered.
-  *
-  * @member position
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number[]}
-  */
-  this.position = data.position;
- /**
-  * The direction of finger tip motion.
-  *
-  * @member direction
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number[]}
-  */
-  this.direction = data.direction;
- /**
-  * The progess value is always 1.0 for a screen tap gesture.
-  *
-  * @member progress
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number}
-  */
-  this.progress = data.progress;
+Controller.prototype.addStep = function(step) {
+  if (!this.pipeline) this.pipeline = new Pipeline(this);
+  this.pipeline.addStep(step);
 }
 
-/**
- * Constructs a new KeyTapGesture object.
- *
- * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
- * of the KeyTapGesture class from a Frame object.
- *
- * @class KeyTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The KeyTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A key tap gesture is recognized when the tip of a finger rotates down toward the
- * palm and then springs back to approximately the original postion, as if
- * tapping. The tapping finger must pause briefly before beginning the tap.
- *
- * ![KeyTap](images/Leap_Gesture_Tap.png)
- *
- * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
- * key tap gesture recognized.
- */
-var KeyTapGesture = function(data) {
-    /**
-     * The position where the key tap is registered.
-     *
-     * @member position
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number[]}
-     */
-    this.position = data.position;
-    /**
-     * The direction of finger tip motion.
-     *
-     * @member direction
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number[]}
-     */
-    this.direction = data.direction;
-    /**
-     * The progess value is always 1.0 for a key tap gesture.
-     *
-     * @member progress
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number}
-     */
-    this.progress = data.progress;
+Controller.prototype.processFrame = function(frame) {
+  if (this.pipeline) {
+    frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
+  }
+  this.lastConnectionFrame = frame;
+  this.emit('deviceFrame', frame);
 }
 
-},{"gl-matrix":17}],13:[function(require,module,exports){
+Controller.prototype.processFinishedFrame = function(frame) {
+  this.lastFrame = frame;
+  if (frame.valid) {
+    this.lastValidFrame = frame;
+  }
+  if (frame.gestures) {
+    frame.gestures = this.accumulatedGestures;
+    this.accumulatedGestures = [];
+  }
+  frame.controller = this;
+  frame.historyIdx = this.history.push(frame);
+  this.emit('frame', frame);
+}
+
+Controller.prototype.setupConnectionEvents = function() {
+  var controller = this;
+  this.connection.on('frame', function(frame) {
+    if (frame.gestures) {
+      controller.accumulatedGestures = controller.accumulatedGestures.concat(frame.gestures);
+    }
+    controller.processFrame(frame);
+  });
+  this.on(this.frameEventName, function(frame) {
+    controller.processFinishedFrame(frame);
+  });
+
+  // Delegate connection events
+  this.connection.on('ready', function() {
+    var heartbeatFrame = controller.lastFrame;
+    controller.deviceReadyTimer = setInterval(function() {
+      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
+      heartbeatFrame = controller.lastFrame;
+    }, 100);
+    controller.emit('ready');
+  });
+  this.connection.on('connect', function() { controller.emit('connect'); });
+  this.connection.on('disconnect', function() {
+    controller.updateDevicePresent(false);
+    clearTimeout(controller.deviceReadyTimer);
+    controller.emit('disconnect');
+  });
+  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('blur', function() { controller.emit('blur') });
+  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+}
+
+_.extend(Controller.prototype, EventEmitter.prototype);
+
+})(require("__browserify_process"))
+},{"./circular_buffer":5,"./connection":9,"./frame":11,"./node_connection":6,"./pipeline":21,"__browserify_process":7,"events":8,"underscore":22}],13:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -5291,319 +5603,7 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":15,"gl-matrix":17,"underscore":22}],15:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
-
-/**
- * Constructs a Pointable object.
- *
- * An uninitialized pointable is considered invalid.
- * Get valid Pointable objects from a Frame or a Hand object.
- *
- * @class Pointable
- * @memberof Leap
- * @classdesc
- * The Pointable class reports the physical characteristics of a detected
- * finger or tool.
- *
- * Both fingers and tools are classified as Pointable objects. Use the
- * Pointable.tool property to determine whether a Pointable object represents a
- * tool or finger. The Leap classifies a detected entity as a tool when it is
- * thinner, straighter, and longer than a typical finger.
- *
- * Note that Pointable objects can be invalid, which means that they do not
- * contain valid tracking data and do not correspond to a physical entity.
- * Invalid Pointable objects can be the result of asking for a Pointable object
- * using an ID from an earlier frame when no Pointable objects with that ID
- * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid
- * property.
- */
-var Pointable = exports.Pointable = function(data) {
-  /**
-   * Indicates whether this is a valid Pointable object.
-   *
-   * @member valid
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.valid = true;
-  /**
-   * A unique ID assigned to this Pointable object, whose value remains the
-   * same across consecutive frames while the tracked finger or tool remains
-   * visible. If tracking is lost (for example, when a finger is occluded by
-   * another finger or when it is withdrawn from the Leap field of view), the
-   * Leap may assign a new ID when it detects the entity in a future frame.
-   *
-   * Use the ID value with the pointable() functions defined for the
-   * {@link Frame} and {@link Frame.Hand} classes to find this
-   * Pointable object in future frames.
-   *
-   * @member id
-   * @type {String}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.id = data.id;
-  this.handId = data.handId;
-  /**
-   * The estimated length of the finger or tool in millimeters.
-   *
-   * The reported length is the visible length of the finger or tool from the
-   * hand to tip. If the length isn't known, then a value of 0 is returned.
-   *
-   * @member length
-   * @type {number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.length = data.length;
-  /**
-   * Whether or not the Pointable is believed to be a tool.
-   * Tools are generally longer, thinner, and straighter than fingers.
-   *
-   * If tool is false, then this Pointable must be a finger.
-   *
-   * @member tool
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tool = data.tool;
-  /**
-   * The estimated width of the tool in millimeters.
-   *
-   * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
-   * then a value of 0 is returned.
-   *
-   * Pointable objects representing fingers do not have a width property.
-   *
-   * @member width
-   * @type {number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.width = data.width;
-  /**
-   * The direction in which this finger or tool is pointing.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the tip.
-   *
-   * ![Finger](images/Leap_Finger_Model.png)
-   * @member direction
-   * @type {number[]}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.direction = data.direction;
-  /**
-   * The tip position in millimeters from the Leap origin.
-   * Stabilized
-   *
-   * @member stabilizedTipPosition
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.stabilizedTipPosition = data.stabilizedTipPosition;
-  /**
-   * The tip position in millimeters from the Leap origin.
-   *
-   * @member tipPosition
-   * @type {number[]}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipPosition = data.tipPosition;
-  /**
-   * The rate of change of the tip position in millimeters/second.
-   *
-   * @member tipVelocity
-   * @type {number[]}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipVelocity = data.tipVelocity;
-  /**
-   * Human readable string describing the 'Touch Zone' of this pointable
-   *
-   * @member Pointable.prototype.touchZone {String}
-   */
-  this.touchZone = data.touchZone;
-  /**
-   * Distance from 'Touch Plane'
-   *
-   * @member Pointable.prototype.touchDistance {number}
-   */
-  this.touchDistance = data.touchDistance;
-}
-
-/**
- * A string containing a brief, human readable description of the Pointable
- * object.
- *
- * @method toString
- * @memberof Leap.Pointable.prototype
- * @returns {String} A description of the Pointable object as a string.
- */
-Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
-}
-
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @static
- * @type {Leap.Pointable}
- * @name Invalid
- * @memberof Leap.Pointable
- */
-Pointable.Invalid = { valid: false };
-
-},{"gl-matrix":17}],14:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
-
-/**
- * Constructs a InteractionBox object.
- *
- * @class InteractionBox
- * @memberof Leap
- * @classdesc
- * The InteractionBox class represents a box-shaped region completely within
- * the field of view of the Leap Motion controller.
- *
- * The interaction box is an axis-aligned rectangular prism and provides
- * normalized coordinates for hands, fingers, and tools within this box.
- * The InteractionBox class can make it easier to map positions in the
- * Leap Motion coordinate system to 2D or 3D coordinate systems used
- * for application drawing.
- *
- * The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.
- */
-var InteractionBox = exports.InteractionBox = function(data) {
-  /**
-   * Indicates whether this is a valid InteractionBox object.
-   *
-   * @member valid
-   * @type {Boolean}
-   * @memberof Leap.InteractionBox.prototype
-   */
-  this.valid = true;
-  /**
-   * The center of the InteractionBox in device coordinates (millimeters).
-   * This point is equidistant from all sides of the box.
-   *
-   * @member center
-   * @type {number[]}
-   * @memberof Leap.InteractionBox.prototype
-   */
-  this.center = data.center;
-
-  this.size = data.size;
-  /**
-   * The width of the InteractionBox in millimeters, measured along the x-axis.
-   *
-   * @member width
-   * @type {number}
-   * @memberof Leap.InteractionBox.prototype
-   */
-  this.width = data.size[0];
-  /**
-   * The height of the InteractionBox in millimeters, measured along the y-axis.
-   *
-   * @member height
-   * @type {number}
-   * @memberof Leap.InteractionBox.prototype
-   */
-  this.height = data.size[1];
-  /**
-   * The depth of the InteractionBox in millimeters, measured along the z-axis.
-   *
-   * @member depth
-   * @type {number}
-   * @memberof Leap.InteractionBox.prototype
-   */
-  this.depth = data.size[2];
-}
-
-/**
- * Converts a position defined by normalized InteractionBox coordinates
- * into device coordinates in millimeters.
- *
- * This function performs the inverse of normalizePoint().
- *
- * @method denormalizePoint
- * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
- * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
- */
-InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
-  return vec3.fromValues(
-    (normalizedPosition[0] - 0.5) * this.size[0] + this.center[0],
-    (normalizedPosition[1] - 0.5) * this.size[1] + this.center[1],
-    (normalizedPosition[2] - 0.5) * this.size[2] + this.center[2]
-  );
-}
-
-/**
- * Normalizes the coordinates of a point using the interaction box.
- *
- * Coordinates from the Leap Motion frame of reference (millimeters) are
- * converted to a range of [0..1] such that the minimum value of the
- * InteractionBox maps to 0 and the maximum value of the InteractionBox maps to 1.
- *
- * @method normalizePoint
- * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} position The input position in device coordinates.
- * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
- * when the input position is outside the InteractionBox. Defaults to true.
- * @returns {Leap.Vector} The normalized position.
- */
-InteractionBox.prototype.normalizePoint = function(position, clamp) {
-  var vec = vec3.fromValues(
-    ((position[0] - this.center[0]) / this.size[0]) + 0.5,
-    ((position[1] - this.center[1]) / this.size[1]) + 0.5,
-    ((position[2] - this.center[2]) / this.size[2]) + 0.5
-  );
-
-  if (clamp) {
-    vec[0] = Math.min(Math.max(vec[0], 0), 1);
-    vec[1] = Math.min(Math.max(vec[1], 0), 1);
-    vec[2] = Math.min(Math.max(vec[2], 0), 1);
-  }
-  return vec;
-}
-
-/**
- * Writes a brief, human readable description of the InteractionBox object.
- *
- * @method toString
- * @memberof Leap.InteractionBox.prototype
- * @returns {String} A description of the InteractionBox object as a string.
- */
-InteractionBox.prototype.toString = function() {
-  return "InteractionBox [ width:" + this.width + " | height:" + this.height + " | depth:" + this.depth + " ]";
-}
-
-/**
- * An invalid InteractionBox object.
- *
- * You can use this InteractionBox instance in comparisons testing
- * whether a given InteractionBox instance is valid or invalid. (You can also use the
- * InteractionBox.valid property.)
- *
- * @static
- * @type {Leap.InteractionBox}
- * @name Invalid
- * @memberof Leap.InteractionBox
- */
-InteractionBox.Invalid = { valid: false };
-
-},{"gl-matrix":17}],22:[function(require,module,exports){
+},{"./pointable":15,"gl-matrix":17,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -6832,7 +6832,141 @@ InteractionBox.Invalid = { valid: false };
 }).call(this);
 
 })()
-},{}],23:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Connection = exports.Connection = function(opts) {
+  this.opts = _.defaults(opts || {}, {
+    host : '127.0.0.1',
+    enableGestures: false,
+    port: 6437,
+    enableHeartbeat: true,
+    heartbeatInterval: 100,
+    requestProtocolVersion: 2
+  });
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(this.opts.enableGestures);
+    if (this.opts.enableHeartbeat) this.startHeartbeat();
+  });
+  this.on('disconnect', function() {
+    if (this.opts.enableHeartbeat) this.stopHeartbeat();
+  });
+  this.heartbeatTimer = null;
+}
+
+Connection.prototype.getUrl = function() {
+  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
+}
+
+Connection.prototype.sendHeartbeat = function() {
+  this.setHeartbeatState(true);
+  this.protocol.sendHeartbeat(this);
+}
+
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.disconnect();
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this;
+  setTimeout(function() { connection.connect() }, 1000);
+}
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  delete this.socket;
+  delete this.protocol;
+}
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) return;
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+Connection.prototype.stopHeartbeat = function() {
+  if (!this.heartbeatTimer) return;
+  clearInterval(this.heartbeatTimer);
+  delete this.heartbeatTimer;
+  this.setHeartbeatState(false);
+};
+
+Connection.prototype.setHeartbeatState = function(state) {
+  if (this.heartbeatState === state) return;
+  this.heartbeatState = state;
+  this.emit(this.heartbeatState ? 'focus' : 'blur');
+};
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"./protocol":23,"events":8,"underscore":22}],23:[function(require,module,exports){
+var Frame = require('./frame').Frame
+  , util = require('util');
+
+var JSONProtocol = function(version) {
+  var protocol = function(data) {
+    return new Frame(data);
+  }
+  protocol.encode = function(message) {
+    return util.format("%j", message);
+  }
+  protocol.version = version;
+  protocol.versionLong = 'Version ' + version;
+  protocol.type = 'protocol';
+  return protocol;
+};
+
+var chooseProtocol = exports.chooseProtocol = function(header) {
+  var protocol;
+  switch(header.version) {
+    case 1:
+      protocol = JSONProtocol(1);
+      break;
+    case 2:
+      protocol = JSONProtocol(2);
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
+      break;
+    default:
+      throw "unrecognized version";
+  }
+  return protocol;
+}
+
+},{"./frame":11,"util":24}],24:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7185,141 +7319,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":8}],18:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Connection = exports.Connection = function(opts) {
-  this.opts = _.defaults(opts || {}, {
-    host : '127.0.0.1',
-    enableGestures: false,
-    port: 6437,
-    enableHeartbeat: true,
-    heartbeatInterval: 100,
-    requestProtocolVersion: 2
-  });
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(this.opts.enableGestures);
-    if (this.opts.enableHeartbeat) this.startHeartbeat();
-  });
-  this.on('disconnect', function() {
-    if (this.opts.enableHeartbeat) this.stopHeartbeat();
-  });
-  this.heartbeatTimer = null;
-}
-
-Connection.prototype.getUrl = function() {
-  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
-}
-
-Connection.prototype.sendHeartbeat = function() {
-  this.setHeartbeatState(true);
-  this.protocol.sendHeartbeat(this);
-}
-
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.disconnect();
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  delete this.socket;
-  delete this.protocol;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) return;
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-Connection.prototype.stopHeartbeat = function() {
-  if (!this.heartbeatTimer) return;
-  clearInterval(this.heartbeatTimer);
-  delete this.heartbeatTimer;
-  this.setHeartbeatState(false);
-};
-
-Connection.prototype.setHeartbeatState = function(state) {
-  if (this.heartbeatState === state) return;
-  this.heartbeatState = state;
-  this.emit(this.heartbeatState ? 'focus' : 'blur');
-};
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"./protocol":24,"events":8,"underscore":22}],24:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var JSONProtocol = function(version) {
-  var protocol = function(data) {
-    return new Frame(data);
-  }
-  protocol.encode = function(message) {
-    return util.format("%j", message);
-  }
-  protocol.version = version;
-  protocol.versionLong = 'Version ' + version;
-  protocol.type = 'protocol';
-  return protocol;
-};
-
-var chooseProtocol = exports.chooseProtocol = function(header) {
-  var protocol;
-  switch(header.version) {
-    case 1:
-      protocol = JSONProtocol(1);
-      break;
-    case 2:
-      protocol = JSONProtocol(2);
-      protocol.sendHeartbeat = function(connection) {
-        connection.send(protocol.encode({heartbeat: true}));
-      }
-      break;
-    default:
-      throw "unrecognized version";
-  }
-  return protocol;
-}
-
-},{"./frame":11,"util":23}],20:[function(require,module,exports){
+},{"events":8}],20:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
 //  , Vector = require('../vector').Vector
   , _ = require('underscore')
