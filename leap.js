@@ -830,6 +830,7 @@ var Frame = require('./frame').Frame
   , CircularBuffer = require("./circular_buffer").CircularBuffer
   , Pipeline = require("./pipeline").Pipeline
   , EventEmitter = require('events').EventEmitter
+  , gestureListener = require('./gesture').gestureListener
   , _ = require('underscore');
 
 /**
@@ -888,6 +889,15 @@ Controller.prototype.updateDevicePresent = function(newState) {
     this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
   }
 };
+
+Controller.prototype.gesture = function(type, cb) {
+  var creator = gestureListener(this, type);
+  if (cb !== undefined) {
+    console.log("adding special cb!")
+    creator.stop(cb);
+  }
+  return creator;
+}
 
 Controller.prototype.inBrowser = function() {
   return !inNode;
@@ -980,6 +990,11 @@ Controller.prototype.processFinishedFrame = function(frame) {
   }
   frame.controller = this;
   frame.historyIdx = this.history.push(frame);
+  if (frame.gestures) {
+    for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
+      this.emit("gesture", frame.gestures[gestureIdx], frame);
+    }
+  }
   this.emit('frame', frame);
 }
 
@@ -1018,10 +1033,10 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":6,"./frame":8,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":20}],8:[function(require,module,exports){
+},{"./circular_buffer":5,"./connection":6,"./frame":8,"./gesture":9,"./node_connection":13,"./pipeline":19,"__browserify_process":14,"events":15,"underscore":20}],8:[function(require,module,exports){
 var Hand = require("./hand").Hand
   , Pointable = require("./pointable").Pointable
-  , Gesture = require("./gesture").Gesture
+  , createGesture = require("./gesture").createGesture
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
@@ -1162,7 +1177,7 @@ var Frame = exports.Frame = function(data) {
     * @type {Leap.Gesture}
     */
     for (var gestureIdx = 0, gestureCount = data.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
-      this.gestures.push(Gesture(data.gestures[gestureIdx]));
+      this.gestures.push(createGesture(data.gestures[gestureIdx]));
     }
   }
 }
@@ -1469,7 +1484,9 @@ Frame.Invalid = {
 
 },{"./gesture":9,"./hand":10,"./pointable":11,"gl-matrix":21,"underscore":20}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
+  , vec3 = glMatrix.vec3
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
 
 /**
  * Constructs a new Gesture object.
@@ -1525,7 +1542,7 @@ var glMatrix = require("gl-matrix")
  * value). Always check object validity in situations where a gesture might be
  * invalid.
  */
-var Gesture = exports.Gesture = function(data) {
+var createGesture = exports.createGesture = function(data) {
   var gesture = undefined
   switch (data.type) {
     case 'circle':
@@ -1625,6 +1642,75 @@ var Gesture = exports.Gesture = function(data) {
   return gesture;
 }
 
+var gestureListener = exports.gestureListener = function(controller, type) {
+  var handlers = {};
+  var gestureMap = {};
+
+  var gestureCreator = function() {
+    var candidateGesture = gestureMap[gesture.id];
+    if (candidateGesture !== undefined) gesture.update(gesture, frame);
+    if (gesture.state == "start" || gesture.state == "stop") {
+      if (type == gesture.type && gestureMap[gesture.id] === undefined) {
+        gestureMap[gesture.id] = new Gesture(gesture, frame);
+        gesture.update(gesture, frame);
+      }
+      if (gesture.state == "stop") {
+        delete gestureMap[gesture.id];
+      }
+    }
+  };
+
+  controller.on('gesture', function(gesture, frame) {
+    if (gesture.type == type) {
+      if (gesture.state == "start" || gesture.state == "stop") {
+        if (gestureMap[gesture.id] === undefined) {
+          var gestureTracker = new Gesture(gesture, frame);
+          gestureMap[gesture.id] = gestureTracker;
+          _.each(handlers, function(cb, name) {
+            gestureTracker.on(name, cb);
+          });
+        }
+      }
+      gestureMap[gesture.id].update(gesture, frame);
+      if (gesture.state == "stop") {
+        delete gestureMap[gesture.id];
+      }
+    }
+  });
+  var builder = {
+    start: function(cb) {
+      handlers['start'] = cb;
+      return builder;
+    },
+    stop: function(cb) {
+      handlers['stop'] = cb;
+      return builder;
+    },
+    complete: function(cb) {
+      handlers['stop'] = cb;
+      return builder;
+    },
+    update: function(cb) {
+      handlers['update'] = cb;
+      return builder;
+    }
+  }
+  return builder;
+}
+
+var Gesture = exports.Gesture = function(gesture, frame) {
+  this.gestures = [gesture];
+  this.frames = [frame];
+}
+
+Gesture.prototype.update = function(gesture, frame) {
+  this.gestures.push(gesture);
+  this.frames.push(frame);
+  this.emit(gesture.state, this);
+}
+
+_.extend(Gesture.prototype, EventEmitter.prototype);
+
 /**
  * Constructs a new CircleGesture object.
  *
@@ -1712,6 +1798,10 @@ var CircleGesture = function(data) {
   this.radius = data.radius;
 }
 
+CircleGesture.prototype.toString = function() {
+  return "CircleGesture ["+JSON.stringify(this)+"]";
+}
+
 /**
  * Constructs a new SwipeGesture object.
  *
@@ -1771,6 +1861,10 @@ var SwipeGesture = function(data) {
   this.speed = data.speed;
 }
 
+SwipeGesture.prototype.toString = function() {
+  return "SwipeGesture ["+JSON.stringify(this)+"]";
+}
+
 /**
  * Constructs a new ScreenTapGesture object.
  *
@@ -1818,6 +1912,10 @@ var ScreenTapGesture = function(data) {
   * @type {number}
   */
   this.progress = data.progress;
+}
+
+ScreenTapGesture.prototype.toString = function() {
+  return "ScreenTapGesture ["+JSON.stringify(this)+"]";
 }
 
 /**
@@ -1869,7 +1967,11 @@ var KeyTapGesture = function(data) {
     this.progress = data.progress;
 }
 
-},{"gl-matrix":21}],10:[function(require,module,exports){
+KeyTapGesture.prototype.toString = function() {
+  return "KeyTapGesture ["+JSON.stringify(this)+"]";
+}
+
+},{"events":15,"gl-matrix":21,"underscore":20}],10:[function(require,module,exports){
 var Pointable = require("./pointable").Pointable
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -6665,7 +6767,106 @@ if(typeof(exports) !== 'undefined') {
 })();
 
 })()
-},{}],22:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+var chooseProtocol = require('./protocol').chooseProtocol
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+var Connection = exports.Connection = function(opts) {
+  this.opts = _.defaults(opts || {}, {
+    host : '127.0.0.1',
+    enableGestures: false,
+    port: 6437,
+    enableHeartbeat: true,
+    heartbeatInterval: 100,
+    requestProtocolVersion: 2
+  });
+  this.host = opts.host;
+  this.port = opts.port;
+  this.on('ready', function() {
+    this.enableGestures(this.opts.enableGestures);
+    if (this.opts.enableHeartbeat) this.startHeartbeat();
+  });
+  this.on('disconnect', function() {
+    if (this.opts.enableHeartbeat) this.stopHeartbeat();
+  });
+  this.heartbeatTimer = null;
+}
+
+Connection.prototype.getUrl = function() {
+  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
+}
+
+Connection.prototype.sendHeartbeat = function() {
+  this.setHeartbeatState(true);
+  this.protocol.sendHeartbeat(this);
+}
+
+Connection.prototype.handleOpen = function() {
+  this.emit('connect');
+}
+
+Connection.prototype.enableGestures = function(enabled) {
+  this.gesturesEnabled = enabled ? true : false;
+  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
+}
+
+Connection.prototype.handleClose = function() {
+  this.disconnect();
+  this.startReconnection();
+  this.emit('disconnect');
+}
+
+Connection.prototype.startReconnection = function() {
+  var connection = this;
+  setTimeout(function() { connection.connect() }, 1000);
+}
+
+Connection.prototype.disconnect = function() {
+  if (!this.socket) return;
+  this.teardownSocket();
+  delete this.socket;
+  delete this.protocol;
+}
+
+Connection.prototype.handleData = function(data) {
+  var message = JSON.parse(data);
+  var messageEvent;
+  if (this.protocol === undefined) {
+    messageEvent = this.protocol = chooseProtocol(message);
+    this.emit('ready');
+  } else {
+    messageEvent = this.protocol(message);
+  }
+  this.emit(messageEvent.type, messageEvent);
+}
+
+Connection.prototype.connect = function() {
+  if (this.socket) return;
+  this.socket = this.setupSocket();
+  return true;
+}
+
+Connection.prototype.send = function(data) {
+  this.socket.send(data);
+}
+
+Connection.prototype.stopHeartbeat = function() {
+  if (!this.heartbeatTimer) return;
+  clearInterval(this.heartbeatTimer);
+  delete this.heartbeatTimer;
+  this.setHeartbeatState(false);
+};
+
+Connection.prototype.setHeartbeatState = function(state) {
+  if (this.heartbeatState === state) return;
+  this.heartbeatState = state;
+  this.emit(this.heartbeatState ? 'focus' : 'blur');
+};
+
+_.extend(Connection.prototype, EventEmitter.prototype);
+
+},{"./protocol":22,"events":15,"underscore":20}],23:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7018,106 +7219,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":15}],16:[function(require,module,exports){
-var chooseProtocol = require('./protocol').chooseProtocol
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-var Connection = exports.Connection = function(opts) {
-  this.opts = _.defaults(opts || {}, {
-    host : '127.0.0.1',
-    enableGestures: false,
-    port: 6437,
-    enableHeartbeat: true,
-    heartbeatInterval: 100,
-    requestProtocolVersion: 2
-  });
-  this.host = opts.host;
-  this.port = opts.port;
-  this.on('ready', function() {
-    this.enableGestures(this.opts.enableGestures);
-    if (this.opts.enableHeartbeat) this.startHeartbeat();
-  });
-  this.on('disconnect', function() {
-    if (this.opts.enableHeartbeat) this.stopHeartbeat();
-  });
-  this.heartbeatTimer = null;
-}
-
-Connection.prototype.getUrl = function() {
-  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
-}
-
-Connection.prototype.sendHeartbeat = function() {
-  this.setHeartbeatState(true);
-  this.protocol.sendHeartbeat(this);
-}
-
-Connection.prototype.handleOpen = function() {
-  this.emit('connect');
-}
-
-Connection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
-}
-
-Connection.prototype.handleClose = function() {
-  this.disconnect();
-  this.startReconnection();
-  this.emit('disconnect');
-}
-
-Connection.prototype.startReconnection = function() {
-  var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
-}
-
-Connection.prototype.disconnect = function() {
-  if (!this.socket) return;
-  this.teardownSocket();
-  delete this.socket;
-  delete this.protocol;
-}
-
-Connection.prototype.handleData = function(data) {
-  var message = JSON.parse(data);
-  var messageEvent;
-  if (this.protocol === undefined) {
-    messageEvent = this.protocol = chooseProtocol(message);
-    this.emit('ready');
-  } else {
-    messageEvent = this.protocol(message);
-  }
-  this.emit(messageEvent.type, messageEvent);
-}
-
-Connection.prototype.connect = function() {
-  if (this.socket) return;
-  this.socket = this.setupSocket();
-  return true;
-}
-
-Connection.prototype.send = function(data) {
-  this.socket.send(data);
-}
-
-Connection.prototype.stopHeartbeat = function() {
-  if (!this.heartbeatTimer) return;
-  clearInterval(this.heartbeatTimer);
-  delete this.heartbeatTimer;
-  this.setHeartbeatState(false);
-};
-
-Connection.prototype.setHeartbeatState = function(state) {
-  if (this.heartbeatState === state) return;
-  this.heartbeatState = state;
-  this.emit(this.heartbeatState ? 'focus' : 'blur');
-};
-
-_.extend(Connection.prototype, EventEmitter.prototype);
-
-},{"./protocol":23,"events":15,"underscore":20}],23:[function(require,module,exports){
+},{"events":15}],22:[function(require,module,exports){
 var Frame = require('./frame').Frame
   , util = require('util');
 
@@ -7152,7 +7254,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-},{"./frame":8,"util":22}],18:[function(require,module,exports){
+},{"./frame":8,"util":23}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
 //  , Vector = require('../vector').Vector
   , _ = require('underscore')
