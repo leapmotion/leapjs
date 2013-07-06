@@ -35,7 +35,7 @@ var Leap = require('leapjs').Leap
 
 ### Getting frames
 
-To listen to the frame events, you can use the friendly `Leap.loop` function.
+To listen for frame events, you can use the friendly `Leap.loop` function.
 This will auto-detect which type of event loop you can accept, and, call your callback with frames.
 
 ```javascript
@@ -53,6 +53,28 @@ Leap.loop(function(frame, done) {
   // do things
   done() // if you don't invoke this, you won't get more events
 })
+```
+
+### Getting gestures
+
+To listen for gesture events, you can create a gesture event listener.
+
+```javascript
+var controller = new Leap.Controller({enabledGestures:true});
+var tapper = controller.gesture('keyTap', function() {
+  this.frames[0] // the current frame
+})
+
+var swiper = controler.gesture('swipe');
+swiper.start(function() {
+  // swipe starting
+});
+swiper.update(function() {
+  // swipe updating
+});
+swiper.stop(function() {
+  // swipe stopping
+});
 ```
 
 ### Options

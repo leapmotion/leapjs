@@ -4,12 +4,15 @@ if (typeof(exports) === 'undefined') {
 
 var fingerId = 0
   , handId = 0
-  , frameId =0;
+  , frameId =0
+  , lastGestureState = false;
 
 var fakeController = exports.fakeController = function(opts) {
   opts = _.defaults(opts || {}, {supressAnimationLoop: false, frameEventName: "deviceFrame", enableHeartbeat:false, version: 1})
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
+
+  lastGestureState = opts.enableGestures;
 
   connection.teardownSocket = function() {
     delete connection.protocol;
@@ -34,7 +37,6 @@ var fakeController = exports.fakeController = function(opts) {
     });
     return socket;
   }
-
   return controller;
 }
 
