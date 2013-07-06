@@ -16,6 +16,10 @@ test-browser: build
 test-node:
 	./node_modules/.bin/mocha lib/index.js test/common.js test/test.js test/*.js -R dot
 
+test-only:
+	./node_modules/.bin/mocha-phantomjs test/runner.html
+	./node_modules/.bin/mocha lib/index.js test/common.js test/test.js test/*.js -R dot
+
 build: compile compress
 
 watch:

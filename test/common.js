@@ -37,7 +37,6 @@ var fakeController = exports.fakeController = function(opts) {
     });
     return socket;
   }
-
   return controller;
 }
 
