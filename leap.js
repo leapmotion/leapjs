@@ -407,7 +407,7 @@ window.requestAnimFrame = (function() {
   function(callback) { window.setTimeout(callback, 1000 / 60); }
 })();
 
-Leap = require("../lib/index").Leap
+Leap = require("../lib/index");
 
 },{"../lib/index":4}],5:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
@@ -671,24 +671,22 @@ EventEmitter.prototype.listeners = function(type) {
 
 })(require("__browserify_process"))
 },{"__browserify_process":7}],4:[function(require,module,exports){
-(function(){var Controller = require("./controller")
-  , Frame = require("./frame")
-  , Gesture = require("./gesture")
-  , Hand = require("./hand")
-  , Pointable = require("./pointable")
-  , Connection = require("./connection")
-  , InteractionBox = require("./interaction_box")
-  , CircularBuffer = require("./circular_buffer")
-  , UI = require("./ui")
-  , glMatrix = require("gl-matrix")
-  , loopController = undefined;
-
-/**
+(function(){/**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
  */
-exports.Leap = {
-
+module.exports = {
+  Controller: require("./controller"),
+  Frame: require("./frame"),
+  Gesture: require("./gesture"),
+  Hand: require("./hand"),
+  Pointable: require("./pointable"),
+  InteractionBox: require("./interaction_box"),
+  Connection: require("./connection"),
+  CircularBuffer: require("./circular_buffer"),
+  UI: require("./ui"),
+  glMatrix: require("gl-matrix"),
+  loopController: undefined,
   /**
    * The Leap.loop() function passes a frame of Leap data to your
    * callback function and then calls window.requestAnimationFrame() after
@@ -725,19 +723,9 @@ exports.Leap = {
       callback = opts;
       opts = {};
     }
-    if (!loopController) loopController = new Controller(opts);
-    loopController.loop(callback);
-  },
-  Controller: Controller,
-  Frame: Frame,
-  Gesture: Gesture,
-  Hand: Hand,
-  Pointable: Pointable,
-  InteractionBox: InteractionBox,
-  Connection: Connection,
-  CircularBuffer: CircularBuffer,
-  UI: UI,
-  glMatrix: glMatrix
+    if (!this.loopController) this.loopController = new Controller(opts);
+    this.loopController.loop(callback);
+  }
 }
 
 })()
