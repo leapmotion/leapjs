@@ -1,5 +1,4 @@
 describe('Hand', function(){
-
   describe("an instance", function() {
     var data = fakeFrame({fingers: 5, hands:1})
     var frame = new Leap.Frame(data);

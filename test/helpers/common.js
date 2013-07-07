@@ -99,6 +99,7 @@ var fakeFinger = exports.fakeFinger = function() {
     width: 5,
     direction: [10, 10, 10],
     tipPosition: [10, 10, 10],
+    stabilizedTipPosition: [10, 10, 10],
     tipVelocity: [10, 10, 10],
     touchZone: "none",
     touchDistance: 5
