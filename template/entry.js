@@ -7,4 +7,4 @@ window.requestAnimFrame = (function() {
   function(callback) { window.setTimeout(callback, 1000 / 60); }
 })();
 
-Leap = require("../lib/index").Leap
+Leap = require("../lib/index");

@@ -407,10 +407,10 @@ window.requestAnimFrame = (function() {
   function(callback) { window.setTimeout(callback, 1000 / 60); }
 })();
 
-Leap = require("../lib/index").Leap
+Leap = require("../lib/index");
 
 },{"../lib/index":4}],5:[function(require,module,exports){
-var CircularBuffer = exports.CircularBuffer = function(size) {
+var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
   this.size = size;
@@ -671,24 +671,22 @@ EventEmitter.prototype.listeners = function(type) {
 
 })(require("__browserify_process"))
 },{"__browserify_process":7}],4:[function(require,module,exports){
-(function(){var Controller = require("./controller").Controller
-  , Frame = require("./frame").Frame
-  , Gesture = require("./gesture").Gesture
-  , Hand = require("./hand").Hand
-  , Pointable = require("./pointable").Pointable
-  , Connection = require("./connection").Connection
-  , InteractionBox = require("./interaction_box").InteractionBox
-  , CircularBuffer = require("./circular_buffer").CircularBuffer
-  , UI = require("./ui").UI
-  , glMatrix = require("gl-matrix")
-  , loopController = undefined;
-
-/**
+(function(){/**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
  */
-exports.Leap = {
-
+module.exports = {
+  Controller: require("./controller"),
+  Frame: require("./frame"),
+  Gesture: require("./gesture"),
+  Hand: require("./hand"),
+  Pointable: require("./pointable"),
+  InteractionBox: require("./interaction_box"),
+  Connection: require("./connection"),
+  CircularBuffer: require("./circular_buffer"),
+  UI: require("./ui"),
+  glMatrix: require("gl-matrix"),
+  loopController: undefined,
   /**
    * The Leap.loop() function passes a frame of Leap data to your
    * callback function and then calls window.requestAnimationFrame() after
@@ -725,24 +723,14 @@ exports.Leap = {
       callback = opts;
       opts = {};
     }
-    if (!loopController) loopController = new Controller(opts);
-    loopController.loop(callback);
-  },
-  Controller: Controller,
-  Frame: Frame,
-  Gesture: Gesture,
-  Hand: Hand,
-  Pointable: Pointable,
-  InteractionBox: InteractionBox,
-  Connection: Connection,
-  CircularBuffer: CircularBuffer,
-  UI: UI,
-  glMatrix: glMatrix
+    if (!this.loopController) this.loopController = new Controller(opts);
+    this.loopController.loop(callback);
+  }
 }
 
 })()
 },{"./circular_buffer":5,"./connection":9,"./controller":10,"./frame":11,"./gesture":12,"./hand":13,"./interaction_box":14,"./pointable":15,"./ui":16,"gl-matrix":17}],9:[function(require,module,exports){
-var Connection = exports.Connection = require('./base_connection').Connection
+var Connection = module.exports = require('./base_connection')
 
 Connection.prototype.setupSocket = function() {
   var connection = this;
@@ -795,8 +783,8 @@ Connection.prototype.startHeartbeat = function() {
 
 },{"./base_connection":18}],16:[function(require,module,exports){
 exports.UI = {
-  Region: require("./ui/region").Region,
-  Cursor: require("./ui/cursor").Cursor
+  Region: require("./ui/region"),
+  Cursor: require("./ui/cursor")
 };
 },{"./ui/cursor":19,"./ui/region":20}],17:[function(require,module,exports){
 (function(){/**
@@ -3873,7 +3861,7 @@ if(typeof(exports) !== 'undefined') {
 
 })()
 },{}],21:[function(require,module,exports){
-var Pipeline = exports.Pipeline = function() {
+var Pipeline = module.exports = function() {
   this.steps = [];
 }
 
@@ -3891,7 +3879,7 @@ Pipeline.prototype.run = function(frame) {
 }
 
 },{}],19:[function(require,module,exports){
-var Cursor = exports.Cursor = function() {
+var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
     if (pointable && pointable.valid) {
@@ -3901,221 +3889,14 @@ var Cursor = exports.Cursor = function() {
   }
 }
 
-},{}],10:[function(require,module,exports){
-(function(process){var inNode = typeof(process) !== 'undefined' && process.title === 'node';
-
-var Frame = require('./frame').Frame
-  , CircularBuffer = require("./circular_buffer").CircularBuffer
-  , Pipeline = require("./pipeline").Pipeline
-  , EventEmitter = require('events').EventEmitter
-  , gestureListener = require('./gesture').gestureListener
-  , _ = require('underscore');
-
-/**
- * Constructs a Controller object.
- *
- * When creating a Controller object, you may optionally pass in options
- * to set the host , set the port, enable gestures, or select the frame event type.
- *
- * ```javascript
- * var controller = new Leap.Controller({
- *   host: '127.0.0.1',
- *   port: 6437,
- *   enableGestures: true,
- *   frameEventName: 'animationFrame'
- * });
- * ```
- *
- * @class Controller
- * @memberof Leap
- * @classdesc
- * The Controller class is your main interface to the Leap Motion Controller.
- *
- * Create an instance of this Controller class to access frames of tracking data
- * and configuration information. Frame data can be polled at any time using the
- * [Controller.frame]{@link Leap.Controller#frame}() function. Call frame() or frame(0) to get the most recent
- * frame. Set the history parameter to a positive integer to access previous frames.
- * A controller stores up to 60 frames in its frame history.
- *
- * Polling is an appropriate strategy for applications which already have an
- * intrinsic update loop, such as a game.
- */
-var Controller = exports.Controller = function(opts) {
-  opts = _.defaults(opts || {}, {
-    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    supressAnimationLoop: false
-  });
-  this.supressAnimationLoop = opts.supressAnimationLoop;
-  this.frameEventName = opts.frameEventName;
-  this.history = new CircularBuffer(200);
-  this.lastFrame = Frame.Invalid;
-  this.lastValidFrame = Frame.Invalid;
-  this.lastConnectionFrame = Frame.Invalid;
-  this.accumulatedGestures = [];
-  if (opts.connectionType === undefined) {
-    this.connectionType = (this.inBrowser() ? require('./connection') : require('./node_connection')).Connection;
-  } else {
-    this.connectionType = opts.connectionType;
-  }
-  this.connection = new this.connectionType(opts);
-  this.setupConnectionEvents();
-}
-
-Controller.prototype.updateDevicePresent = function(newState) {
-  if (this.devicePresent !== newState) {
-    this.devicePresent = newState;
-    this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
-  }
-};
-
-Controller.prototype.gesture = function(type, cb) {
-  var creator = gestureListener(this, type);
-  if (cb !== undefined) {
-    creator.stop(cb);
-  }
-  return creator;
-}
-
-Controller.prototype.inBrowser = function() {
-  return !inNode;
-}
-
-Controller.prototype.useAnimationLoop = function() {
-  return this.inBrowser() && typeof(chrome) === "undefined";
-}
-
-Controller.prototype.connect = function() {
-  var controller = this;
-  if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastConnectionFrame);
-      window.requestAnimFrame(callback);
-    }
-    window.requestAnimFrame(callback);
-  }
-}
-
-Controller.prototype.disconnect = function() {
-  this.connection.disconnect();
-}
-
-/**
- * Returns a frame of tracking data from the Leap.
- *
- * Use the optional history parameter to specify which frame to retrieve.
- * Call frame() or frame(0) to access the most recent frame; call frame(1) to
- * access the previous frame, and so on. If you use a history value greater
- * than the number of stored frames, then the controller returns an invalid frame.
- *
- * @method frame
- * @memberof Leap.Controller.prototype
- * @param {number} history The age of the frame to return, counting backwards from
- * the most recent frame (0) into the past and up to the maximum age (59).
- * @returns {Leap.Frame} The specified frame; or, if no history
- * parameter is specified, the newest frame. If a frame is not available at
- * the specified history position, an invalid Frame is returned.
- */
-Controller.prototype.frame = function(num) {
-  return this.history.get(num) || Frame.Invalid;
-}
-
-Controller.prototype.loop = function(callback) {
-  switch (callback.length) {
-    case 1:
-      this.on(this.frameEventName, callback);
-      break;
-    case 2:
-      var controller = this;
-      var scheduler = null;
-      var immediateRunnerCallback = function(frame) {
-        callback(frame, function() {
-          if (controller.lastFrame != frame) {
-            immediateRunnerCallback(controller.lastFrame);
-          } else {
-            controller.once(controller.frameEventName, immediateRunnerCallback);
-          }
-        });
-      }
-      this.once(this.frameEventName, immediateRunnerCallback);
-      break;
-  }
-  this.connect();
-}
-
-Controller.prototype.addStep = function(step) {
-  if (!this.pipeline) this.pipeline = new Pipeline(this);
-  this.pipeline.addStep(step);
-}
-
-Controller.prototype.processFrame = function(frame) {
-  if (frame.gestures) {
-    this.accumulatedGestures = this.accumulatedGestures.concat(frame.gestures);
-  }
-  if (this.pipeline) {
-    frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
-  }
-  this.lastConnectionFrame = frame;
-  this.emit('deviceFrame', frame);
-}
-
-Controller.prototype.processFinishedFrame = function(frame) {
-  this.lastFrame = frame;
-  if (frame.valid) {
-    this.lastValidFrame = frame;
-  }
-  frame.controller = this;
-  frame.historyIdx = this.history.push(frame);
-  if (frame.gestures) {
-    frame.gestures = this.accumulatedGestures;
-    this.accumulatedGestures = [];
-    for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
-      this.emit("gesture", frame.gestures[gestureIdx], frame);
-    }
-  }
-  this.emit('frame', frame);
-}
-
-Controller.prototype.setupConnectionEvents = function() {
-  var controller = this;
-  this.connection.on('frame', function(frame) {
-    controller.processFrame(frame);
-  });
-  this.on(this.frameEventName, function(frame) {
-    controller.processFinishedFrame(frame);
-  });
-
-  // Delegate connection events
-  this.connection.on('ready', function() {
-    var heartbeatFrame = controller.lastFrame;
-    controller.deviceReadyTimer = setInterval(function() {
-      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
-      heartbeatFrame = controller.lastFrame;
-    }, 100);
-    controller.emit('ready');
-  });
-  this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('disconnect', function() {
-    controller.updateDevicePresent(false);
-    clearTimeout(controller.deviceReadyTimer);
-    controller.emit('disconnect');
-  });
-  this.connection.on('focus', function() { controller.emit('focus') });
-  this.connection.on('blur', function() { controller.emit('blur') });
-  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
-}
-
-_.extend(Controller.prototype, EventEmitter.prototype);
-
-})(require("__browserify_process"))
-},{"./circular_buffer":5,"./connection":9,"./frame":11,"./gesture":12,"./node_connection":6,"./pipeline":21,"__browserify_process":7,"events":8,"underscore":22}],11:[function(require,module,exports){
-var Hand = require("./hand").Hand
-  , Pointable = require("./pointable").Pointable
+},{}],11:[function(require,module,exports){
+var Hand = require("./hand")
+  , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
-  , InteractionBox = require("./interaction_box").InteractionBox
+  , InteractionBox = require("./interaction_box")
   , _ = require("underscore");
 
 /**
@@ -4136,7 +3917,7 @@ var Hand = require("./hand").Hand
  *
  * Access Frame objects using the [Controller.frame]{@link Leap.Controller#frame}() function.
  */
-var Frame = exports.Frame = function(data) {
+var Frame = module.exports = function(data) {
   /**
    * Reports whether this Frame instance is valid.
    *
@@ -4620,7 +4401,7 @@ var glMatrix = require("gl-matrix")
  * invalid.
  */
 var createGesture = exports.createGesture = function(data) {
-  var gesture = undefined
+  var gesture;
   switch (data.type) {
     case 'circle':
       gesture = new CircleGesture(data);
@@ -5048,180 +4829,8 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":8,"gl-matrix":17,"underscore":22}],15:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3;
-
-/**
- * Constructs a Pointable object.
- *
- * An uninitialized pointable is considered invalid.
- * Get valid Pointable objects from a Frame or a Hand object.
- *
- * @class Pointable
- * @memberof Leap
- * @classdesc
- * The Pointable class reports the physical characteristics of a detected
- * finger or tool.
- *
- * Both fingers and tools are classified as Pointable objects. Use the
- * Pointable.tool property to determine whether a Pointable object represents a
- * tool or finger. The Leap classifies a detected entity as a tool when it is
- * thinner, straighter, and longer than a typical finger.
- *
- * Note that Pointable objects can be invalid, which means that they do not
- * contain valid tracking data and do not correspond to a physical entity.
- * Invalid Pointable objects can be the result of asking for a Pointable object
- * using an ID from an earlier frame when no Pointable objects with that ID
- * exist in the current frame. A Pointable object created from the Pointable
- * constructor is also invalid. Test for validity with the Pointable.valid
- * property.
- */
-var Pointable = exports.Pointable = function(data) {
-  /**
-   * Indicates whether this is a valid Pointable object.
-   *
-   * @member valid
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.valid = true;
-  /**
-   * A unique ID assigned to this Pointable object, whose value remains the
-   * same across consecutive frames while the tracked finger or tool remains
-   * visible. If tracking is lost (for example, when a finger is occluded by
-   * another finger or when it is withdrawn from the Leap field of view), the
-   * Leap may assign a new ID when it detects the entity in a future frame.
-   *
-   * Use the ID value with the pointable() functions defined for the
-   * {@link Frame} and {@link Frame.Hand} classes to find this
-   * Pointable object in future frames.
-   *
-   * @member id
-   * @type {String}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.id = data.id;
-  this.handId = data.handId;
-  /**
-   * The estimated length of the finger or tool in millimeters.
-   *
-   * The reported length is the visible length of the finger or tool from the
-   * hand to tip. If the length isn't known, then a value of 0 is returned.
-   *
-   * @member length
-   * @type {number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.length = data.length;
-  /**
-   * Whether or not the Pointable is believed to be a tool.
-   * Tools are generally longer, thinner, and straighter than fingers.
-   *
-   * If tool is false, then this Pointable must be a finger.
-   *
-   * @member tool
-   * @type {Boolean}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tool = data.tool;
-  /**
-   * The estimated width of the tool in millimeters.
-   *
-   * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
-   * then a value of 0 is returned.
-   *
-   * Pointable objects representing fingers do not have a width property.
-   *
-   * @member width
-   * @type {number}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.width = data.width;
-  /**
-   * The direction in which this finger or tool is pointing.
-   *
-   * The direction is expressed as a unit vector pointing in the same
-   * direction as the tip.
-   *
-   * ![Finger](images/Leap_Finger_Model.png)
-   * @member direction
-   * @type {number[]}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.direction = data.direction;
-  /**
-   * The tip position in millimeters from the Leap origin.
-   * Stabilized
-   *
-   * @member stabilizedTipPosition
-   * @type {Leap.Vector}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.stabilizedTipPosition = data.stabilizedTipPosition;
-  /**
-   * The tip position in millimeters from the Leap origin.
-   *
-   * @member tipPosition
-   * @type {number[]}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipPosition = data.tipPosition;
-  /**
-   * The rate of change of the tip position in millimeters/second.
-   *
-   * @member tipVelocity
-   * @type {number[]}
-   * @memberof Leap.Pointable.prototype
-   */
-  this.tipVelocity = data.tipVelocity;
-  /**
-   * Human readable string describing the 'Touch Zone' of this pointable
-   *
-   * @member Pointable.prototype.touchZone {String}
-   */
-  this.touchZone = data.touchZone;
-  /**
-   * Distance from 'Touch Plane'
-   *
-   * @member Pointable.prototype.touchDistance {number}
-   */
-  this.touchDistance = data.touchDistance;
-}
-
-/**
- * A string containing a brief, human readable description of the Pointable
- * object.
- *
- * @method toString
- * @memberof Leap.Pointable.prototype
- * @returns {String} A description of the Pointable object as a string.
- */
-Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
-}
-
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @static
- * @type {Leap.Pointable}
- * @name Invalid
- * @memberof Leap.Pointable
- */
-Pointable.Invalid = { valid: false };
-
-},{"gl-matrix":17}],13:[function(require,module,exports){
-var Pointable = require("./pointable").Pointable
+},{"events":8,"gl-matrix":17,"underscore":22}],13:[function(require,module,exports){
+var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
@@ -5248,7 +4857,7 @@ var Pointable = require("./pointable").Pointable
  * A Hand object created from the Hand constructor is also invalid.
  * Test for validity with the [Hand.valid]{@link Leap.Hand#valid} property.
  */
-var Hand = exports.Hand = function(data) {
+var Hand = module.exports = function(data) {
   /**
    * A unique ID assigned to this Hand object, whose value remains the same
    * across consecutive frames while the tracked hand remains visible. If
@@ -5562,7 +5171,179 @@ Hand.prototype.toString = function() {
  */
 Hand.Invalid = { valid: false };
 
-},{"./pointable":15,"gl-matrix":17,"underscore":22}],14:[function(require,module,exports){
+},{"./pointable":15,"gl-matrix":17,"underscore":22}],15:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3;
+
+/**
+ * Constructs a Pointable object.
+ *
+ * An uninitialized pointable is considered invalid.
+ * Get valid Pointable objects from a Frame or a Hand object.
+ *
+ * @class Pointable
+ * @memberof Leap
+ * @classdesc
+ * The Pointable class reports the physical characteristics of a detected
+ * finger or tool.
+ *
+ * Both fingers and tools are classified as Pointable objects. Use the
+ * Pointable.tool property to determine whether a Pointable object represents a
+ * tool or finger. The Leap classifies a detected entity as a tool when it is
+ * thinner, straighter, and longer than a typical finger.
+ *
+ * Note that Pointable objects can be invalid, which means that they do not
+ * contain valid tracking data and do not correspond to a physical entity.
+ * Invalid Pointable objects can be the result of asking for a Pointable object
+ * using an ID from an earlier frame when no Pointable objects with that ID
+ * exist in the current frame. A Pointable object created from the Pointable
+ * constructor is also invalid. Test for validity with the Pointable.valid
+ * property.
+ */
+var Pointable = module.exports = function(data) {
+  /**
+   * Indicates whether this is a valid Pointable object.
+   *
+   * @member valid
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.valid = true;
+  /**
+   * A unique ID assigned to this Pointable object, whose value remains the
+   * same across consecutive frames while the tracked finger or tool remains
+   * visible. If tracking is lost (for example, when a finger is occluded by
+   * another finger or when it is withdrawn from the Leap field of view), the
+   * Leap may assign a new ID when it detects the entity in a future frame.
+   *
+   * Use the ID value with the pointable() functions defined for the
+   * {@link Frame} and {@link Frame.Hand} classes to find this
+   * Pointable object in future frames.
+   *
+   * @member id
+   * @type {String}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.id = data.id;
+  this.handId = data.handId;
+  /**
+   * The estimated length of the finger or tool in millimeters.
+   *
+   * The reported length is the visible length of the finger or tool from the
+   * hand to tip. If the length isn't known, then a value of 0 is returned.
+   *
+   * @member length
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.length = data.length;
+  /**
+   * Whether or not the Pointable is believed to be a tool.
+   * Tools are generally longer, thinner, and straighter than fingers.
+   *
+   * If tool is false, then this Pointable must be a finger.
+   *
+   * @member tool
+   * @type {Boolean}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tool = data.tool;
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member width
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.width = data.width;
+  /**
+   * The direction in which this finger or tool is pointing.
+   *
+   * The direction is expressed as a unit vector pointing in the same
+   * direction as the tip.
+   *
+   * ![Finger](images/Leap_Finger_Model.png)
+   * @member direction
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.direction = data.direction;
+  /**
+   * The tip position in millimeters from the Leap origin.
+   * Stabilized
+   *
+   * @member stabilizedTipPosition
+   * @type {Leap.Vector}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.stabilizedTipPosition = data.stabilizedTipPosition;
+  /**
+   * The tip position in millimeters from the Leap origin.
+   *
+   * @member tipPosition
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipPosition = data.tipPosition;
+  /**
+   * The rate of change of the tip position in millimeters/second.
+   *
+   * @member tipVelocity
+   * @type {number[]}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.tipVelocity = data.tipVelocity;
+  /**
+   * Human readable string describing the 'Touch Zone' of this pointable
+   *
+   * @member Pointable.prototype.touchZone {String}
+   */
+  this.touchZone = data.touchZone;
+  /**
+   * Distance from 'Touch Plane'
+   *
+   * @member Pointable.prototype.touchDistance {number}
+   */
+  this.touchDistance = data.touchDistance;
+}
+
+/**
+ * A string containing a brief, human readable description of the Pointable
+ * object.
+ *
+ * @method toString
+ * @memberof Leap.Pointable.prototype
+ * @returns {String} A description of the Pointable object as a string.
+ */
+Pointable.prototype.toString = function() {
+  if(this.tool == true){
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
+}
+
+/**
+ * An invalid Pointable object.
+ *
+ * You can use this Pointable instance in comparisons testing
+ * whether a given Pointable instance is valid or invalid. (You can also use the
+ * Pointable.valid property.)
+
+ * @static
+ * @type {Leap.Pointable}
+ * @name Invalid
+ * @memberof Leap.Pointable
+ */
+Pointable.Invalid = { valid: false };
+
+},{"gl-matrix":17}],14:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -5583,7 +5364,7 @@ var glMatrix = require("gl-matrix")
  *
  * The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.
  */
-var InteractionBox = exports.InteractionBox = function(data) {
+var InteractionBox = module.exports = function(data) {
   /**
    * Indicates whether this is a valid InteractionBox object.
    *
@@ -5702,7 +5483,214 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":17}],22:[function(require,module,exports){
+},{"gl-matrix":17}],10:[function(require,module,exports){
+(function(process){var Frame = require('./frame')
+  , CircularBuffer = require("./circular_buffer")
+  , Pipeline = require("./pipeline")
+  , EventEmitter = require('events').EventEmitter
+  , gestureListener = require('./gesture').gestureListener
+  , _ = require('underscore');
+
+/**
+ * Constructs a Controller object.
+ *
+ * When creating a Controller object, you may optionally pass in options
+ * to set the host , set the port, enable gestures, or select the frame event type.
+ *
+ * ```javascript
+ * var controller = new Leap.Controller({
+ *   host: '127.0.0.1',
+ *   port: 6437,
+ *   enableGestures: true,
+ *   frameEventName: 'animationFrame'
+ * });
+ * ```
+ *
+ * @class Controller
+ * @memberof Leap
+ * @classdesc
+ * The Controller class is your main interface to the Leap Motion Controller.
+ *
+ * Create an instance of this Controller class to access frames of tracking data
+ * and configuration information. Frame data can be polled at any time using the
+ * [Controller.frame]{@link Leap.Controller#frame}() function. Call frame() or frame(0) to get the most recent
+ * frame. Set the history parameter to a positive integer to access previous frames.
+ * A controller stores up to 60 frames in its frame history.
+ *
+ * Polling is an appropriate strategy for applications which already have an
+ * intrinsic update loop, such as a game.
+ */
+var Controller = module.exports = function(opts) {
+  opts = _.defaults(opts || {}, {
+    frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
+    supressAnimationLoop: false,
+    inNode: typeof(process) !== 'undefined' && process.title === 'node'
+  });
+  this.inNode = opts.inNode;
+  this.supressAnimationLoop = opts.supressAnimationLoop;
+  this.frameEventName = opts.frameEventName;
+  this.history = new CircularBuffer(200);
+  this.lastFrame = Frame.Invalid;
+  this.lastValidFrame = Frame.Invalid;
+  this.lastConnectionFrame = Frame.Invalid;
+  this.accumulatedGestures = [];
+  if (opts.connectionType === undefined) {
+    this.connectionType = (this.inBrowser() ? require('./connection') : require('./node_connection'));
+  } else {
+    this.connectionType = opts.connectionType;
+  }
+  this.connection = new this.connectionType(opts);
+  this.setupConnectionEvents();
+}
+
+Controller.prototype.updateDevicePresent = function(newState) {
+  if (this.devicePresent !== newState) {
+    this.devicePresent = newState;
+    this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
+  }
+};
+
+Controller.prototype.gesture = function(type, cb) {
+  var creator = gestureListener(this, type);
+  if (cb !== undefined) {
+    creator.stop(cb);
+  }
+  return creator;
+}
+
+Controller.prototype.inBrowser = function() {
+  return !this.inNode;
+}
+
+Controller.prototype.useAnimationLoop = function() {
+  return this.inBrowser() && typeof(chrome) === "undefined";
+}
+
+Controller.prototype.connect = function() {
+  var controller = this;
+  if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
+    var callback = function() {
+      controller.emit('animationFrame', controller.lastConnectionFrame);
+      window.requestAnimFrame(callback);
+    }
+    window.requestAnimFrame(callback);
+  }
+}
+
+Controller.prototype.disconnect = function() {
+  this.connection.disconnect();
+}
+
+/**
+ * Returns a frame of tracking data from the Leap.
+ *
+ * Use the optional history parameter to specify which frame to retrieve.
+ * Call frame() or frame(0) to access the most recent frame; call frame(1) to
+ * access the previous frame, and so on. If you use a history value greater
+ * than the number of stored frames, then the controller returns an invalid frame.
+ *
+ * @method frame
+ * @memberof Leap.Controller.prototype
+ * @param {number} history The age of the frame to return, counting backwards from
+ * the most recent frame (0) into the past and up to the maximum age (59).
+ * @returns {Leap.Frame} The specified frame; or, if no history
+ * parameter is specified, the newest frame. If a frame is not available at
+ * the specified history position, an invalid Frame is returned.
+ */
+Controller.prototype.frame = function(num) {
+  return this.history.get(num) || Frame.Invalid;
+}
+
+Controller.prototype.loop = function(callback) {
+  switch (callback.length) {
+    case 1:
+      this.on(this.frameEventName, callback);
+      break;
+    case 2:
+      var controller = this;
+      var scheduler = null;
+      var immediateRunnerCallback = function(frame) {
+        callback(frame, function() {
+          if (controller.lastFrame != frame) {
+            immediateRunnerCallback(controller.lastFrame);
+          } else {
+            controller.once(controller.frameEventName, immediateRunnerCallback);
+          }
+        });
+      }
+      this.once(this.frameEventName, immediateRunnerCallback);
+      break;
+  }
+  this.connect();
+}
+
+Controller.prototype.addStep = function(step) {
+  if (!this.pipeline) this.pipeline = new Pipeline(this);
+  this.pipeline.addStep(step);
+}
+
+Controller.prototype.processFrame = function(frame) {
+  if (frame.gestures) {
+    this.accumulatedGestures = this.accumulatedGestures.concat(frame.gestures);
+  }
+  if (this.pipeline) {
+    frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
+  }
+  this.lastConnectionFrame = frame;
+  this.emit('deviceFrame', frame);
+}
+
+Controller.prototype.processFinishedFrame = function(frame) {
+  this.lastFrame = frame;
+  if (frame.valid) {
+    this.lastValidFrame = frame;
+  }
+  frame.controller = this;
+  frame.historyIdx = this.history.push(frame);
+  if (frame.gestures) {
+    frame.gestures = this.accumulatedGestures;
+    this.accumulatedGestures = [];
+    for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
+      this.emit("gesture", frame.gestures[gestureIdx], frame);
+    }
+  }
+  this.emit('frame', frame);
+}
+
+Controller.prototype.setupConnectionEvents = function() {
+  var controller = this;
+  this.connection.on('frame', function(frame) {
+    controller.processFrame(frame);
+  });
+  this.on(this.frameEventName, function(frame) {
+    controller.processFinishedFrame(frame);
+  });
+
+  // Delegate connection events
+  this.connection.on('ready', function() {
+    var heartbeatFrame = controller.lastFrame;
+    controller.deviceReadyTimer = setInterval(function() {
+      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
+      heartbeatFrame = controller.lastFrame;
+    }, 100);
+    controller.emit('ready');
+  });
+  this.connection.on('connect', function() { controller.emit('connect'); });
+  this.connection.on('disconnect', function() {
+    controller.updateDevicePresent(false);
+    clearTimeout(controller.deviceReadyTimer);
+    controller.emit('disconnect');
+  });
+  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('blur', function() { controller.emit('blur') });
+  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+}
+
+_.extend(Controller.prototype, EventEmitter.prototype);
+
+})(require("__browserify_process"))
+},{"./circular_buffer":5,"./connection":9,"./frame":11,"./gesture":12,"./node_connection":6,"./pipeline":21,"__browserify_process":7,"events":8,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -6936,7 +6924,7 @@ var chooseProtocol = require('./protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
 
-var Connection = exports.Connection = function(opts) {
+var BaseConnection = module.exports = function(opts) {
   this.opts = _.defaults(opts || {}, {
     host : '127.0.0.1',
     enableGestures: false,
@@ -6957,43 +6945,43 @@ var Connection = exports.Connection = function(opts) {
   this.heartbeatTimer = null;
 }
 
-Connection.prototype.getUrl = function() {
+BaseConnection.prototype.getUrl = function() {
   return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
 }
 
-Connection.prototype.sendHeartbeat = function() {
+BaseConnection.prototype.sendHeartbeat = function() {
   this.setHeartbeatState(true);
   this.protocol.sendHeartbeat(this);
 }
 
-Connection.prototype.handleOpen = function() {
+BaseConnection.prototype.handleOpen = function() {
   this.emit('connect');
 }
 
-Connection.prototype.enableGestures = function(enabled) {
+BaseConnection.prototype.enableGestures = function(enabled) {
   this.gesturesEnabled = enabled ? true : false;
   this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
 }
 
-Connection.prototype.handleClose = function() {
+BaseConnection.prototype.handleClose = function() {
   this.disconnect();
   this.startReconnection();
   this.emit('disconnect');
 }
 
-Connection.prototype.startReconnection = function() {
+BaseConnection.prototype.startReconnection = function() {
   var connection = this;
   setTimeout(function() { connection.connect() }, 1000);
 }
 
-Connection.prototype.disconnect = function() {
+BaseConnection.prototype.disconnect = function() {
   if (!this.socket) return;
   this.teardownSocket();
   delete this.socket;
   delete this.protocol;
 }
 
-Connection.prototype.handleData = function(data) {
+BaseConnection.prototype.handleData = function(data) {
   var message = JSON.parse(data);
   var messageEvent;
   if (this.protocol === undefined) {
@@ -7005,400 +6993,33 @@ Connection.prototype.handleData = function(data) {
   this.emit(messageEvent.type, messageEvent);
 }
 
-Connection.prototype.connect = function() {
+BaseConnection.prototype.connect = function() {
   if (this.socket) return;
   this.socket = this.setupSocket();
   return true;
 }
 
-Connection.prototype.send = function(data) {
+BaseConnection.prototype.send = function(data) {
   this.socket.send(data);
 }
 
-Connection.prototype.stopHeartbeat = function() {
+BaseConnection.prototype.stopHeartbeat = function() {
   if (!this.heartbeatTimer) return;
   clearInterval(this.heartbeatTimer);
   delete this.heartbeatTimer;
   this.setHeartbeatState(false);
 };
 
-Connection.prototype.setHeartbeatState = function(state) {
+BaseConnection.prototype.setHeartbeatState = function(state) {
   if (this.heartbeatState === state) return;
   this.heartbeatState = state;
   this.emit(this.heartbeatState ? 'focus' : 'blur');
 };
 
-_.extend(Connection.prototype, EventEmitter.prototype);
+_.extend(BaseConnection.prototype, EventEmitter.prototype);
 
-},{"./protocol":23,"events":8,"underscore":22}],24:[function(require,module,exports){
-var events = require('events');
-
-exports.isArray = isArray;
-exports.isDate = function(obj){return Object.prototype.toString.call(obj) === '[object Date]'};
-exports.isRegExp = function(obj){return Object.prototype.toString.call(obj) === '[object RegExp]'};
-
-
-exports.print = function () {};
-exports.puts = function () {};
-exports.debug = function() {};
-
-exports.inspect = function(obj, showHidden, depth, colors) {
-  var seen = [];
-
-  var stylize = function(str, styleType) {
-    // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-    var styles =
-        { 'bold' : [1, 22],
-          'italic' : [3, 23],
-          'underline' : [4, 24],
-          'inverse' : [7, 27],
-          'white' : [37, 39],
-          'grey' : [90, 39],
-          'black' : [30, 39],
-          'blue' : [34, 39],
-          'cyan' : [36, 39],
-          'green' : [32, 39],
-          'magenta' : [35, 39],
-          'red' : [31, 39],
-          'yellow' : [33, 39] };
-
-    var style =
-        { 'special': 'cyan',
-          'number': 'blue',
-          'boolean': 'yellow',
-          'undefined': 'grey',
-          'null': 'bold',
-          'string': 'green',
-          'date': 'magenta',
-          // "name": intentionally not styling
-          'regexp': 'red' }[styleType];
-
-    if (style) {
-      return '\033[' + styles[style][0] + 'm' + str +
-             '\033[' + styles[style][1] + 'm';
-    } else {
-      return str;
-    }
-  };
-  if (! colors) {
-    stylize = function(str, styleType) { return str; };
-  }
-
-  function format(value, recurseTimes) {
-    // Provide a hook for user-specified inspect functions.
-    // Check that value is an object with an inspect function on it
-    if (value && typeof value.inspect === 'function' &&
-        // Filter out the util module, it's inspect function is special
-        value !== exports &&
-        // Also filter out any prototype objects using the circular check.
-        !(value.constructor && value.constructor.prototype === value)) {
-      return value.inspect(recurseTimes);
-    }
-
-    // Primitive types cannot have properties
-    switch (typeof value) {
-      case 'undefined':
-        return stylize('undefined', 'undefined');
-
-      case 'string':
-        var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                                 .replace(/'/g, "\\'")
-                                                 .replace(/\\"/g, '"') + '\'';
-        return stylize(simple, 'string');
-
-      case 'number':
-        return stylize('' + value, 'number');
-
-      case 'boolean':
-        return stylize('' + value, 'boolean');
-    }
-    // For some reason typeof null is "object", so special case here.
-    if (value === null) {
-      return stylize('null', 'null');
-    }
-
-    // Look up the keys of the object.
-    var visible_keys = Object_keys(value);
-    var keys = showHidden ? Object_getOwnPropertyNames(value) : visible_keys;
-
-    // Functions without properties can be shortcutted.
-    if (typeof value === 'function' && keys.length === 0) {
-      if (isRegExp(value)) {
-        return stylize('' + value, 'regexp');
-      } else {
-        var name = value.name ? ': ' + value.name : '';
-        return stylize('[Function' + name + ']', 'special');
-      }
-    }
-
-    // Dates without properties can be shortcutted
-    if (isDate(value) && keys.length === 0) {
-      return stylize(value.toUTCString(), 'date');
-    }
-
-    var base, type, braces;
-    // Determine the object type
-    if (isArray(value)) {
-      type = 'Array';
-      braces = ['[', ']'];
-    } else {
-      type = 'Object';
-      braces = ['{', '}'];
-    }
-
-    // Make functions say that they are functions
-    if (typeof value === 'function') {
-      var n = value.name ? ': ' + value.name : '';
-      base = (isRegExp(value)) ? ' ' + value : ' [Function' + n + ']';
-    } else {
-      base = '';
-    }
-
-    // Make dates with properties first say the date
-    if (isDate(value)) {
-      base = ' ' + value.toUTCString();
-    }
-
-    if (keys.length === 0) {
-      return braces[0] + base + braces[1];
-    }
-
-    if (recurseTimes < 0) {
-      if (isRegExp(value)) {
-        return stylize('' + value, 'regexp');
-      } else {
-        return stylize('[Object]', 'special');
-      }
-    }
-
-    seen.push(value);
-
-    var output = keys.map(function(key) {
-      var name, str;
-      if (value.__lookupGetter__) {
-        if (value.__lookupGetter__(key)) {
-          if (value.__lookupSetter__(key)) {
-            str = stylize('[Getter/Setter]', 'special');
-          } else {
-            str = stylize('[Getter]', 'special');
-          }
-        } else {
-          if (value.__lookupSetter__(key)) {
-            str = stylize('[Setter]', 'special');
-          }
-        }
-      }
-      if (visible_keys.indexOf(key) < 0) {
-        name = '[' + key + ']';
-      }
-      if (!str) {
-        if (seen.indexOf(value[key]) < 0) {
-          if (recurseTimes === null) {
-            str = format(value[key]);
-          } else {
-            str = format(value[key], recurseTimes - 1);
-          }
-          if (str.indexOf('\n') > -1) {
-            if (isArray(value)) {
-              str = str.split('\n').map(function(line) {
-                return '  ' + line;
-              }).join('\n').substr(2);
-            } else {
-              str = '\n' + str.split('\n').map(function(line) {
-                return '   ' + line;
-              }).join('\n');
-            }
-          }
-        } else {
-          str = stylize('[Circular]', 'special');
-        }
-      }
-      if (typeof name === 'undefined') {
-        if (type === 'Array' && key.match(/^\d+$/)) {
-          return str;
-        }
-        name = JSON.stringify('' + key);
-        if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-          name = name.substr(1, name.length - 2);
-          name = stylize(name, 'name');
-        } else {
-          name = name.replace(/'/g, "\\'")
-                     .replace(/\\"/g, '"')
-                     .replace(/(^"|"$)/g, "'");
-          name = stylize(name, 'string');
-        }
-      }
-
-      return name + ': ' + str;
-    });
-
-    seen.pop();
-
-    var numLinesEst = 0;
-    var length = output.reduce(function(prev, cur) {
-      numLinesEst++;
-      if (cur.indexOf('\n') >= 0) numLinesEst++;
-      return prev + cur.length + 1;
-    }, 0);
-
-    if (length > 50) {
-      output = braces[0] +
-               (base === '' ? '' : base + '\n ') +
-               ' ' +
-               output.join(',\n  ') +
-               ' ' +
-               braces[1];
-
-    } else {
-      output = braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-    }
-
-    return output;
-  }
-  return format(obj, (typeof depth === 'undefined' ? 2 : depth));
-};
-
-
-function isArray(ar) {
-  return ar instanceof Array ||
-         Array.isArray(ar) ||
-         (ar && ar !== Object.prototype && isArray(ar.__proto__));
-}
-
-
-function isRegExp(re) {
-  return re instanceof RegExp ||
-    (typeof re === 'object' && Object.prototype.toString.call(re) === '[object RegExp]');
-}
-
-
-function isDate(d) {
-  if (d instanceof Date) return true;
-  if (typeof d !== 'object') return false;
-  var properties = Date.prototype && Object_getOwnPropertyNames(Date.prototype);
-  var proto = d.__proto__ && Object_getOwnPropertyNames(d.__proto__);
-  return JSON.stringify(proto) === JSON.stringify(properties);
-}
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-exports.log = function (msg) {};
-
-exports.pump = null;
-
-var Object_keys = Object.keys || function (obj) {
-    var res = [];
-    for (var key in obj) res.push(key);
-    return res;
-};
-
-var Object_getOwnPropertyNames = Object.getOwnPropertyNames || function (obj) {
-    var res = [];
-    for (var key in obj) {
-        if (Object.hasOwnProperty.call(obj, key)) res.push(key);
-    }
-    return res;
-};
-
-var Object_create = Object.create || function (prototype, properties) {
-    // from es5-shim
-    var object;
-    if (prototype === null) {
-        object = { '__proto__' : null };
-    }
-    else {
-        if (typeof prototype !== 'object') {
-            throw new TypeError(
-                'typeof prototype[' + (typeof prototype) + '] != \'object\''
-            );
-        }
-        var Type = function () {};
-        Type.prototype = prototype;
-        object = new Type();
-        object.__proto__ = prototype;
-    }
-    if (typeof properties !== 'undefined' && Object.defineProperties) {
-        Object.defineProperties(object, properties);
-    }
-    return object;
-};
-
-exports.inherits = function(ctor, superCtor) {
-  ctor.super_ = superCtor;
-  ctor.prototype = Object_create(superCtor.prototype, {
-    constructor: {
-      value: ctor,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-};
-
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (typeof f !== 'string') {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(exports.inspect(arguments[i]));
-    }
-    return objects.join(' ');
-  }
-
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j': return JSON.stringify(args[i++]);
-      default:
-        return x;
-    }
-  });
-  for(var x = args[i]; i < len; x = args[++i]){
-    if (x === null || typeof x !== 'object') {
-      str += ' ' + x;
-    } else {
-      str += ' ' + exports.inspect(x);
-    }
-  }
-  return str;
-};
-
-},{"events":8}],23:[function(require,module,exports){
-var Frame = require('./frame').Frame
-  , util = require('util');
-
-var JSONProtocol = function(version) {
-  var protocol = function(data) {
-    return new Frame(data);
-  }
-  protocol.encode = function(message) {
-    return util.format("%j", message);
-  }
-  protocol.version = version;
-  protocol.versionLong = 'Version ' + version;
-  protocol.type = 'protocol';
-  return protocol;
-};
+},{"./protocol":23,"events":8,"underscore":22}],23:[function(require,module,exports){
+var Frame = require('./frame');
 
 var chooseProtocol = exports.chooseProtocol = function(header) {
   var protocol;
@@ -7418,12 +7039,24 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-},{"./frame":11,"util":24}],20:[function(require,module,exports){
+var JSONProtocol = function(version) {
+  var protocol = function(data) {
+    return new Frame(data);
+  }
+  protocol.encode = function(message) {
+    return JSON.stringify(message);
+  }
+  protocol.version = version;
+  protocol.versionLong = 'Version ' + version;
+  protocol.type = 'protocol';
+  return protocol;
+};
+
+},{"./frame":11}],20:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
-//  , Vector = require('../vector').Vector
   , _ = require('underscore')
 
-var Region = exports.Region = function(start, end) {
+var Region = module.exports = function(start, end) {
   this.start = new Vector(start)
   this.end = new Vector(end)
   this.enteredFrame = null

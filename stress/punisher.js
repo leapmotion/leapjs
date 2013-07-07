@@ -1,4 +1,4 @@
-var Leap = require('../lib').Leap;
+var Leap = require('../lib');
 
 setTimeout(function() {
   process.exit(0);

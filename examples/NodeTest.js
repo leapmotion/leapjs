@@ -1,4 +1,4 @@
-var Leap = require('../lib/index').Leap;
+var Leap = require('../lib/index');
 
 var controller = new Leap.Controller()
 controller.on("frame", function(frame) {
