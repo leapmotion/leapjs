@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script src="../../node_modules/underscore/underscore.js"></script>
+    <script src="../../node_modules/mocha/mocha.js"></script>
+    <script src="../../node_modules/chai/chai.js"></script>
+    <script>
+      mocha.ui('bdd');
+      mocha.reporter('html');
+      assert = chai.assert;
+    </script>
+    <script src="../../leap.js"></script>
+    <script src="./common.js"></script>
+    <script src="../connection.js"></script>
+    <script src="../controller.js"></script>
+    <script src="../circular_buffer.js"></script>
+    <script src="../frame.js"></script>
+    <script src="../hand.js"></script>
+    <script src="../interaction_box.js"></script>
+    <script>
+      if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+      else { mocha.run(); }
+    </script>
+  </body>
+</html>

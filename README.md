@@ -30,7 +30,7 @@ Include the leap.js script included at the root of this package, or, use the min
 Use the following:
 
 ```javascript
-var Leap = require('leapjs').Leap
+var Leap = require('leapjs');
 ```
 
 ### Getting frames
