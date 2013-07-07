@@ -17,12 +17,12 @@ var fakeController = exports.fakeController = function(opts) {
   connection.teardownSocket = function() {
     delete connection.protocol;
     var socket = this.socket;
-    setTimeout(function() { socket.close(); }, 10)
+    setTimeout(function() { socket.close(); }, 1)
     delete connection.socket;
   };
 
   connection.setupSocket = function() {
-    setTimeout(function() { connection.handleOpen() }, 10)
+    setTimeout(function() { connection.handleOpen() }, 1)
     var socket = {
       messages: [],
       send: function(message) {
