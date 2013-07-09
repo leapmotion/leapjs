@@ -1,7 +1,7 @@
 {
   "name": "leapjs",
-  "version": "0.1.2",
-  "description": "Leap Motion Client",
+  "version": "0.2.0.pre1",
+  "description": "Javascript client for the Leapmotion",
   "main": "lib",
   "scripts": {
     "test": "make test-node"
@@ -14,7 +14,7 @@
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
-    "gl-matrix": "2.0.x"
+    "gl-matrix": "2.0.0"
   },
   "devDependencies": {
     "underscore": "1.4.4",
