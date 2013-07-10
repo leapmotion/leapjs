@@ -1,0 +1,46 @@
+<html>
+<head>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script src="../leap.js"></script>
+  <script>
+  var ctl = new Leap.Controller({enableGestures: true});
+
+  var swiper = ctl.gesture('swipe');
+
+  var totalDistance = 0;
+
+  swiper.start(function(g) {
+    if (swiper.currentSwipe) return;
+    swiper.currentSwipe = g;
+  });
+
+  swiper.update(function(g) {
+    if (swiper.currentSwipe === true) return;
+    if (Math.abs(g.translation()[0]) > 100) {
+      swiper.currentSwipe = true;
+    }
+    setTimeout(function() {
+      $('#slide').animate({'width': "0%"}, 100, "swing", function() {
+        swiper.currentSwipe = null;
+      });
+    }, 10);
+  });
+
+  ctl.connect()
+  </script>
+  <style>
+  #slide {
+    background-color:white;
+    float: left;
+    width: 100%;
+    height: 100%;
+  }
+  body {
+    background-color:black;
+  }
+  </style>
+</head>
+<body>
+  <div id="slide"></div>
+</body>
+</html>
