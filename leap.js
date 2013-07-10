@@ -1,6 +1,6 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
-/*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
-	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
+/*	SWFObject v2.2 <http://code.google.com/p/swfobject/>
+	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
 */
 var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="ShockwaveFlash.ShockwaveFlash",q="application/x-shockwave-flash",R="SWFObjectExprInst",x="onreadystatechange",O=window,j=document,t=navigator,T=false,U=[h],o=[],N=[],I=[],l,Q,E,B,J=false,a=false,n,G,m=true,M=function(){var aa=typeof j.getElementById!=D&&typeof j.getElementsByTagName!=D&&typeof j.createElement!=D,ah=t.userAgent.toLowerCase(),Y=t.platform.toLowerCase(),ae=Y?/win/.test(Y):/win/.test(ah),ac=Y?/mac/.test(Y):/mac/.test(ah),af=/webkit/.test(ah)?parseFloat(ah.replace(/^.*webkit\/(\d+(\.\d+)?).*$/,"$1")):false,X=!+"\v1",ag=[0,0,0],ab=null;if(typeof t.plugins!=D&&typeof t.plugins[S]==r){ab=t.plugins[S].description;if(ab&&!(typeof t.mimeTypes!=D&&t.mimeTypes[q]&&!t.mimeTypes[q].enabledPlugin)){T=true;X=false;ab=ab.replace(/^.*\s+(\S+\s+\S+$)/,"$1");ag[0]=parseInt(ab.replace(/^(.*)\..*$/,"$1"),10);ag[1]=parseInt(ab.replace(/^.*\.(.*)\s.*$/,"$1"),10);ag[2]=/[a-zA-Z]/.test(ab)?parseInt(ab.replace(/^.*[a-zA-Z]+(.*)$/,"$1"),10):0}}else{if(typeof O.ActiveXObject!=D){try{var ad=new ActiveXObject(W);if(ad){ab=ad.GetVariable("$version");if(ab){X=true;ab=ab.split(" ")[1].split(",");ag=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}}catch(Z){}}}return{w3:aa,pv:ag,wk:af,ie:X,win:ae,mac:ac}}(),k=function(){if(!M.w3){return}if((typeof j.readyState!=D&&j.readyState=="complete")||(typeof j.readyState==D&&(j.getElementsByTagName("body")[0]||j.body))){f()}if(!J){if(typeof j.addEventListener!=D){j.addEventListener("DOMContentLoaded",f,false)}if(M.ie&&M.win){j.attachEvent(x,function(){if(j.readyState=="complete"){j.detachEvent(x,arguments.callee);f()}});if(O==top){(function(){if(J){return}try{j.documentElement.doScroll("left")}catch(X){setTimeout(arguments.callee,0);return}f()})()}}if(M.wk){(function(){if(J){return}if(!/loaded|complete/.test(j.readyState)){setTimeout(arguments.callee,0);return}f()})()}s(f)}}();function f(){if(J){return}try{var Z=j.getElementsByTagName("body")[0].appendChild(C("span"));Z.parentNode.removeChild(Z)}catch(aa){return}J=true;var X=U.length;for(var Y=0;Y<X;Y++){U[Y]()}}function K(X){if(J){X()}else{U[U.length]=X}}function s(Y){if(typeof O.addEventListener!=D){O.addEventListener("load",Y,false)}else{if(typeof j.addEventListener!=D){j.addEventListener("load",Y,false)}else{if(typeof O.attachEvent!=D){i(O,"onload",Y)}else{if(typeof O.onload=="function"){var X=O.onload;O.onload=function(){X();Y()}}else{O.onload=Y}}}}}function h(){if(T){V()}else{H()}}function V(){var X=j.getElementsByTagName("body")[0];var aa=C(r);aa.setAttribute("type",q);var Z=X.appendChild(aa);if(Z){var Y=0;(function(){if(typeof Z.GetVariable!=D){var ab=Z.GetVariable("$version");if(ab){ab=ab.split(" ")[1].split(",");M.pv=[parseInt(ab[0],10),parseInt(ab[1],10),parseInt(ab[2],10)]}}else{if(Y<10){Y++;setTimeout(arguments.callee,10);return}}X.removeChild(aa);Z=null;H()})()}else{H()}}function H(){var ag=o.length;if(ag>0){for(var af=0;af<ag;af++){var Y=o[af].id;var ab=o[af].callbackFn;var aa={success:false,id:Y};if(M.pv[0]>0){var ae=c(Y);if(ae){if(F(o[af].swfVersion)&&!(M.wk&&M.wk<312)){w(Y,true);if(ab){aa.success=true;aa.ref=z(Y);ab(aa)}}else{if(o[af].expressInstall&&A()){var ai={};ai.data=o[af].expressInstall;ai.width=ae.getAttribute("width")||"0";ai.height=ae.getAttribute("height")||"0";if(ae.getAttribute("class")){ai.styleclass=ae.getAttribute("class")}if(ae.getAttribute("align")){ai.align=ae.getAttribute("align")}var ah={};var X=ae.getElementsByTagName("param");var ac=X.length;for(var ad=0;ad<ac;ad++){if(X[ad].getAttribute("name").toLowerCase()!="movie"){ah[X[ad].getAttribute("name")]=X[ad].getAttribute("value")}}P(ai,ah,Y,ab)}else{p(ae);if(ab){ab(aa)}}}}}else{w(Y,true);if(ab){var Z=z(Y);if(Z&&typeof Z.SetVariable!=D){aa.success=true;aa.ref=Z}ab(aa)}}}}}function z(aa){var X=null;var Y=c(aa);if(Y&&Y.nodeName=="OBJECT"){if(typeof Y.SetVariable!=D){X=Y}else{var Z=Y.getElementsByTagName(r)[0];if(Z){X=Z}}}return X}function A(){return !a&&F("6.0.65")&&(M.win||M.mac)&&!(M.wk&&M.wk<312)}function P(aa,ab,X,Z){a=true;E=Z||null;B={success:false,id:X};var ae=c(X);if(ae){if(ae.nodeName=="OBJECT"){l=g(ae);Q=null}else{l=ae;Q=X}aa.id=R;if(typeof aa.width==D||(!/%$/.test(aa.width)&&parseInt(aa.width,10)<310)){aa.width="310"}if(typeof aa.height==D||(!/%$/.test(aa.height)&&parseInt(aa.height,10)<137)){aa.height="137"}j.title=j.title.slice(0,47)+" - Flash Player Installation";var ad=M.ie&&M.win?"ActiveX":"PlugIn",ac="MMredirectURL="+O.location.toString().replace(/&/g,"%26")+"&MMplayerType="+ad+"&MMdoctitle="+j.title;if(typeof ab.flashvars!=D){ab.flashvars+="&"+ac}else{ab.flashvars=ac}if(M.ie&&M.win&&ae.readyState!=4){var Y=C("div");X+="SWFObjectNew";Y.setAttribute("id",X);ae.parentNode.insertBefore(Y,ae);ae.style.display="none";(function(){if(ae.readyState==4){ae.parentNode.removeChild(ae)}else{setTimeout(arguments.callee,10)}})()}u(aa,ab,X)}}function p(Y){if(M.ie&&M.win&&Y.readyState!=4){var X=C("div");Y.parentNode.insertBefore(X,Y);X.parentNode.replaceChild(g(Y),X);Y.style.display="none";(function(){if(Y.readyState==4){Y.parentNode.removeChild(Y)}else{setTimeout(arguments.callee,10)}})()}else{Y.parentNode.replaceChild(g(Y),Y)}}function g(ab){var aa=C("div");if(M.win&&M.ie){aa.innerHTML=ab.innerHTML}else{var Y=ab.getElementsByTagName(r)[0];if(Y){var ad=Y.childNodes;if(ad){var X=ad.length;for(var Z=0;Z<X;Z++){if(!(ad[Z].nodeType==1&&ad[Z].nodeName=="PARAM")&&!(ad[Z].nodeType==8)){aa.appendChild(ad[Z].cloneNode(true))}}}}}return aa}function u(ai,ag,Y){var X,aa=c(Y);if(M.wk&&M.wk<312){return X}if(aa){if(typeof ai.id==D){ai.id=Y}if(M.ie&&M.win){var ah="";for(var ae in ai){if(ai[ae]!=Object.prototype[ae]){if(ae.toLowerCase()=="data"){ag.movie=ai[ae]}else{if(ae.toLowerCase()=="styleclass"){ah+=' class="'+ai[ae]+'"'}else{if(ae.toLowerCase()!="classid"){ah+=" "+ae+'="'+ai[ae]+'"'}}}}}var af="";for(var ad in ag){if(ag[ad]!=Object.prototype[ad]){af+='<param name="'+ad+'" value="'+ag[ad]+'" />'}}aa.outerHTML='<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'+ah+">"+af+"</object>";N[N.length]=ai.id;X=c(ai.id)}else{var Z=C(r);Z.setAttribute("type",q);for(var ac in ai){if(ai[ac]!=Object.prototype[ac]){if(ac.toLowerCase()=="styleclass"){Z.setAttribute("class",ai[ac])}else{if(ac.toLowerCase()!="classid"){Z.setAttribute(ac,ai[ac])}}}}for(var ab in ag){if(ag[ab]!=Object.prototype[ab]&&ab.toLowerCase()!="movie"){e(Z,ab,ag[ab])}}aa.parentNode.replaceChild(Z,aa);X=Z}}return X}function e(Z,X,Y){var aa=C("param");aa.setAttribute("name",X);aa.setAttribute("value",Y);Z.appendChild(aa)}function y(Y){var X=c(Y);if(X&&X.nodeName=="OBJECT"){if(M.ie&&M.win){X.style.display="none";(function(){if(X.readyState==4){b(Y)}else{setTimeout(arguments.callee,10)}})()}else{X.parentNode.removeChild(X)}}}function b(Z){var Y=c(Z);if(Y){for(var X in Y){if(typeof Y[X]=="function"){Y[X]=null}}Y.parentNode.removeChild(Y)}}function c(Z){var X=null;try{X=j.getElementById(Z)}catch(Y){}return X}function C(X){return j.createElement(X)}function i(Z,X,Y){Z.attachEvent(X,Y);I[I.length]=[Z,X,Y]}function F(Z){var Y=M.pv,X=Z.split(".");X[0]=parseInt(X[0],10);X[1]=parseInt(X[1],10)||0;X[2]=parseInt(X[2],10)||0;return(Y[0]>X[0]||(Y[0]==X[0]&&Y[1]>X[1])||(Y[0]==X[0]&&Y[1]==X[1]&&Y[2]>=X[2]))?true:false}function v(ac,Y,ad,ab){if(M.ie&&M.mac){return}var aa=j.getElementsByTagName("head")[0];if(!aa){return}var X=(ad&&typeof ad=="string")?ad:"screen";if(ab){n=null;G=null}if(!n||G!=X){var Z=C("style");Z.setAttribute("type","text/css");Z.setAttribute("media",X);n=aa.appendChild(Z);if(M.ie&&M.win&&typeof j.styleSheets!=D&&j.styleSheets.length>0){n=j.styleSheets[j.styleSheets.length-1]}G=X}if(M.ie&&M.win){if(n&&typeof n.addRule==r){n.addRule(ac,Y)}}else{if(n&&typeof j.createTextNode!=D){n.appendChild(j.createTextNode(ac+" {"+Y+"}"))}}}function w(Z,X){if(!m){return}var Y=X?"visible":"hidden";if(J&&c(Z)){c(Z).style.visibility=Y}else{v("#"+Z,"visibility:"+Y)}}function L(Y){var Z=/[\\\"<>\.;]/;var X=Z.exec(Y)!=null;return X&&typeof encodeURIComponent!=D?encodeURIComponent(Y):Y}var d=function(){if(M.ie&&M.win){window.attachEvent("onunload",function(){var ac=I.length;for(var ab=0;ab<ac;ab++){I[ab][0].detachEvent(I[ab][1],I[ab][2])}var Z=N.length;for(var aa=0;aa<Z;aa++){y(N[aa])}for(var Y in M){M[Y]=null}M=null;for(var X in swfobject){swfobject[X]=null}swfobject=null})}}();return{registerObject:function(ab,X,aa,Z){if(M.w3&&ab&&X){var Y={};Y.id=ab;Y.swfVersion=X;Y.expressInstall=aa;Y.callbackFn=Z;o[o.length]=Y;w(ab,false)}else{if(Z){Z({success:false,id:ab})}}},getObjectById:function(X){if(M.w3){return z(X)}},embedSWF:function(ab,ah,ae,ag,Y,aa,Z,ad,af,ac){var X={success:false,id:ah};if(M.w3&&!(M.wk&&M.wk<312)&&ab&&ah&&ae&&ag&&Y){w(ah,false);K(function(){ae+="";ag+="";var aj={};if(af&&typeof af===r){for(var al in af){aj[al]=af[al]}}aj.data=ab;aj.width=ae;aj.height=ag;var am={};if(ad&&typeof ad===r){for(var ak in ad){am[ak]=ad[ak]}}if(Z&&typeof Z===r){for(var ai in Z){if(typeof am.flashvars!=D){am.flashvars+="&"+ai+"="+Z[ai]}else{am.flashvars=ai+"="+Z[ai]}}}if(F(Y)){var an=u(aj,am,ah);if(aj.id==ah){w(ah,true)}X.success=true;X.ref=an}else{if(aa&&A()){aj.data=aa;P(aj,am,ah,ac);return}else{w(ah,true)}}if(ac){ac(X)}})}else{if(ac){ac(X)}}},switchOffAutoHideShow:function(){m=false},ua:M,getFlashPlayerVersion:function(){return{major:M.pv[0],minor:M.pv[1],release:M.pv[2]}},hasFlashPlayerVersion:F,createSWF:function(Z,Y,X){if(M.w3){return u(Z,Y,X)}else{return undefined}},showExpressInstall:function(Z,aa,X,Y){if(M.w3&&A()){P(Z,aa,X,Y)}},removeSWF:function(X){if(M.w3){y(X)}},createCSS:function(aa,Z,Y,X){if(M.w3){v(aa,Z,Y,X)}},addDomLoadEvent:K,addLoadEvent:s,getQueryParamValue:function(aa){var Z=j.location.search||j.location.hash;if(Z){if(/\?/.test(Z)){Z=Z.split("?")[1]}if(aa==null){return L(Z)}var Y=Z.split("&");for(var X=0;X<Y.length;X++){if(Y[X].substring(0,Y[X].indexOf("="))==aa){return L(Y[X].substring((Y[X].indexOf("=")+1)))}}}return""},expressInstallCallback:function(){if(a){var X=c(R);if(X&&l){X.parentNode.replaceChild(l,X);if(Q){w(Q,true);if(M.ie&&M.win){l.style.display="block"}}if(E){E(B)}}a=false}}}}();
 },{}],2:[function(require,module,exports){
@@ -10,7 +10,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 // Reference: http://tools.ietf.org/html/rfc6455
 
 (function() {
-  
+
   if (window.WEB_SOCKET_FORCE_FLASH) {
     // Keeps going.
   } else if (window.WebSocket) {
@@ -20,7 +20,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     window.WebSocket = MozWebSocket;
     return;
   }
-  
+
   var logger;
   if (window.WEB_SOCKET_LOGGER) {
     logger = WEB_SOCKET_LOGGER;
@@ -30,7 +30,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   } else {
     logger = {log: function(){ }, error: function(){ }};
   }
-  
+
   // swfobject.hasFlashPlayerVersion("10.0.0") doesn't work with Gnash.
   if (swfobject.getFlashPlayerVersion().major < 10) {
     logger.error("Flash Player >= 10.0.0 is required.");
@@ -171,14 +171,14 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
    * @param {Object} flashEvent
    */
   WebSocket.prototype.__handleEvent = function(flashEvent) {
-    
+
     if ("readyState" in flashEvent) {
       this.readyState = flashEvent.readyState;
     }
     if ("protocol" in flashEvent) {
       this.protocol = flashEvent.protocol;
     }
-    
+
     var jsEvent;
     if (flashEvent.type == "open" || flashEvent.type == "error") {
       jsEvent = this.__createSimpleEvent(flashEvent.type);
@@ -193,11 +193,11 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     } else {
       throw "unknown event type: " + flashEvent.type;
     }
-    
+
     this.dispatchEvent(jsEvent);
-    
+
   };
-  
+
   WebSocket.prototype.__createSimpleEvent = function(type) {
     if (document.createEvent && window.Event) {
       var event = document.createEvent("Event");
@@ -207,7 +207,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       return {type: type, bubbles: false, cancelable: false};
     }
   };
-  
+
   WebSocket.prototype.__createMessageEvent = function(type, data) {
     if (document.createEvent && window.MessageEvent && !window.opera) {
       var event = document.createEvent("MessageEvent");
@@ -218,7 +218,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       return {type: type, data: data, bubbles: false, cancelable: false};
     }
   };
-  
+
   /**
    * Define the WebSocket readyState enumeration.
    */
@@ -234,7 +234,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
   WebSocket.__instances = {};
   WebSocket.__tasks = [];
   WebSocket.__nextId = 0;
-  
+
   /**
    * Load a new flash security policy file.
    * @param {string} url
@@ -249,10 +249,10 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
    * Loads WebSocketMain.swf and creates WebSocketMain object in Flash.
    */
   WebSocket.__initialize = function() {
-    
+
     if (WebSocket.__initialized) return;
     WebSocket.__initialized = true;
-    
+
     if (WebSocket.__swfLocation) {
       // For backword compatibility.
       window.WEB_SOCKET_SWF_LOCATION = WebSocket.__swfLocation;
@@ -311,9 +311,9 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
         }
       }
     );
-    
+
   };
-  
+
   /**
    * Called by Flash to notify JS that it's fully loaded and ready
    * for communication.
@@ -331,7 +331,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       WebSocket.__tasks = [];
     }, 0);
   };
-  
+
   /**
    * Called by Flash to notify WebSockets events are fired.
    */
@@ -351,17 +351,17 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     }, 0);
     return true;
   };
-  
+
   // Called by Flash.
   WebSocket.__log = function(message) {
     logger.log(decodeURIComponent(message));
   };
-  
+
   // Called by Flash.
   WebSocket.__error = function(message) {
     logger.error(decodeURIComponent(message));
   };
-  
+
   WebSocket.__addTask = function(task) {
     if (WebSocket.__flash) {
       task();
@@ -369,7 +369,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       WebSocket.__tasks.push(task);
     }
   };
-  
+
   /**
    * Test if the browser is running flash lite.
    * @return {boolean} True if flash lite is running, false otherwise.
@@ -384,7 +384,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
     }
     return mimeType.enabledPlugin.filename.match(/flashlite/i) ? true : false;
   };
-  
+
   if (!window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION) {
     // NOTE:
     //   This fires immediately if web_socket.js is dynamically loaded after
@@ -393,7 +393,7 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
       WebSocket.__initialize();
     });
   }
-  
+
 })();
 
 })()
@@ -802,12 +802,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -830,7 +830,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
     } else {
       // gl-matrix lives in a browser, define its namespaces in global
       shim.exports = window;
-    }    
+    }
   }
   else {
     // gl-matrix lives in commonjs, define its namespaces in exports
@@ -846,12 +846,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -870,7 +870,7 @@ var vec2 = {};
 if(!GLMAT_EPSILON) {
     var GLMAT_EPSILON = 0.000001;
 }
- 
+
 /**
  * Creates a new, empty vec2
  *
@@ -1198,7 +1198,7 @@ vec2.forEach = (function() {
         if(!offset) {
             offset = 0;
         }
-        
+
         if(count) {
             l = Math.min((count * stride) + offset, a.length);
         } else {
@@ -1210,7 +1210,7 @@ vec2.forEach = (function() {
             fn(vec, vec, arg);
             a[i] = vec[0]; a[i+1] = vec[1];
         }
-        
+
         return a;
     };
 })();
@@ -1237,12 +1237,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -1261,7 +1261,7 @@ var vec3 = {};
 if(!GLMAT_EPSILON) {
     var GLMAT_EPSILON = 0.000001;
 }
- 
+
 /**
  * Creates a new, empty vec3
  *
@@ -1639,7 +1639,7 @@ vec3.forEach = (function() {
         if(!offset) {
             offset = 0;
         }
-        
+
         if(count) {
             l = Math.min((count * stride) + offset, a.length);
         } else {
@@ -1651,7 +1651,7 @@ vec3.forEach = (function() {
             fn(vec, vec, arg);
             a[i] = vec[0]; a[i+1] = vec[1]; a[i+2] = vec[2];
         }
-        
+
         return a;
     };
 })();
@@ -1678,12 +1678,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -2083,7 +2083,7 @@ vec4.forEach = (function() {
         if(!offset) {
             offset = 0;
         }
-        
+
         if(count) {
             l = Math.min((count * stride) + offset, a.length);
         } else {
@@ -2095,7 +2095,7 @@ vec4.forEach = (function() {
             fn(vec, vec, arg);
             a[i] = vec[0]; a[i+1] = vec[1]; a[i+2] = vec[2]; a[i+3] = vec[3];
         }
-        
+
         return a;
     };
 })();
@@ -2122,12 +2122,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -2224,7 +2224,7 @@ mat2.transpose = function(out, a) {
         out[2] = a[1];
         out[3] = a[3];
     }
-    
+
     return out;
 };
 
@@ -2245,7 +2245,7 @@ mat2.invert = function(out, a) {
         return null;
     }
     det = 1.0 / det;
-    
+
     out[0] =  a3 * det;
     out[1] = -a1 * det;
     out[2] = -a2 * det;
@@ -2359,12 +2359,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -2486,7 +2486,7 @@ mat3.transpose = function(out, a) {
         out[7] = a[5];
         out[8] = a[8];
     }
-    
+
     return out;
 };
 
@@ -2509,8 +2509,8 @@ mat3.invert = function(out, a) {
         // Calculate the determinant
         det = a00 * b01 + a01 * b11 + a02 * b21;
 
-    if (!det) { 
-        return null; 
+    if (!det) {
+        return null;
     }
     det = 1.0 / det;
 
@@ -2602,8 +2602,8 @@ mat3.mul = mat3.multiply = function (out, a, b) {
  * @returns {String} string representation of the matrix
  */
 mat3.str = function (a) {
-    return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + 
-                    a[3] + ', ' + a[4] + ', ' + a[5] + ', ' + 
+    return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' +
+                    a[3] + ', ' + a[4] + ', ' + a[5] + ', ' +
                     a[6] + ', ' + a[7] + ', ' + a[8] + ')';
 };
 
@@ -2619,12 +2619,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -2784,7 +2784,7 @@ mat4.transpose = function(out, a) {
         out[14] = a[11];
         out[15] = a[15];
     }
-    
+
     return out;
 };
 
@@ -2817,8 +2817,8 @@ mat4.invert = function(out, a) {
         // Calculate the determinant
         det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 
-    if (!det) { 
-        return null; 
+    if (!det) {
+        return null;
     }
     det = 1.0 / det;
 
@@ -2918,7 +2918,7 @@ mat4.mul = mat4.multiply = function (out, a, b) {
         a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
 
     // Cache only the current line of the second matrix
-    var b0  = b[0], b1 = b[1], b2 = b[2], b3 = b[3];  
+    var b0  = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
     out[0] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
     out[1] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
     out[2] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
@@ -3032,7 +3032,7 @@ mat4.rotate = function (out, a, rad, axis) {
         b20, b21, b22;
 
     if (Math.abs(len) < GLMAT_EPSILON) { return null; }
-    
+
     len = 1 / len;
     x *= len;
     y *= len;
@@ -3251,7 +3251,7 @@ mat4.fromRotationTranslation = function (out, q, v) {
     out[13] = v[1];
     out[14] = v[2];
     out[15] = 1;
-    
+
     return out;
 };
 
@@ -3453,7 +3453,7 @@ mat4.lookAt = function (out, eye, center, up) {
 mat4.str = function (a) {
     return 'mat4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
                     a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' +
-                    a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' + 
+                    a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' +
                     a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 };
 
@@ -3469,12 +3469,12 @@ are permitted provided that the following conditions are met:
   * Redistributions of source code must retain the above copyright notice, this
     list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation 
+    this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
 ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -3626,7 +3626,7 @@ quat.scale = vec4.scale;
  * @returns {quat} out
  */
 quat.rotateX = function (out, a, rad) {
-    rad *= 0.5; 
+    rad *= 0.5;
 
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
         bx = Math.sin(rad), bw = Math.cos(rad);
@@ -3647,7 +3647,7 @@ quat.rotateX = function (out, a, rad) {
  * @returns {quat} out
  */
 quat.rotateY = function (out, a, rad) {
-    rad *= 0.5; 
+    rad *= 0.5;
 
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
         by = Math.sin(rad), bw = Math.cos(rad);
@@ -3668,7 +3668,7 @@ quat.rotateY = function (out, a, rad) {
  * @returns {quat} out
  */
 quat.rotateZ = function (out, a, rad) {
-    rad *= 0.5; 
+    rad *= 0.5;
 
     var ax = a[0], ay = a[1], az = a[2], aw = a[3],
         bz = Math.sin(rad), bw = Math.cos(rad);
@@ -3781,7 +3781,7 @@ quat.invert = function(out, a) {
     var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
         dot = a0*a0 + a1*a1 + a2*a2 + a3*a3,
         invDot = dot ? 1.0/dot : 0;
-    
+
     // TODO: Would be faster to return [0,0,0,0] immediately if dot == 0
 
     out[0] = -a0*invDot;
@@ -3927,12 +3927,19 @@ var Cursor = module.exports = function() {
  * intrinsic update loop, such as a game.
  */
 var Controller = module.exports = function(opts) {
+  var inNode = typeof(process) !== 'undefined' && process.title === 'node';
+
+  opts = _.defaults(opts || {}, {
+    inNode: inNode
+  });
+
+  this.inNode = opts.inNode;
+
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
     supressAnimationLoop: false,
-    inNode: typeof(process) !== 'undefined' && process.title === 'node'
   });
-  this.inNode = opts.inNode;
+
   this.supressAnimationLoop = opts.supressAnimationLoop;
   this.frameEventName = opts.frameEventName;
   this.history = new CircularBuffer(200);
@@ -4549,496 +4556,7 @@ Frame.Invalid = {
   dump: function() { return this.toString() }
 }
 
-},{"./gesture":12,"./hand":13,"./interaction_box":14,"./pointable":15,"gl-matrix":17,"underscore":22}],12:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3
-  , EventEmitter = require('events').EventEmitter
-  , _ = require('underscore');
-
-/**
- * Constructs a new Gesture object.
- *
- * An uninitialized Gesture object is considered invalid. Get valid instances
- * of the Gesture class, which will be one of the Gesture subclasses, from a
- * Frame object.
- *
- * @class Gesture
- * @abstract
- * @memberof Leap
- * @classdesc
- * The Gesture class represents a recognized movement by the user.
- *
- * The Leap watches the activity within its field of view for certain movement
- * patterns typical of a user gesture or command. For example, a movement from side to
- * side with the hand can indicate a swipe gesture, while a finger poking forward
- * can indicate a screen tap gesture.
- *
- * When the Leap recognizes a gesture, it assigns an ID and adds a
- * Gesture object to the frame gesture list. For continuous gestures, which
- * occur over many frames, the Leap updates the gesture by adding
- * a Gesture object having the same ID and updated properties in each
- * subsequent frame.
- *
- * **Important:** Recognition for each type of gesture must be enabled;
- * otherwise **no gestures are recognized or reported**.
- *
- * Subclasses of Gesture define the properties for the specific movement patterns
- * recognized by the Leap.
- *
- * The Gesture subclasses for include:
- *
- * * CircleGesture -- A circular movement by a finger.
- * * SwipeGesture -- A straight line movement by the hand with fingers extended.
- * * ScreenTapGesture -- A forward tapping movement by a finger.
- * * KeyTapGesture -- A downward tapping movement by a finger.
- *
- * Circle and swipe gestures are continuous and these objects can have a
- * state of start, update, and stop.
- *
- * The screen tap gesture is a discrete gesture. The Leap only creates a single
- * ScreenTapGesture object appears for each tap and it always has a stop state.
- *
- * Get valid Gesture instances from a Frame object. You can get a list of gestures
- * from the Frame gestures array. You can also use the Frame gesture() method
- * to find a gesture in the current frame using an ID value obtained in a
- * previous frame.
- *
- * Gesture objects can be invalid. For example, when you get a gesture by ID
- * using Frame.gesture(), and there is no gesture with that ID in the current
- * frame, then gesture() returns an Invalid Gesture object (rather than a null
- * value). Always check object validity in situations where a gesture might be
- * invalid.
- */
-var createGesture = exports.createGesture = function(data) {
-  var gesture;
-  switch (data.type) {
-    case 'circle':
-      gesture = new CircleGesture(data);
-      break;
-    case 'swipe':
-      gesture = new SwipeGesture(data);
-      break;
-    case 'screenTap':
-      gesture = new ScreenTapGesture(data);
-      break;
-    case 'keyTap':
-      gesture = new KeyTapGesture(data);
-      break;
-    default:
-      throw "unkown gesture type";
-  }
- /**
-  * The gesture ID.
-  *
-  * All Gesture objects belonging to the same recognized movement share the
-  * same ID value. Use the ID value with the Frame::gesture() method to
-  * find updates related to this Gesture object in subsequent frames.
-  *
-  * @member id
-  * @memberof Leap.Gesture.prototype
-  * @type {number}
-  */
-  gesture.id = data.id;
- /**
-  * The list of hands associated with this Gesture, if any.
-  *
-  * If no hands are related to this gesture, the list is empty.
-  *
-  * @member handIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.handIds = data.handIds;
- /**
-  * The list of fingers and tools associated with this Gesture, if any.
-  *
-  * If no Pointable objects are related to this gesture, the list is empty.
-  *
-  * @member pointableIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.pointableIds = data.pointableIds;
- /**
-  * The elapsed duration of the recognized movement up to the
-  * frame containing this Gesture object, in microseconds.
-  *
-  * The duration reported for the first Gesture in the sequence (with the
-  * start state) will typically be a small positive number since
-  * the movement must progress far enough for the Leap to recognize it as
-  * an intentional gesture.
-  *
-  * @member duration
-  * @memberof Leap.Gesture.prototype
-  * @type {number}
-  */
-  gesture.duration = data.duration;
- /**
-  * The gesture ID.
-  *
-  * Recognized movements occur over time and have a beginning, a middle,
-  * and an end. The 'state()' attribute reports where in that sequence this
-  * Gesture object falls.
-  *
-  * Possible values for the state field are:
-  *
-  * * start
-  * * update
-  * * stop
-  *
-  * @member state
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.state = data.state;
- /**
-  * The gesture type.
-  *
-  * Possible values for the type field are:
-  *
-  * * circle
-  * * swipe
-  * * screenTap
-  * * keyTap
-  *
-  * @member type
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.type = data.type;
-  return gesture;
-}
-
-var gestureListener = exports.gestureListener = function(controller, type) {
-  var handlers = {};
-  var gestureMap = {};
-
-  var gestureCreator = function() {
-    var candidateGesture = gestureMap[gesture.id];
-    if (candidateGesture !== undefined) gesture.update(gesture, frame);
-    if (gesture.state == "start" || gesture.state == "stop") {
-      if (type == gesture.type && gestureMap[gesture.id] === undefined) {
-        gestureMap[gesture.id] = new Gesture(gesture, frame);
-        gesture.update(gesture, frame);
-      }
-      if (gesture.state == "stop") {
-        delete gestureMap[gesture.id];
-      }
-    }
-  };
-
-  controller.on('gesture', function(gesture, frame) {
-    if (gesture.type == type) {
-      if (gesture.state == "start" || gesture.state == "stop") {
-        if (gestureMap[gesture.id] === undefined) {
-          var gestureTracker = new Gesture(gesture, frame);
-          gestureMap[gesture.id] = gestureTracker;
-          _.each(handlers, function(cb, name) {
-            gestureTracker.on(name, cb);
-          });
-        }
-      }
-      gestureMap[gesture.id].update(gesture, frame);
-      if (gesture.state == "stop") {
-        delete gestureMap[gesture.id];
-      }
-    }
-  });
-  var builder = {
-    start: function(cb) {
-      handlers['start'] = cb;
-      return builder;
-    },
-    stop: function(cb) {
-      handlers['stop'] = cb;
-      return builder;
-    },
-    complete: function(cb) {
-      handlers['stop'] = cb;
-      return builder;
-    },
-    update: function(cb) {
-      handlers['update'] = cb;
-      return builder;
-    }
-  }
-  return builder;
-}
-
-var Gesture = exports.Gesture = function(gesture, frame) {
-  this.gestures = [gesture];
-  this.frames = [frame];
-}
-
-Gesture.prototype.update = function(gesture, frame) {
-  this.gestures.push(gesture);
-  this.frames.push(frame);
-  this.emit(gesture.state, this);
-}
-
-_.extend(Gesture.prototype, EventEmitter.prototype);
-
-/**
- * Constructs a new CircleGesture object.
- *
- * An uninitialized CircleGesture object is considered invalid. Get valid instances
- * of the CircleGesture class from a Frame object.
- *
- * @class CircleGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The CircleGesture classes represents a circular finger movement.
- *
- * A circle movement is recognized when the tip of a finger draws a circle
- * within the Leap field of view.
- *
- * ![CircleGesture](images/Leap_Gesture_Circle.png)
- *
- * Circle gestures are continuous. The CircleGesture objects for the gesture have
- * three possible states:
- *
- * * start -- The circle gesture has just started. The movement has
- *  progressed far enough for the recognizer to classify it as a circle.
- * * update -- The circle gesture is continuing.
- * * stop -- The circle gesture is finished.
- */
-var CircleGesture = function(data) {
- /**
-  * The center point of the circle within the Leap frame of reference.
-  *
-  * @member center
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number[]}
-  */
-  this.center = data.center;
- /**
-  * The normal vector for the circle being traced.
-  *
-  * If you draw the circle clockwise, the normal vector points in the same
-  * general direction as the pointable object drawing the circle. If you draw
-  * the circle counterclockwise, the normal points back toward the
-  * pointable. If the angle between the normal and the pointable object
-  * drawing the circle is less than 90 degrees, then the circle is clockwise.
-  *
-  * ```javascript
-  *    var clockwiseness;
-  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
-  *        clockwiseness = "clockwise";
-  *    }
-  *    else
-  *    {
-  *        clockwiseness = "counterclockwise";
-  *    }
-  * ```
-  *
-  * @member normal
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number[]}
-  */
-  this.normal = data.normal;
- /**
-  * The number of times the finger tip has traversed the circle.
-  *
-  * Progress is reported as a positive number of the number. For example,
-  * a progress value of .5 indicates that the finger has gone halfway
-  * around, while a value of 3 indicates that the finger has gone around
-  * the the circle three times.
-  *
-  * Progress starts where the circle gesture began. Since the circle
-  * must be partially formed before the Leap can recognize it, progress
-  * will be greater than zero when a circle gesture first appears in the
-  * frame.
-  *
-  * @member progress
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number}
-  */
-  this.progress = data.progress;
- /**
-  * The radius of the circle in mm.
-  *
-  * @member radius
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number}
-  */
-  this.radius = data.radius;
-}
-
-CircleGesture.prototype.toString = function() {
-  return "CircleGesture ["+JSON.stringify(this)+"]";
-}
-
-/**
- * Constructs a new SwipeGesture object.
- *
- * An uninitialized SwipeGesture object is considered invalid. Get valid instances
- * of the SwipeGesture class from a Frame object.
- *
- * @class SwipeGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The SwipeGesture class represents a swiping motion of a finger or tool.
- *
- * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
- *
- * Swipe gestures are continuous.
- */
-var SwipeGesture = function(data) {
- /**
-  * The starting position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member startPosition
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.startPosition = data.startPosition;
- /**
-  * The current swipe position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member position
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.position = data.position;
- /**
-  * The unit direction vector parallel to the swipe motion.
-  *
-  * You can compare the components of the vector to classify the swipe as
-  * appropriate for your application. For example, if you are using swipes
-  * for two dimensional scrolling, you can compare the x and y values to
-  * determine if the swipe is primarily horizontal or vertical.
-  *
-  * @member direction
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.direction = data.direction;
- /**
-  * The speed of the finger performing the swipe gesture in
-  * millimeters per second.
-  *
-  * @member speed
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number}
-  */
-  this.speed = data.speed;
-}
-
-SwipeGesture.prototype.toString = function() {
-  return "SwipeGesture ["+JSON.stringify(this)+"]";
-}
-
-/**
- * Constructs a new ScreenTapGesture object.
- *
- * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
- * of the ScreenTapGesture class from a Frame object.
- *
- * @class ScreenTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A screen tap gesture is recognized when the tip of a finger pokes forward
- * and then springs back to approximately the original postion, as if
- * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
- *
- * ![ScreenTap](images/Leap_Gesture_Tap2.png)
- *
- * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
- * screen tap gesture recognized.
- */
-var ScreenTapGesture = function(data) {
- /**
-  * The position where the screen tap is registered.
-  *
-  * @member position
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number[]}
-  */
-  this.position = data.position;
- /**
-  * The direction of finger tip motion.
-  *
-  * @member direction
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number[]}
-  */
-  this.direction = data.direction;
- /**
-  * The progess value is always 1.0 for a screen tap gesture.
-  *
-  * @member progress
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number}
-  */
-  this.progress = data.progress;
-}
-
-ScreenTapGesture.prototype.toString = function() {
-  return "ScreenTapGesture ["+JSON.stringify(this)+"]";
-}
-
-/**
- * Constructs a new KeyTapGesture object.
- *
- * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
- * of the KeyTapGesture class from a Frame object.
- *
- * @class KeyTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The KeyTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A key tap gesture is recognized when the tip of a finger rotates down toward the
- * palm and then springs back to approximately the original postion, as if
- * tapping. The tapping finger must pause briefly before beginning the tap.
- *
- * ![KeyTap](images/Leap_Gesture_Tap.png)
- *
- * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
- * key tap gesture recognized.
- */
-var KeyTapGesture = function(data) {
-    /**
-     * The position where the key tap is registered.
-     *
-     * @member position
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number[]}
-     */
-    this.position = data.position;
-    /**
-     * The direction of finger tip motion.
-     *
-     * @member direction
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number[]}
-     */
-    this.direction = data.direction;
-    /**
-     * The progess value is always 1.0 for a key tap gesture.
-     *
-     * @member progress
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number}
-     */
-    this.progress = data.progress;
-}
-
-KeyTapGesture.prototype.toString = function() {
-  return "KeyTapGesture ["+JSON.stringify(this)+"]";
-}
-
-},{"events":8,"gl-matrix":17,"underscore":22}],13:[function(require,module,exports){
+},{"./gesture":12,"./hand":13,"./interaction_box":14,"./pointable":15,"gl-matrix":17,"underscore":22}],13:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -5692,7 +5210,496 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":17}],22:[function(require,module,exports){
+},{"gl-matrix":17}],12:[function(require,module,exports){
+var glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3
+  , EventEmitter = require('events').EventEmitter
+  , _ = require('underscore');
+
+/**
+ * Constructs a new Gesture object.
+ *
+ * An uninitialized Gesture object is considered invalid. Get valid instances
+ * of the Gesture class, which will be one of the Gesture subclasses, from a
+ * Frame object.
+ *
+ * @class Gesture
+ * @abstract
+ * @memberof Leap
+ * @classdesc
+ * The Gesture class represents a recognized movement by the user.
+ *
+ * The Leap watches the activity within its field of view for certain movement
+ * patterns typical of a user gesture or command. For example, a movement from side to
+ * side with the hand can indicate a swipe gesture, while a finger poking forward
+ * can indicate a screen tap gesture.
+ *
+ * When the Leap recognizes a gesture, it assigns an ID and adds a
+ * Gesture object to the frame gesture list. For continuous gestures, which
+ * occur over many frames, the Leap updates the gesture by adding
+ * a Gesture object having the same ID and updated properties in each
+ * subsequent frame.
+ *
+ * **Important:** Recognition for each type of gesture must be enabled;
+ * otherwise **no gestures are recognized or reported**.
+ *
+ * Subclasses of Gesture define the properties for the specific movement patterns
+ * recognized by the Leap.
+ *
+ * The Gesture subclasses for include:
+ *
+ * * CircleGesture -- A circular movement by a finger.
+ * * SwipeGesture -- A straight line movement by the hand with fingers extended.
+ * * ScreenTapGesture -- A forward tapping movement by a finger.
+ * * KeyTapGesture -- A downward tapping movement by a finger.
+ *
+ * Circle and swipe gestures are continuous and these objects can have a
+ * state of start, update, and stop.
+ *
+ * The screen tap gesture is a discrete gesture. The Leap only creates a single
+ * ScreenTapGesture object appears for each tap and it always has a stop state.
+ *
+ * Get valid Gesture instances from a Frame object. You can get a list of gestures
+ * from the Frame gestures array. You can also use the Frame gesture() method
+ * to find a gesture in the current frame using an ID value obtained in a
+ * previous frame.
+ *
+ * Gesture objects can be invalid. For example, when you get a gesture by ID
+ * using Frame.gesture(), and there is no gesture with that ID in the current
+ * frame, then gesture() returns an Invalid Gesture object (rather than a null
+ * value). Always check object validity in situations where a gesture might be
+ * invalid.
+ */
+var createGesture = exports.createGesture = function(data) {
+  var gesture;
+  switch (data.type) {
+    case 'circle':
+      gesture = new CircleGesture(data);
+      break;
+    case 'swipe':
+      gesture = new SwipeGesture(data);
+      break;
+    case 'screenTap':
+      gesture = new ScreenTapGesture(data);
+      break;
+    case 'keyTap':
+      gesture = new KeyTapGesture(data);
+      break;
+    default:
+      throw "unkown gesture type";
+  }
+ /**
+  * The gesture ID.
+  *
+  * All Gesture objects belonging to the same recognized movement share the
+  * same ID value. Use the ID value with the Frame::gesture() method to
+  * find updates related to this Gesture object in subsequent frames.
+  *
+  * @member id
+  * @memberof Leap.Gesture.prototype
+  * @type {number}
+  */
+  gesture.id = data.id;
+ /**
+  * The list of hands associated with this Gesture, if any.
+  *
+  * If no hands are related to this gesture, the list is empty.
+  *
+  * @member handIds
+  * @memberof Leap.Gesture.prototype
+  * @type {Array}
+  */
+  gesture.handIds = data.handIds;
+ /**
+  * The list of fingers and tools associated with this Gesture, if any.
+  *
+  * If no Pointable objects are related to this gesture, the list is empty.
+  *
+  * @member pointableIds
+  * @memberof Leap.Gesture.prototype
+  * @type {Array}
+  */
+  gesture.pointableIds = data.pointableIds;
+ /**
+  * The elapsed duration of the recognized movement up to the
+  * frame containing this Gesture object, in microseconds.
+  *
+  * The duration reported for the first Gesture in the sequence (with the
+  * start state) will typically be a small positive number since
+  * the movement must progress far enough for the Leap to recognize it as
+  * an intentional gesture.
+  *
+  * @member duration
+  * @memberof Leap.Gesture.prototype
+  * @type {number}
+  */
+  gesture.duration = data.duration;
+ /**
+  * The gesture ID.
+  *
+  * Recognized movements occur over time and have a beginning, a middle,
+  * and an end. The 'state()' attribute reports where in that sequence this
+  * Gesture object falls.
+  *
+  * Possible values for the state field are:
+  *
+  * * start
+  * * update
+  * * stop
+  *
+  * @member state
+  * @memberof Leap.Gesture.prototype
+  * @type {String}
+  */
+  gesture.state = data.state;
+ /**
+  * The gesture type.
+  *
+  * Possible values for the type field are:
+  *
+  * * circle
+  * * swipe
+  * * screenTap
+  * * keyTap
+  *
+  * @member type
+  * @memberof Leap.Gesture.prototype
+  * @type {String}
+  */
+  gesture.type = data.type;
+  return gesture;
+}
+
+var gestureListener = exports.gestureListener = function(controller, type) {
+  var handlers = {};
+  var gestureMap = {};
+
+  var gestureCreator = function() {
+    var candidateGesture = gestureMap[gesture.id];
+    if (candidateGesture !== undefined) gesture.update(gesture, frame);
+    if (gesture.state == "start" || gesture.state == "stop") {
+      if (type == gesture.type && gestureMap[gesture.id] === undefined) {
+        gestureMap[gesture.id] = new Gesture(gesture, frame);
+        gesture.update(gesture, frame);
+      }
+      if (gesture.state == "stop") {
+        delete gestureMap[gesture.id];
+      }
+    }
+  };
+
+  controller.on('gesture', function(gesture, frame) {
+    if (gesture.type == type) {
+      if (gesture.state == "start" || gesture.state == "stop") {
+        if (gestureMap[gesture.id] === undefined) {
+          var gestureTracker = new Gesture(gesture, frame);
+          gestureMap[gesture.id] = gestureTracker;
+          _.each(handlers, function(cb, name) {
+            gestureTracker.on(name, cb);
+          });
+        }
+      }
+      gestureMap[gesture.id].update(gesture, frame);
+      if (gesture.state == "stop") {
+        delete gestureMap[gesture.id];
+      }
+    }
+  });
+  var builder = {
+    start: function(cb) {
+      handlers['start'] = cb;
+      return builder;
+    },
+    stop: function(cb) {
+      handlers['stop'] = cb;
+      return builder;
+    },
+    complete: function(cb) {
+      handlers['stop'] = cb;
+      return builder;
+    },
+    update: function(cb) {
+      handlers['update'] = cb;
+      return builder;
+    }
+  }
+  return builder;
+}
+
+var Gesture = exports.Gesture = function(gesture, frame) {
+  this.gestures = [gesture];
+  this.frames = [frame];
+}
+
+Gesture.prototype.update = function(gesture, frame) {
+  this.gestures.push(gesture);
+  this.frames.push(frame);
+  this.emit(gesture.state, this);
+}
+
+_.extend(Gesture.prototype, EventEmitter.prototype);
+
+/**
+ * Constructs a new CircleGesture object.
+ *
+ * An uninitialized CircleGesture object is considered invalid. Get valid instances
+ * of the CircleGesture class from a Frame object.
+ *
+ * @class CircleGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The CircleGesture classes represents a circular finger movement.
+ *
+ * A circle movement is recognized when the tip of a finger draws a circle
+ * within the Leap field of view.
+ *
+ * ![CircleGesture](images/Leap_Gesture_Circle.png)
+ *
+ * Circle gestures are continuous. The CircleGesture objects for the gesture have
+ * three possible states:
+ *
+ * * start -- The circle gesture has just started. The movement has
+ *  progressed far enough for the recognizer to classify it as a circle.
+ * * update -- The circle gesture is continuing.
+ * * stop -- The circle gesture is finished.
+ */
+var CircleGesture = function(data) {
+ /**
+  * The center point of the circle within the Leap frame of reference.
+  *
+  * @member center
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number[]}
+  */
+  this.center = data.center;
+ /**
+  * The normal vector for the circle being traced.
+  *
+  * If you draw the circle clockwise, the normal vector points in the same
+  * general direction as the pointable object drawing the circle. If you draw
+  * the circle counterclockwise, the normal points back toward the
+  * pointable. If the angle between the normal and the pointable object
+  * drawing the circle is less than 90 degrees, then the circle is clockwise.
+  *
+  * ```javascript
+  *    var clockwiseness;
+  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
+  *        clockwiseness = "clockwise";
+  *    }
+  *    else
+  *    {
+  *        clockwiseness = "counterclockwise";
+  *    }
+  * ```
+  *
+  * @member normal
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number[]}
+  */
+  this.normal = data.normal;
+ /**
+  * The number of times the finger tip has traversed the circle.
+  *
+  * Progress is reported as a positive number of the number. For example,
+  * a progress value of .5 indicates that the finger has gone halfway
+  * around, while a value of 3 indicates that the finger has gone around
+  * the the circle three times.
+  *
+  * Progress starts where the circle gesture began. Since the circle
+  * must be partially formed before the Leap can recognize it, progress
+  * will be greater than zero when a circle gesture first appears in the
+  * frame.
+  *
+  * @member progress
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number}
+  */
+  this.progress = data.progress;
+ /**
+  * The radius of the circle in mm.
+  *
+  * @member radius
+  * @memberof Leap.CircleGesture.prototype
+  * @type {number}
+  */
+  this.radius = data.radius;
+}
+
+CircleGesture.prototype.toString = function() {
+  return "CircleGesture ["+JSON.stringify(this)+"]";
+}
+
+/**
+ * Constructs a new SwipeGesture object.
+ *
+ * An uninitialized SwipeGesture object is considered invalid. Get valid instances
+ * of the SwipeGesture class from a Frame object.
+ *
+ * @class SwipeGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The SwipeGesture class represents a swiping motion of a finger or tool.
+ *
+ * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
+ *
+ * Swipe gestures are continuous.
+ */
+var SwipeGesture = function(data) {
+ /**
+  * The starting position within the Leap frame of
+  * reference, in mm.
+  *
+  * @member startPosition
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.startPosition = data.startPosition;
+ /**
+  * The current swipe position within the Leap frame of
+  * reference, in mm.
+  *
+  * @member position
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.position = data.position;
+ /**
+  * The unit direction vector parallel to the swipe motion.
+  *
+  * You can compare the components of the vector to classify the swipe as
+  * appropriate for your application. For example, if you are using swipes
+  * for two dimensional scrolling, you can compare the x and y values to
+  * determine if the swipe is primarily horizontal or vertical.
+  *
+  * @member direction
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number[]}
+  */
+  this.direction = data.direction;
+ /**
+  * The speed of the finger performing the swipe gesture in
+  * millimeters per second.
+  *
+  * @member speed
+  * @memberof Leap.SwipeGesture.prototype
+  * @type {number}
+  */
+  this.speed = data.speed;
+}
+
+SwipeGesture.prototype.toString = function() {
+  return "SwipeGesture ["+JSON.stringify(this)+"]";
+}
+
+/**
+ * Constructs a new ScreenTapGesture object.
+ *
+ * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
+ * of the ScreenTapGesture class from a Frame object.
+ *
+ * @class ScreenTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
+ *
+ * A screen tap gesture is recognized when the tip of a finger pokes forward
+ * and then springs back to approximately the original postion, as if
+ * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
+ *
+ * ![ScreenTap](images/Leap_Gesture_Tap2.png)
+ *
+ * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
+ * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
+ * screen tap gesture recognized.
+ */
+var ScreenTapGesture = function(data) {
+ /**
+  * The position where the screen tap is registered.
+  *
+  * @member position
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number[]}
+  */
+  this.position = data.position;
+ /**
+  * The direction of finger tip motion.
+  *
+  * @member direction
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number[]}
+  */
+  this.direction = data.direction;
+ /**
+  * The progess value is always 1.0 for a screen tap gesture.
+  *
+  * @member progress
+  * @memberof Leap.ScreenTapGesture.prototype
+  * @type {number}
+  */
+  this.progress = data.progress;
+}
+
+ScreenTapGesture.prototype.toString = function() {
+  return "ScreenTapGesture ["+JSON.stringify(this)+"]";
+}
+
+/**
+ * Constructs a new KeyTapGesture object.
+ *
+ * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
+ * of the KeyTapGesture class from a Frame object.
+ *
+ * @class KeyTapGesture
+ * @memberof Leap
+ * @augments Leap.Gesture
+ * @classdesc
+ * The KeyTapGesture class represents a tapping gesture by a finger or tool.
+ *
+ * A key tap gesture is recognized when the tip of a finger rotates down toward the
+ * palm and then springs back to approximately the original postion, as if
+ * tapping. The tapping finger must pause briefly before beginning the tap.
+ *
+ * ![KeyTap](images/Leap_Gesture_Tap.png)
+ *
+ * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
+ * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
+ * key tap gesture recognized.
+ */
+var KeyTapGesture = function(data) {
+    /**
+     * The position where the key tap is registered.
+     *
+     * @member position
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number[]}
+     */
+    this.position = data.position;
+    /**
+     * The direction of finger tip motion.
+     *
+     * @member direction
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number[]}
+     */
+    this.direction = data.direction;
+    /**
+     * The progess value is always 1.0 for a key tap gesture.
+     *
+     * @member progress
+     * @memberof Leap.KeyTapGesture.prototype
+     * @type {number}
+     */
+    this.progress = data.progress;
+}
+
+KeyTapGesture.prototype.toString = function() {
+  return "KeyTapGesture ["+JSON.stringify(this)+"]";
+}
+
+},{"events":8,"gl-matrix":17,"underscore":22}],22:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
