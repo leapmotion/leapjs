@@ -18,12 +18,12 @@
     if (swiper.currentSwipe === true) return;
     if (Math.abs(g.translation()[0]) > 100) {
       swiper.currentSwipe = true;
+      setTimeout(function() {
+        $('#slide').animate({'width': "0%"}, 100, "swing", function() {
+          swiper.currentSwipe = null;
+        });
+      }, 10);
     }
-    setTimeout(function() {
-      $('#slide').animate({'width': "0%"}, 100, "swing", function() {
-        swiper.currentSwipe = null;
-      });
-    }, 10);
   });
 
   ctl.connect()
