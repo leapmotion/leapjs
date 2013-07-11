@@ -44,3 +44,8 @@ docs-commit:
 	git commit -a -m"regenerate docs"
 	git push origin gh-pages
 	cd ..
+
+open-in-browsers: build
+	open -a /Applications/Firefox.app test/helpers/browser.html
+	open -a /Applications/Safari.app test/helpers/browser.html
+	open -a /Applications/Google\ Chrome.app test/helpers/browser.html
