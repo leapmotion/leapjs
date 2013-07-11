@@ -71,7 +71,10 @@ describe('Controller', function(){
       controller.on('ready', function() {
         controller.processFrame(fakeFrame());
       });
-      controller.on('deviceConnected', done);
+      controller.on('deviceConnected', function() {
+        controller.disconnect();
+        done();
+      });
       controller.connect()
     });
 
@@ -79,6 +82,7 @@ describe('Controller', function(){
       var controller = fakeController()
       controller.on('protocol', function(protocol) {
         assert.equal(1, protocol.version);
+        controller.disconnect();
         done();
       });
       controller.connect()
@@ -86,7 +90,10 @@ describe('Controller', function(){
 
     it('should fire a device event with false if there is no frame', function(done) {
       var controller = fakeController()
-      controller.on('deviceDisconnected', done);
+      controller.on('deviceDisconnected', function() {
+        controller.disconnect();
+        done();
+      });
       controller.connect()
     });
   });

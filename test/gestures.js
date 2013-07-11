@@ -3,6 +3,7 @@ describe('Gestures', function(){
     var controller = fakeController({enableGestures:true});
     controller.gesture('keyTap', function() {
       assert(this.frames[0])
+      controller.disconnect();
       done()
     })
     controller.on('ready', function() {
@@ -20,6 +21,7 @@ describe('Gestures', function(){
     })
     .stop(function() {
       assert.deepEqual(['start', 'update', 'update', 'update'], states);
+      controller.disconnect();
       done();
     })
     .update(function() {

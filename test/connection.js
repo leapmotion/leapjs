@@ -8,6 +8,7 @@ describe('Connection', function(){
       })
       controller.on('frame', function() {
         assert.equal(123, controller.lastFrame.id)
+        connection.disconnect()
         done()
       })
       connection.connect()
@@ -18,7 +19,10 @@ describe('Connection', function(){
     it('should fire a "connect" event', function(done){
       var controller = fakeController()
       var connection = controller.connection
-      connection.on('ready', done)
+      connection.on('ready', function() {
+        connection.disconnect()
+        done()
+      })
       connection.connect()
     })
   })
@@ -49,6 +53,7 @@ describe('Connection', function(){
         connection.on('focus', function() {
           setTimeout(function() {
             assert.equal('{"heartbeat":true}', connection.socket.messages[connection.socket.messages.length - 1]);
+            connection.disconnect();
             done();
           }, 200);
         })
