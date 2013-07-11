@@ -29,22 +29,6 @@ compile:
 
 watch-test: watch
 
-docs: docs-clone docs-build docs-commit
-
-docs-clone:
-	if test -d docs-repo; then rm -rf docs-repo; fi
-	git clone -b gh-pages git@github.com:leapmotion/leapjs.git docs-repo
-
-docs-build:
-	if ! test -d './node_modules/jsdoc/templates/jsdoc3Template'; then cp -r ./docs-repo/templates/jsdoc3Template ./node_modules/jsdoc/templates/jsdoc3Template; fi
-	./node_modules/jsdoc/jsdoc -c jsdoc_conf.json lib README.md -d docs-repo -t ./node_modules/jsdoc/templates/jsdoc3Template
-
-docs-commit:
-	cd docs-repo
-	git commit -a -m"regenerate docs"
-	git push origin gh-pages
-	cd ..
-
 open-in-browsers: build
 	open -a /Applications/Firefox.app test/helpers/browser.html
 	open -a /Applications/Safari.app test/helpers/browser.html

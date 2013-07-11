@@ -5,3 +5,5 @@ Welcome to the Leap JavaScript framework. This is intended for use with the Leap
 [![Build Status](https://travis-ci.org/leapmotion/leapjs.png)](https://travis-ci.org/leapmotion/leapjs)
 
 For more information, please visit [http://js.leapmotion.com/](http://js.leapmotion.com/).
+
+For examples, please see [http://js.leapmotion.com/examples](http://js.leapmotion.com/examples/), as well, there are some basic examples included in the `examples` directory.
