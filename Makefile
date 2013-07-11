@@ -6,19 +6,15 @@ stress: stress/punisher.js
 serve:
 	./node_modules/.bin/http-server .
 
-test: test-all
+test: build test-only
 
-test-all: test-browser test-node
+test-only: test-browser test-node
 
-test-browser: build
+test-browser:
 	./node_modules/.bin/mocha-phantomjs test/helpers/browser.html
 
 test-node:
 	./node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot
-
-test-only:
-	./node_modules/.bin/mocha-phantomjs test/runner.html
-	./node_modules/.bin/mocha lib/index.js test/common.js test/test.js test/*.js -R dot
 
 build: compile compress
 
@@ -53,4 +49,3 @@ open-in-browsers: build
 	open -a /Applications/Firefox.app test/helpers/browser.html
 	open -a /Applications/Safari.app test/helpers/browser.html
 	open -a /Applications/Google\ Chrome.app test/helpers/browser.html
-
