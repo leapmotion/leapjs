@@ -66,7 +66,7 @@ describe('Controller', function(){
   });
 
   describe('events', function() {
-    it('should fire a device event with true if there is a frame', function(done) {
+    it('should fire a deviceConnected event if there is a frame', function(done) {
       var controller = fakeController()
       controller.on('ready', function() {
         controller.processFrame(fakeFrame());
@@ -88,7 +88,7 @@ describe('Controller', function(){
       controller.connect()
     });
 
-    it('should fire a device event with false if there is no frame', function(done) {
+    it('should fire a deviceDisconnected event if there is no frame', function(done) {
       var controller = fakeController()
       controller.on('deviceDisconnected', function() {
         controller.disconnect();
