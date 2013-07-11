@@ -14,13 +14,6 @@ var fakeController = exports.fakeController = function(opts) {
 
   lastGestureState = opts.enableGestures;
 
-  connection.teardownSocket = function() {
-    delete connection.protocol;
-    var socket = this.socket;
-    setTimeout(function() { socket.close(); }, 1)
-    delete connection.socket;
-  };
-
   connection.setupSocket = function() {
     setTimeout(function() { connection.handleOpen() }, 1)
     var socket = {
@@ -28,9 +21,7 @@ var fakeController = exports.fakeController = function(opts) {
       send: function(message) {
         socket.messages.push(message);
       },
-      close: function() {
-        connection.handleClose();
-      }
+      close: function() { }
     };
     connection.on('connect', function() {
       connection.handleData(JSON.stringify({version: opts.version}))
