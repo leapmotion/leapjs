@@ -3,9 +3,6 @@ BROWSERIFY_ARGS=--ignore=./node_connection lib/websocketjs/swfobject.js lib/webs
 stress: stress/punisher.js
 	node stress/punisher.js
 
-serve:
-	./node_modules/.bin/http-server .
-
 test: build test-only
 
 test-only: test-browser test-node
