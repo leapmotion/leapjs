@@ -17,7 +17,7 @@
     "gl-matrix": "2.0.0"
   },
   "devDependencies": {
-    "browserify": "git://github.com/joshbuddy/node-browserify.git#7a43547ec7e69c9818a865edfc06b3decbf206fb",
+    "browserify": "2.25.0",
     "mocha": "1.7.4",
     "mocha-phantomjs": "3.0.0",
     "phantomjs": "1.9.0-6",
