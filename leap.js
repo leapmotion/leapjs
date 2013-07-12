@@ -342,12 +342,13 @@ Controller.prototype.processFinishedFrame = function(frame) {
   }
   frame.controller = this;
   frame.historyIdx = this.history.push(frame);
+  var controller = this;
   if (frame.gestures) {
     frame.gestures = this.accumulatedGestures;
     this.accumulatedGestures = [];
-    for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
-      this.emit("gesture", frame.gestures[gestureIdx], frame);
-    }
+    _.each(frame.gestures, function(gesture) {
+      controller.emit("gesture", gesture, frame);
+    });
   }
   this.emit('frame', frame);
 }
@@ -501,25 +502,26 @@ var Frame = module.exports = function(data) {
   this.data = data;
   this.type = 'frame'; // used by event emitting
   var handMap = {};
-  for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
+  var frame = this;
+  _.each(data.hands, function(handData, handIdx) {
     var hand = new Hand(data.hands[handIdx]);
-    hand.frame = this;
-    this.hands.push(hand);
-    this.handsMap[hand.id] = hand;
+    hand.frame = frame;
+    frame.hands.push(hand);
+    frame.handsMap[hand.id] = hand;
     handMap[hand.id] = handIdx;
-  }
-  for (var pointableIdx = 0, pointableCount = data.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
-    var pointable = new Pointable(data.pointables[pointableIdx]);
-    pointable.frame = this;
-    this.pointables.push(pointable);
-    this.pointablesMap[pointable.id] = pointable;
-    (pointable.tool ? this.tools : this.fingers).push(pointable);
+  });
+  _.each(data.pointables, function(pointableData) {
+    var pointable = new Pointable(pointableData);
+    pointable.frame = frame;
+    frame.pointables.push(pointable);
+    frame.pointablesMap[pointable.id] = pointable;
+    (pointable.tool ? frame.tools : frame.fingers).push(pointable);
     if (pointable.handId !== undefined && handMap.hasOwnProperty(pointable.handId)) {
-      var hand = this.hands[handMap[pointable.handId]];
+      var hand = frame.hands[handMap[pointable.handId]];
       hand.pointables.push(pointable);
       (pointable.tool ? hand.tools : hand.fingers).push(pointable);
     }
-  }
+  });
 
   if (data.gestures) {
    /**
@@ -1869,6 +1871,8 @@ InteractionBox.prototype.toString = function() {
 InteractionBox.Invalid = { valid: false };
 
 },{"gl-matrix":21}],10:[function(require,module,exports){
+var _ = require("underscore");
+
 var Pipeline = module.exports = function() {
   this.steps = [];
 }
@@ -1878,15 +1882,14 @@ Pipeline.prototype.addStep = function(step) {
 }
 
 Pipeline.prototype.run = function(frame) {
-  var stepsLength = this.steps.length;
-  for (var i = 0; i != stepsLength; i++) {
-    if (!frame) break;
-    frame = this.steps[i](frame);
-  }
+  _.each(this.steps, function(step) {
+    if (!frame) return;
+    frame = step(frame);
+  });
   return frame;
 }
 
-},{}],11:[function(require,module,exports){
+},{"underscore":22}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
