@@ -79,4 +79,17 @@ describe('Hand', function(){
     })
   })
 
+  describe('Invalid', function() {
+    it('should be invalid', function() { assert(!Leap.Hand.Invalid.valid)})
+    it('should have empty fingers', function() { assert.equal(0, Leap.Hand.Invalid.fingers.length)})
+    it('should have empty tools', function() { assert.equal(0, Leap.Hand.Invalid.tools.length)})
+    it('should have empty pointables', function() { assert.equal(0, Leap.Hand.Invalid.pointables.length)})
+    it('should return an invalid #pointable', function() { assert(!Leap.Hand.Invalid.pointable().valid)})
+    it('should return an invalid #finger', function() { assert(!Leap.Hand.Invalid.finger().valid)})
+    it('should return 0.0 from #rotationAngle', function() { assert.equal(0.0, Leap.Hand.Invalid.rotationAngle())})
+    it('should return an identity matrix from #rotationMatrix', function() { assert.deepEqual(Leap.mat3.create(), Leap.Hand.Invalid.rotationMatrix())})
+    it('should return a null vector from #rotationAxis', function() { assert.deepEqual(Leap.vec3.create(), Leap.Hand.Invalid.rotationAxis())})
+    it('should return 1.0 from #scaleFactor', function() { assert.equal(1.0, Leap.Hand.Invalid.scaleFactor())})
+    it('should return a null vector from #translation', function() { assert.equal(1.0, Leap.Hand.Invalid.scaleFactor())})
+  })
 });

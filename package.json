@@ -1,6 +1,6 @@
 {
   "name": "leapjs",
-  "version": "0.2.0-beta3",
+  "version": "0.2.0-beta4",
   "description": "Javascript client for the Leapmotion",
   "main": "lib",
   "scripts": {

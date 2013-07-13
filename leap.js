@@ -835,8 +835,13 @@ Frame.Invalid = {
   finger: function() { return Pointable.Invalid },
   hand: function() { return Hand.Invalid },
   toString: function() { return "invalid frame" },
-  dump: function() { return this.toString() }
-}
+  dump: function() { return this.toString() },
+  rotationAngle: function() { return 0.0; },
+  rotationMatrix: function() { return mat3.create(); },
+  rotationAxis: function() { return vec3.create(); },
+  scaleFactor: function() { return 1.0; },
+  translation: function() { return vec3.create(); }
+};
 
 },{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":19,"underscore":20}],6:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
@@ -1585,9 +1590,9 @@ Hand.prototype.rotationAxis = function(sinceFrame) {
  * rotational change of the hand between the current frame and that specified in the sinceFrame parameter.
  */
 Hand.prototype.rotationMatrix = function(sinceFrame) {
-  if (!this.valid || !sinceFrame.valid) return Matrix.identity();
+  if (!this.valid || !sinceFrame.valid) return mat3.create();
   var sinceHand = sinceFrame.hand(this.id);
-  if(!sinceHand.valid) return Matrix.identity();
+  if(!sinceHand.valid) return mat3.create();
   var transpose = mat3.transpose(mat3.create(), this._rotation);
   var m = mat3.multiply(mat3.create(), sinceHand._rotation, transpose);
   return m;
@@ -1667,7 +1672,21 @@ Hand.prototype.toString = function() {
  * @name Invalid
  * @memberof Leap.Hand
  */
-Hand.Invalid = { valid: false };
+Hand.Invalid = {
+  valid: false,
+  fingers: [],
+  tools: [],
+  pointables: [],
+  pointable: function() { return Pointable.Invalid },
+  finger: function() { return Pointable.Invalid },
+  toString: function() { return "invalid frame" },
+  dump: function() { return this.toString(); },
+  rotationAngle: function() { return 0.0; },
+  rotationMatrix: function() { return mat3.create(); },
+  rotationAxis: function() { return vec3.create(); },
+  scaleFactor: function() { return 1.0; },
+  translation: function() { return vec3.create(); }
+};
 
 },{"./pointable":11,"gl-matrix":19,"underscore":20}],8:[function(require,module,exports){
 (function(){/**
@@ -1685,6 +1704,8 @@ module.exports = {
   CircularBuffer: require("./circular_buffer"),
   UI: require("./ui"),
   glMatrix: require("gl-matrix"),
+  mat3: require("gl-matrix").mat3,
+  vec3: require("gl-matrix").vec3,
   loopController: undefined,
   /**
    * The Leap.loop() function passes a frame of Leap data to your
