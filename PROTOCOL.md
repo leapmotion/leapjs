@@ -1,4 +1,4 @@
-# Protocol
+# Protocol for communicating with leapd
 
 The Leap Motion service provides a locally running WebSocket server listening to port 6347. This server provides tracking data as JSON.
 
@@ -103,14 +103,16 @@ The relative translation factor between two frames can be calculated by subtract
 
 ## Version 2
 
-The first version of the protocol is available at `/v2.json`.
+### Changes
 
-### Sending
+This version introduced *heartbeats*. Heartbeats are used to signal that you'd like exclusive control of the Leap. Other apps that provide OS-level interaction should be supressed when you are sending heartbeats.
 
-#### Heartbeats
+### Sending Heartbeats
 
-Clients can send a heartbeat to get exclusive access by sending `{heartbeat: true}`. Heartbeats must be sent <100 ms from each other.
+Clients heartbeat by sending `{heartbeat: true}`. Heartbeats must be sent <100 ms from each other.
 
-### Receiving
+## Version 3
 
-Same as version 1.
+### Changes
+
+This version introduced server-side events.
