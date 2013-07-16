@@ -30,3 +30,6 @@ open-in-browsers: build
 	open -a /Applications/Firefox.app test/helpers/browser.html
 	open -a /Applications/Safari.app test/helpers/browser.html
 	open -a /Applications/Google\ Chrome.app test/helpers/browser.html
+
+docs:
+	./node_modules/jsdoc/jsdoc lib README.md -d docs
