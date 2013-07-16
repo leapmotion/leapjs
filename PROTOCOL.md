@@ -1,4 +1,4 @@
-# Leap Motion WebSocket server
+# Protocol
 
 The Leap Motion service provides a locally running WebSocket server listening to port 6347. This server provides tracking data as JSON.
 
