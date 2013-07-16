@@ -500,6 +500,7 @@ var Frame = module.exports = function(data) {
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
+  this.currentFramerate = data.currentFramerate
   var handMap = {};
   for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
     var hand = new Hand(data.hands[handIdx]);
@@ -1485,6 +1486,21 @@ var Hand = module.exports = function(data) {
   this._translation = data.t;
   this._rotation = _.flatten(data.r);
   this._scaleFactor = data.s;
+
+  /**
+   * Time the hand has been visible in microseconds.
+   *
+   * @member Hand.prototype.timeVisible {number}
+   */
+   this.timeVisible = data.timeVisible;
+
+  /**
+   * The palm position with stabalization
+   * @member stabilizedPalmPosition
+   * @memberof Leap.Hand.prototype
+   * @type {number[]}
+   */
+   this.stabilizedPalmPosition = data.stabilizedPalmPosition;
 }
 
 /**
@@ -2047,6 +2063,13 @@ var Pointable = module.exports = function(data) {
    * @member Pointable.prototype.touchDistance {number}
    */
   this.touchDistance = data.touchDistance;
+
+  /**
+   * Time the pointable has been visible in microseconds.
+   *
+   * @member Pointable.prototype.timeVisible {number}
+   */
+  this.timeVisible = data.timeVisible;
 }
 
 /**

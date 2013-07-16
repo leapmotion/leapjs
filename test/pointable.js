@@ -14,5 +14,6 @@ describe('Pointable', function(){
     it('should have tipVelocity', function() { assert(pointable.tipVelocity) })
     it('should have touchZone', function() { assert(pointable.touchZone) })
     it('should have touchDistance', function() { assert(pointable.touchDistance) })
+    it('should have timeVisible', function() { assert(pointable.timeVisible) })
   });
 });
