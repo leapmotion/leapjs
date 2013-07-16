@@ -45,7 +45,8 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
-    interactionBox: {center: [1,2,3], size: [1,2,3]}
+    interactionBox: {center: [1,2,3], size: [1,2,3]},
+    currentFrameRate: 10
   };
   if (opts.gestures) {
     frame.gestures = opts.gestures;
@@ -76,7 +77,9 @@ var fakeHand = exports.fakeHand = function(opts) {
     palmNormal: [1,2,3],
     sphereCenter:[1,2,3],
     r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
-    t: (opts && opts.translation) || [1, 2, 3]
+    t: (opts && opts.translation) || [1, 2, 3],
+    timeVisible: 10,
+    stabilizedPalmPosition: [1,2,3]
   }
 }
 
@@ -93,6 +96,7 @@ var fakeFinger = exports.fakeFinger = function() {
     stabilizedTipPosition: [10, 10, 10],
     tipVelocity: [10, 10, 10],
     touchZone: "none",
-    touchDistance: 5
+    touchDistance: 5,
+    timeVisible: 10
   }
 }
