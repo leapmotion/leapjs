@@ -500,7 +500,7 @@ var Frame = module.exports = function(data) {
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
-  this.currentFramerate = data.currentFramerate
+  this.currentFrameRate = data.currentFrameRate;
   var handMap = {};
   for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
     var hand = new Hand(data.hands[handIdx]);
@@ -1488,9 +1488,9 @@ var Hand = module.exports = function(data) {
   this._scaleFactor = data.s;
 
   /**
-   * Time the hand has been visible in microseconds.
+   * Time the hand has been visible in seconds.
    *
-   * @member Hand.prototype.timeVisible {number}
+   * @member Hand.prototype.timeVisible {float}
    */
    this.timeVisible = data.timeVisible;
 
@@ -2065,9 +2065,9 @@ var Pointable = module.exports = function(data) {
   this.touchDistance = data.touchDistance;
 
   /**
-   * Time the pointable has been visible in microseconds.
+   * Time the pointable has been visible in seconds.
    *
-   * @member Pointable.prototype.timeVisible {number}
+   * @member Pointable.prototype.timeVisible {float}
    */
   this.timeVisible = data.timeVisible;
 }
