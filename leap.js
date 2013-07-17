@@ -10,7 +10,7 @@ var BaseConnection = module.exports = function(opts) {
     port: 6437,
     enableHeartbeat: true,
     heartbeatInterval: 100,
-    requestProtocolVersion: 2
+    requestProtocolVersion: 3
   });
   this.host = opts.host;
   this.port = opts.port;
@@ -99,7 +99,7 @@ BaseConnection.prototype.setHeartbeatState = function(state) {
 
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
-},{"./protocol":12,"events":17,"underscore":20}],2:[function(require,module,exports){
+},{"./protocol":13,"events":18,"underscore":21}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -237,13 +237,6 @@ var Controller = module.exports = function(opts) {
   this.setupConnectionEvents();
 }
 
-Controller.prototype.updateDevicePresent = function(newState) {
-  if (this.devicePresent !== newState) {
-    this.devicePresent = newState;
-    this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
-  }
-};
-
 Controller.prototype.gesture = function(type, cb) {
   var creator = gestureListener(this, type);
   if (cb !== undefined) {
@@ -362,30 +355,29 @@ Controller.prototype.setupConnectionEvents = function() {
   });
 
   // Delegate connection events
-  this.connection.on('ready', function() {
-    var heartbeatFrame = controller.lastFrame;
-    controller.deviceReadyTimer = setInterval(function() {
-      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
-      heartbeatFrame = controller.lastFrame;
-    }, 500);
-    controller.emit('ready');
-  });
-  this.connection.on('connect', function() { controller.emit('connect'); });
   this.connection.on('disconnect', function() {
-    controller.updateDevicePresent(false);
     clearTimeout(controller.deviceReadyTimer);
     delete controller.deviceReadyTimer;
     controller.emit('disconnect');
   });
+  this.connection.on('ready', function() { controller.emit('ready'); });
+  this.connection.on('connect', function() { controller.emit('connect'); });
   this.connection.on('focus', function() { controller.emit('focus') });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
 }
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":2,"./connection":3,"./frame":5,"./gesture":6,"./node_connection":16,"./pipeline":10,"__browserify_process":18,"events":17,"underscore":20}],5:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection":3,"./frame":6,"./gesture":7,"./node_connection":17,"./pipeline":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
+var Event = module.exports = function(data) {
+  this.type = data.type;
+  this.state = data.state;
+};
+
+},{}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -844,7 +836,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":19,"underscore":20}],6:[function(require,module,exports){
+},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1333,7 +1325,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":17,"gl-matrix":19,"underscore":20}],7:[function(require,module,exports){
+},{"events":18,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -1704,7 +1696,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":11,"gl-matrix":19,"underscore":20}],8:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":20,"underscore":21}],9:[function(require,module,exports){
 (function(){/**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -1765,7 +1757,7 @@ module.exports = {
 }
 
 })()
-},{"./circular_buffer":2,"./connection":3,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"./ui":13,"gl-matrix":19}],9:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection":3,"./controller":4,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"gl-matrix":20}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -1905,7 +1897,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":19}],10:[function(require,module,exports){
+},{"gl-matrix":20}],11:[function(require,module,exports){
 var Pipeline = module.exports = function() {
   this.steps = [];
 }
@@ -1923,7 +1915,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2102,31 +2094,41 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":19}],12:[function(require,module,exports){
-var Frame = require('./frame');
+},{"gl-matrix":20}],13:[function(require,module,exports){
+var Frame = require('./frame')
+  , Event = require('./event')
 
 var chooseProtocol = exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
     case 1:
-      protocol = JSONProtocol(1);
+      protocol = JSONProtocol(1, function(data) {
+        return new Frame(data);
+      });
       break;
     case 2:
-      protocol = JSONProtocol(2);
+      protocol = JSONProtocol(2, function(data) {
+        return new Frame(data);
+      });
       protocol.sendHeartbeat = function(connection) {
         connection.send(protocol.encode({heartbeat: true}));
       }
       break;
+    case 3:
+      protocol = JSONProtocol(3, function(data) {
+        return data.event ? new Event(data.event) : new Frame(data);
+      });
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
     default:
       throw "unrecognized version";
   }
   return protocol;
 }
 
-var JSONProtocol = function(version) {
-  var protocol = function(data) {
-    return new Frame(data);
-  }
+var JSONProtocol = function(version, cb) {
+  var protocol = cb;
   protocol.encode = function(message) {
     return JSON.stringify(message);
   }
@@ -2136,12 +2138,12 @@ var JSONProtocol = function(version) {
   return protocol;
 };
 
-},{"./frame":5}],13:[function(require,module,exports){
+},{"./event":5,"./frame":6}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":14,"./ui/region":15}],14:[function(require,module,exports){
+},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2152,7 +2154,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2240,9 +2242,9 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":17,"underscore":20}],16:[function(require,module,exports){
+},{"events":18,"underscore":21}],17:[function(require,module,exports){
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2428,7 +2430,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":18}],18:[function(require,module,exports){
+},{"__browserify_process":19}],19:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2482,7 +2484,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function(){/**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -5556,7 +5558,7 @@ if(typeof(exports) !== 'undefined') {
 })();
 
 })()
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -6785,7 +6787,7 @@ if(typeof(exports) !== 'undefined') {
 }).call(this);
 
 })()
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 window.requestAnimFrame = (function() {
   return  window.requestAnimationFrame ||
   window.webkitRequestAnimationFrame   ||
@@ -6797,5 +6799,5 @@ window.requestAnimFrame = (function() {
 
 Leap = require("../lib/index");
 
-},{"../lib/index":8}]},{},[21])
+},{"../lib/index":9}]},{},[22])
 ;

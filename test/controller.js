@@ -66,31 +66,10 @@ describe('Controller', function(){
   });
 
   describe('events', function() {
-    it('should fire a deviceConnected event if there is a frame', function(done) {
-      var controller = fakeController()
-      controller.on('ready', function() {
-        controller.processFrame(fakeFrame());
-      });
-      controller.on('deviceConnected', function() {
-        controller.disconnect();
-        done();
-      });
-      controller.connect()
-    });
-
     it('should fire a protocol event', function(done) {
       var controller = fakeController()
       controller.on('protocol', function(protocol) {
         assert.equal(1, protocol.version);
-        controller.disconnect();
-        done();
-      });
-      controller.connect()
-    });
-
-    it('should fire a deviceDisconnected event if there is no frame', function(done) {
-      var controller = fakeController()
-      controller.on('deviceDisconnected', function() {
         controller.disconnect();
         done();
       });
