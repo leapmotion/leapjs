@@ -75,5 +75,19 @@ describe('Controller', function(){
       });
       controller.connect()
     });
+
+    it('should fire a connection event when using protocol 3', function(done) {
+      var controller = fakeController({version: 3})
+      controller.on('ready', function(protocol) {
+        controller.connection.handleData(JSON.stringify({event: {type: 'deviceConnect', state: true}}));
+      });
+      controller.on('deviceConnected', function() {
+        controller.connection.handleData(JSON.stringify({event: {type: 'deviceConnect', state: false}}));
+      });
+      controller.on('deviceDisconnected', function() {
+        done();
+      });
+      controller.connect()
+    });
   });
 })
