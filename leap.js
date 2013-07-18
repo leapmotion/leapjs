@@ -143,7 +143,7 @@ Connection.prototype.startHeartbeat = function() {
   } else if (typeof document.webkitHidden !== "undefined") {
     propertyName = "webkitHidden";
   } else {
-    propertyName = "hidden";
+    propertyName = undefined;
   }
 
   var windowVisible = true;
@@ -161,7 +161,7 @@ Connection.prototype.startHeartbeat = function() {
   });
 
   this.heartbeatTimer = setInterval(function() {
-    var isVisible = document[propertyName] === false;
+    var isVisible = propertyName === undefined ? true : document[propertyName] === false;
     if (isVisible && windowVisible) {
       connection.sendHeartbeat();
     } else {
