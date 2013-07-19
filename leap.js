@@ -10,7 +10,7 @@ var BaseConnection = module.exports = function(opts) {
     port: 6437,
     enableHeartbeat: true,
     heartbeatInterval: 100,
-    requestProtocolVersion: 2
+    requestProtocolVersion: 3
   });
   this.host = opts.host;
   this.port = opts.port;
@@ -98,6 +98,7 @@ BaseConnection.prototype.setHeartbeatState = function(state) {
 };
 
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
+
 
 },{"./protocol":12,"events":17,"underscore":20}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
@@ -237,13 +238,6 @@ var Controller = module.exports = function(opts) {
   this.setupConnectionEvents();
 }
 
-Controller.prototype.updateDevicePresent = function(newState) {
-  if (this.devicePresent !== newState) {
-    this.devicePresent = newState;
-    this.emit(this.devicePresent ? 'deviceConnected' : 'deviceDisconnected');
-  }
-};
-
 Controller.prototype.gesture = function(type, cb) {
   var creator = gestureListener(this, type);
   if (cb !== undefined) {
@@ -362,24 +356,17 @@ Controller.prototype.setupConnectionEvents = function() {
   });
 
   // Delegate connection events
-  this.connection.on('ready', function() {
-    var heartbeatFrame = controller.lastFrame;
-    controller.deviceReadyTimer = setInterval(function() {
-      controller.updateDevicePresent(controller.lastFrame.valid && heartbeatFrame != controller.lastFrame);
-      heartbeatFrame = controller.lastFrame;
-    }, 500);
-    controller.emit('ready');
-  });
-  this.connection.on('connect', function() { controller.emit('connect'); });
   this.connection.on('disconnect', function() {
-    controller.updateDevicePresent(false);
     clearTimeout(controller.deviceReadyTimer);
     delete controller.deviceReadyTimer;
     controller.emit('disconnect');
   });
+  this.connection.on('ready', function() { controller.emit('ready'); });
+  this.connection.on('connect', function() { controller.emit('connect'); });
   this.connection.on('focus', function() { controller.emit('focus') });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
 }
 
 _.extend(Controller.prototype, EventEmitter.prototype);
@@ -2103,16 +2090,34 @@ Pointable.prototype.toString = function() {
 Pointable.Invalid = { valid: false };
 
 },{"gl-matrix":19}],12:[function(require,module,exports){
-var Frame = require('./frame');
+var Frame = require('./frame')
+
+var Event = function(data) {
+  this.type = data.type;
+  this.state = data.state;
+};
 
 var chooseProtocol = exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
     case 1:
-      protocol = JSONProtocol(1);
+      protocol = JSONProtocol(1, function(data) {
+        return new Frame(data);
+      });
       break;
     case 2:
-      protocol = JSONProtocol(2);
+      protocol = JSONProtocol(2, function(data) {
+        return new Frame(data);
+      });
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
+      break;
+    case 3:
+      protocol = JSONProtocol(3, function(data) {
+        return data.event ? new Event(data.event) : new Frame(data);
+
+      });
       protocol.sendHeartbeat = function(connection) {
         connection.send(protocol.encode({heartbeat: true}));
       }
@@ -2123,10 +2128,8 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-var JSONProtocol = function(version) {
-  var protocol = function(data) {
-    return new Frame(data);
-  }
+var JSONProtocol = function(version, cb) {
+  var protocol = cb;
   protocol.encode = function(message) {
     return JSON.stringify(message);
   }
