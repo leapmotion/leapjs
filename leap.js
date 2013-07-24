@@ -356,11 +356,7 @@ Controller.prototype.setupConnectionEvents = function() {
   });
 
   // Delegate connection events
-  this.connection.on('disconnect', function() {
-    clearTimeout(controller.deviceReadyTimer);
-    delete controller.deviceReadyTimer;
-    controller.emit('disconnect');
-  });
+  this.connection.on('disconnect', function() { controller.emit('disconnect'); });
   this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
   this.connection.on('focus', function() { controller.emit('focus') });
