@@ -12,7 +12,7 @@ controller.on("frame", function(frame) {
 
 setInterval(function() {
   var time = frameCount/2;
-  console.log("recieved " + frameCount + " frames @ " + time + "fps");
+  console.log("received " + frameCount + " frames @ " + time + "fps");
   frameCount = 0;
 }, 2000);
 
