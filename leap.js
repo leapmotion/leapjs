@@ -12,8 +12,8 @@ var BaseConnection = module.exports = function(opts) {
     heartbeatInterval: 100,
     requestProtocolVersion: 3
   });
-  this.host = opts.host;
-  this.port = opts.port;
+  this.host = this.opts.host;
+  this.port = this.opts.port;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     if (this.opts.enableHeartbeat) this.startHeartbeat();
