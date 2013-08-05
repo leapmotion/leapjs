@@ -219,7 +219,7 @@ var Controller = module.exports = function(opts) {
 
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    supressAnimationLoop: false,
+    supressAnimationLoop: false
   });
 
   this.supressAnimationLoop = opts.supressAnimationLoop;
@@ -259,9 +259,9 @@ Controller.prototype.connect = function() {
   if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
     var callback = function() {
       controller.emit('animationFrame', controller.lastConnectionFrame);
-      window.requestAnimFrame(callback);
+      window.requestAnimationFrame(callback);
     }
-    window.requestAnimFrame(callback);
+    window.requestAnimationFrame(callback);
   }
 }
 
@@ -6785,14 +6785,15 @@ if(typeof(exports) !== 'undefined') {
 
 })()
 },{}],21:[function(require,module,exports){
-window.requestAnimFrame = (function() {
-  return  window.requestAnimationFrame ||
-  window.webkitRequestAnimationFrame   ||
-  window.mozRequestAnimationFrame      ||
-  window.oRequestAnimationFrame        ||
-  window.msRequestAnimationFrame       ||
-  function(callback) { window.setTimeout(callback, 1000 / 60); }
-})();
+if (typeof(window.requestAnimationFrame) !== 'function') {
+  window.requestAnimationFrame = (function() {
+    window.webkitRequestAnimationFrame   ||
+    window.mozRequestAnimationFrame      ||
+    window.oRequestAnimationFrame        ||
+    window.msRequestAnimationFrame       ||
+    function(callback) { window.setTimeout(callback, 1000 / 60); }
+  })();
+}
 
 Leap = require("../lib/index");
 
