@@ -2,6 +2,10 @@ if (typeof(exports) === 'undefined') {
   exports = {};
 }
 
+if (typeof(window) !== 'undefined') {
+  window.requestAnimationFrame = function(callback) { setTimeout(callback, 1000 / 60); };
+}
+
 var fingerId = 0
   , handId = 0
   , frameId =0
