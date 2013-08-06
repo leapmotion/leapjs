@@ -36,10 +36,8 @@ BaseConnection.prototype.sendHeartbeat = function() {
 }
 
 BaseConnection.prototype.handleOpen = function() {
-  // Check for state change before emitting connect event
-  if (this.connected !== true) {
-    this.emit('connect');
-  }
+  if (this.connected === true) return;
+  this.emit('connect');
   this.connected = true;
 }
 
@@ -49,6 +47,7 @@ BaseConnection.prototype.enableGestures = function(enabled) {
 }
 
 BaseConnection.prototype.handleClose = function() {
+  if (!this.connected) return;
   this.disconnect();
   this.startReconnection();
 }
@@ -61,13 +60,10 @@ BaseConnection.prototype.startReconnection = function() {
 BaseConnection.prototype.disconnect = function() {
   if (!this.socket) return;
   this.socket.close();
+  this.connected = false;
   delete this.socket;
   delete this.protocol;
-  // Check for state change before emitting disconnect event
-  if (this.connected === true) {
-    this.emit('disconnect');
-  }
-  this.connected = false;
+  this.emit('disconnect');
 }
 
 BaseConnection.prototype.handleData = function(data) {
