@@ -10,4 +10,4 @@ For examples, please see [http://js.leapmotion.com/examples](http://js.leapmotio
 
 ## Protocol
 
-Details about the protocol used to communicate with `leapd` are detailed here [https://github.com/leapmotion/leapjs/blob/master/PROTOCOL.md](PROTOCOL.md).
+Details about the protocol used to communicate with `leapd` are detailed here [PROTOCOL.md](https://github.com/leapmotion/leapjs/blob/master/PROTOCOL.md).
