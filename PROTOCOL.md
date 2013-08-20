@@ -115,4 +115,8 @@ Clients heartbeat by sending `{heartbeat: true}`. Heartbeats must be sent <100 m
 
 ### Changes
 
-This version introduced server-side events.
+This version introduced server-side events. Events are structured in the following way.
+
+{event: {type: "deviceConnect", state: true}}
+
+These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
