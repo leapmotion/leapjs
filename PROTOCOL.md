@@ -105,7 +105,7 @@ The relative translation factor between two frames can be calculated by subtract
 
 ### Changes
 
-This version introduced *heartbeats*. Heartbeats are used to signal that you'd like exclusive control of the Leap. Other apps that provide OS-level interaction should be supressed when you are sending heartbeats.
+This version introduced *heartbeats*. Heartbeats are used to signal that you'd like exclusive control of the Leap. Other apps that provide OS-level interaction should be suppressed when you are sending heartbeats.
 
 ### Sending Heartbeats
 
