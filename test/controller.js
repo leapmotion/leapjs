@@ -44,7 +44,7 @@ describe('Controller', function(){
 
   describe('accumulating gestures', function() {
     it('should accumulate gestures', function(done) {
-      var controller = fakeController({supressAnimationLoop: true, frameEventName: 'animationFrame'})
+      var controller = fakeController({suppressAnimationLoop: true, frameEventName: 'animationFrame'})
       var count = 0
       controller.on('animationFrame', function(frame) {
         assert.equal(7, frame.gestures.length);
