@@ -103,7 +103,7 @@ Each frame of data from the WebSocket server contains JSON defining a frame. The
 Protocol versions
 +++++++++++++++++++
 
-The current version of the protocol is v2.json. The format is the same as the previous version (v1.json), but the WebSocket server now accepts a heartbeat message to supress plug-ins.
+The current version of the protocol is v2.json. The format is the same as the previous version (v1.json), but the WebSocket server now accepts a heartbeat message to suppress plug-ins.
 
 
 Motion factors
