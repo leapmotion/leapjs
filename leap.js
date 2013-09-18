@@ -1801,6 +1801,7 @@ module.exports = {
     }
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
+    return this.loopController;
   }
 }
 
