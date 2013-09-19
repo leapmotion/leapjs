@@ -161,8 +161,8 @@ Connection.prototype.startHeartbeat = function() {
       clearTimeout(connection.heartbeatTimer);
       delete connection.heartbeatTimer;
     }
-    window.removeEventListener(focusListener);
-    window.removeEventListener(blurListener);
+    window.removeEventListener('focus', focusListener);
+    window.removeEventListener('blur', blurListener);
   });
 
   this.heartbeatTimer = setInterval(function() {
@@ -223,10 +223,10 @@ var Controller = module.exports = function(opts) {
 
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    supressAnimationLoop: false
+    suppressAnimationLoop: false
   });
 
-  this.supressAnimationLoop = opts.supressAnimationLoop;
+  this.suppressAnimationLoop = opts.suppressAnimationLoop;
   this.frameEventName = opts.frameEventName;
   this.history = new CircularBuffer(200);
   this.lastFrame = Frame.Invalid;
@@ -260,7 +260,7 @@ Controller.prototype.useAnimationLoop = function() {
 
 Controller.prototype.connect = function() {
   var controller = this;
-  if (this.connection.connect() && this.inBrowser() && !controller.supressAnimationLoop) {
+  if (this.connection.connect() && this.inBrowser() && !controller.suppressAnimationLoop) {
     var callback = function() {
       controller.emit('animationFrame', controller.lastConnectionFrame);
       window.requestAnimationFrame(callback);
@@ -1670,6 +1670,60 @@ Hand.prototype.toString = function() {
 }
 
 /**
+ * The pitch angle in radians.
+ *
+ * Pitch is the angle between the negative z-axis and the projection of
+ * the vector onto the y-z plane. In other words, pitch represents rotation
+ * around the x-axis.
+ * If the vector points upward, the returned angle is between 0 and pi radians
+ * (180 degrees); if it points downward, the angle is between 0 and -pi radians.
+ *
+ * @method pitch
+ * @memberof Leap.Hand.prototype
+ * @returns {number} The angle of this vector above or below the horizon (x-z plane).
+ *
+ */
+Hand.prototype.pitch = function() {
+  return Math.atan2(this.direction[1], -this.direction[2]);
+}
+
+/**
+ *  The yaw angle in radians.
+ *
+ * Yaw is the angle between the negative z-axis and the projection of
+ * the vector onto the x-z plane. In other words, yaw represents rotation
+ * around the y-axis. If the vector points to the right of the negative z-axis,
+ * then the returned angle is between 0 and pi radians (180 degrees);
+ * if it points to the left, the angle is between 0 and -pi radians.
+ *
+ * @method yaw
+ * @memberof Leap.Hand.prototype
+ * @returns {number} The angle of this vector to the right or left of the y-axis.
+ *
+ */
+Hand.prototype.yaw = function() {
+  return Math.atan2(this.direction[0], -this.direction[2]);
+}
+
+/**
+ *  The roll angle in radians.
+ *
+ * Roll is the angle between the y-axis and the projection of
+ * the vector onto the x-y plane. In other words, roll represents rotation
+ * around the z-axis. If the vector points to the left of the y-axis,
+ * then the returned angle is between 0 and pi radians (180 degrees);
+ * if it points to the right, the angle is between 0 and -pi radians.
+ *
+ * @method roll
+ * @memberof Leap.Hand.prototype
+ * @returns {number} The angle of this vector to the right or left of the y-axis.
+ *
+ */
+Hand.prototype.roll = function() {
+  return Math.atan2(this.palmNormal[0], -this.palmNormal[1]);
+}
+
+/**
  * An invalid Hand object.
  *
  * You can use an invalid Hand object in comparisons testing
@@ -1754,6 +1808,7 @@ module.exports = {
     }
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
+    return this.loopController;
   }
 }
 
