@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script src="../leap.js"></script>
   <script>
@@ -15,15 +16,11 @@
   });
 
   swiper.update(function(g) {
-    if (swiper.currentSwipe === true) return;
     if (Math.abs(g.translation()[0]) > 100) {
-      swiper.currentSwipe = true;
       _.debounce(function() {
         $('#slide').animate({'width': "0%"}, 100, "swing", function() {
-          swiper.currentSwipe = null;
         });
-
-      })
+      });
     }
   });
 
