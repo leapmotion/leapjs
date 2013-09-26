@@ -11,3 +11,15 @@ For examples, please see [http://js.leapmotion.com/examples](http://js.leapmotio
 ## Protocol
 
 Details about the protocol used to communicate with `leapd` are detailed here [PROTOCOL.md](https://github.com/leapmotion/leapjs/blob/master/PROTOCOL.md).
+
+##  Examples
+
+Some examples have been included in the <code>examples/</code> directory. To run them do the following:
+
+1. Run `npm install`
+2. Run `make serve`
+3. Point your browser to [http://localhost:8080/examples](http://localhost:8080/examples)
+
+Or in code:
+
+1. Run `node examples/node.js`
