@@ -1,7 +1,7 @@
 describe('Pointable', function(){
   describe("properties", function() {
     var data = fakeFrame({fingers: 5, hands:1})
-    var frame = new Leap.Frame(data);
+    var frame = createFrame(data);
     var pointable = frame.hands[0].pointables[0];
 
     it('should have id', function() { assert.equal(0, pointable.id) })

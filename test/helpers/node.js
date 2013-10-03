@@ -3,9 +3,11 @@ _ = require("underscore")
 
 Leap = require('../../lib')
 
-fakeHand = require('./common').fakeHand
-fakeFrame = require('./common').fakeFrame
-fakeFinger = require('./common').fakeFinger
-fakeController = require('./common').fakeController
-fakeGesture = require('./common').fakeGesture
+var common = require('./common');
 
+fakeHand = common.fakeHand;
+fakeFrame = common.fakeFrame;
+fakeFinger = common.fakeFinger;
+fakeController = common.fakeController;
+fakeGesture = common.fakeGesture;
+createFrame = common.createFrame;

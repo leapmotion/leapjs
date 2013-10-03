@@ -35,6 +35,10 @@ var fakeController = exports.fakeController = function(opts) {
   return controller;
 }
 
+var createFrame = exports.createFrame = function(data) {
+  return Leap.JSONProtocol(3)(data);
+}
+
 var fakeFrame = exports.fakeFrame = function(opts) {
   if (opts === undefined) opts = {};
 

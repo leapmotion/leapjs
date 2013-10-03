@@ -10,7 +10,7 @@ var BaseConnection = module.exports = function(opts) {
     port: 6437,
     enableHeartbeat: true,
     heartbeatInterval: 100,
-    requestProtocolVersion: 3
+    requestProtocolVersion: 4
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
@@ -104,7 +104,7 @@ BaseConnection.prototype.setHeartbeatState = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"./protocol":12,"events":17,"underscore":20}],2:[function(require,module,exports){
+},{"./protocol":13,"events":18,"underscore":21}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -372,7 +372,33 @@ Controller.prototype.setupConnectionEvents = function() {
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
-},{"./circular_buffer":2,"./connection":3,"./frame":5,"./gesture":6,"./node_connection":16,"./pipeline":10,"__browserify_process":18,"events":17,"underscore":20}],5:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection":3,"./frame":6,"./gesture":7,"./node_connection":17,"./pipeline":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
+var Pointable = require('./pointable');
+
+var Finger = module.exports = function(data) {
+  Pointable.call(this, data); // use pointable as super-constructor
+  this.dipPosition = data.dipPosition;
+  this.pipPosition = data.pipPosition;
+  this.mcpPosition = data.mcpPosition;
+  this.extended = data.extended;
+  this.type = data.type;
+  this.finger = true;
+  this.positions = [this.tipPosition, this.dipPosition, this.pipPosition, this.mcpPosition];
+};
+
+Finger.prototype = Pointable.prototype;
+
+Finger.prototype.toString = function() {
+  if(this.tool == true){
+    return "Finger [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
+  } else {
+    return "Finger [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
+  }
+}
+
+Finger.Invalid = { valid: false };
+
+},{"./pointable":12}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -488,26 +514,6 @@ var Frame = module.exports = function(data) {
   this.data = data;
   this.type = 'frame'; // used by event emitting
   this.currentFrameRate = data.currentFrameRate;
-  var handMap = {};
-  for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
-    var hand = new Hand(data.hands[handIdx]);
-    hand.frame = this;
-    this.hands.push(hand);
-    this.handsMap[hand.id] = hand;
-    handMap[hand.id] = handIdx;
-  }
-  for (var pointableIdx = 0, pointableCount = data.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
-    var pointable = new Pointable(data.pointables[pointableIdx]);
-    pointable.frame = this;
-    this.pointables.push(pointable);
-    this.pointablesMap[pointable.id] = pointable;
-    (pointable.tool ? this.tools : this.fingers).push(pointable);
-    if (pointable.handId !== undefined && handMap.hasOwnProperty(pointable.handId)) {
-      var hand = this.hands[handMap[pointable.handId]];
-      hand.pointables.push(pointable);
-      (pointable.tool ? hand.tools : hand.fingers).push(pointable);
-    }
-  }
 
   if (data.gestures) {
    /**
@@ -831,7 +837,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":19,"underscore":20}],6:[function(require,module,exports){
+},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1320,7 +1326,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":17,"gl-matrix":19,"underscore":20}],7:[function(require,module,exports){
+},{"events":18,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -1745,7 +1751,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":11,"gl-matrix":19,"underscore":20}],8:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":20,"underscore":21}],9:[function(require,module,exports){
 (function(){/**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -1760,6 +1766,7 @@ module.exports = {
   Connection: require("./connection"),
   CircularBuffer: require("./circular_buffer"),
   UI: require("./ui"),
+  JSONProtocol: require("./protocol").JSONProtocol,
   glMatrix: require("gl-matrix"),
   mat3: require("gl-matrix").mat3,
   vec3: require("gl-matrix").vec3,
@@ -1807,7 +1814,7 @@ module.exports = {
 }
 
 })()
-},{"./circular_buffer":2,"./connection":3,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"./ui":13,"gl-matrix":19}],9:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection":3,"./controller":4,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./protocol":13,"./ui":14,"gl-matrix":20}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -1947,7 +1954,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":19}],10:[function(require,module,exports){
+},{"gl-matrix":20}],11:[function(require,module,exports){
 var Pipeline = module.exports = function() {
   this.steps = [];
 }
@@ -1965,7 +1972,7 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2144,8 +2151,11 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":19}],12:[function(require,module,exports){
+},{"gl-matrix":20}],13:[function(require,module,exports){
 var Frame = require('./frame')
+  , Hand = require('./hand')
+  , Pointable = require('./pointable')
+  , Finger = require('./finger');
 
 var Event = function(data) {
   this.type = data.type;
@@ -2156,23 +2166,22 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
     case 1:
-      protocol = JSONProtocol(1, function(data) {
-        return new Frame(data);
-      });
+      protocol = JSONProtocol(1);
       break;
     case 2:
-      protocol = JSONProtocol(2, function(data) {
-        return new Frame(data);
-      });
+      protocol = JSONProtocol(2);
       protocol.sendHeartbeat = function(connection) {
         connection.send(protocol.encode({heartbeat: true}));
       }
       break;
     case 3:
-      protocol = JSONProtocol(3, function(data) {
-        return data.event ? new Event(data.event) : new Frame(data);
-
-      });
+      protocol = JSONProtocol(3);
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
+      break;
+    case 4:
+      protocol = JSONProtocol(4);
       protocol.sendHeartbeat = function(connection) {
         connection.send(protocol.encode({heartbeat: true}));
       }
@@ -2183,8 +2192,36 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   return protocol;
 }
 
-var JSONProtocol = function(version, cb) {
-  var protocol = cb;
+var JSONProtocol = exports.JSONProtocol = function(version) {
+  var protocol = function(data) {
+    if (data.event) {
+      return new Event(data.event);
+    } else {
+      var frame = new Frame(data);
+      var handMap = {};
+      for (var handIdx = 0, handCount = data.hands.length; handIdx != handCount; handIdx++) {
+        var hand = new Hand(data.hands[handIdx]);
+        hand.frame = frame;
+        frame.hands.push(hand);
+        frame.handsMap[hand.id] = hand;
+        handMap[hand.id] = handIdx;
+      }
+      for (var pointableIdx = 0, pointableCount = data.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
+        var pointableData = data.pointables[pointableIdx];
+        var pointable = pointableData.dipPosition ? new Finger(pointableData) : new Pointable(pointableData);
+        pointable.frame = frame;
+        frame.pointables.push(pointable);
+        frame.pointablesMap[pointable.id] = pointable;
+        (pointable.tool ? frame.tools : frame.fingers).push(pointable);
+        if (pointable.handId !== undefined && handMap.hasOwnProperty(pointable.handId)) {
+          var hand = frame.hands[handMap[pointable.handId]];
+          hand.pointables.push(pointable);
+          (pointable.tool ? hand.tools : hand.fingers).push(pointable);
+        }
+      }
+      return frame;
+    }
+  };
   protocol.encode = function(message) {
     return JSON.stringify(message);
   }
@@ -2194,12 +2231,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":5}],13:[function(require,module,exports){
+},{"./finger":5,"./frame":6,"./hand":8,"./pointable":12}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":14,"./ui/region":15}],14:[function(require,module,exports){
+},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2210,7 +2247,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2298,9 +2335,9 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":17,"underscore":20}],16:[function(require,module,exports){
+},{"events":18,"underscore":21}],17:[function(require,module,exports){
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2486,7 +2523,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":18}],18:[function(require,module,exports){
+},{"__browserify_process":19}],19:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2540,7 +2577,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function(){/**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -5614,7 +5651,7 @@ if(typeof(exports) !== 'undefined') {
 })();
 
 })()
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -6843,7 +6880,7 @@ if(typeof(exports) !== 'undefined') {
 }).call(this);
 
 })()
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 if (typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -6856,5 +6893,5 @@ if (typeof(window.requestAnimationFrame) !== 'function') {
 
 Leap = require("../lib/index");
 
-},{"../lib/index":8}]},{},[21])
+},{"../lib/index":9}]},{},[22])
 ;
