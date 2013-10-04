@@ -49,7 +49,7 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     id: opts.id || ++frameId,
     valid: true,
     timestamp: frameId,
-    pointables: _(opts.fingers || 0).times(function() { return fakeFinger() }),
+    pointables: opts.pointableData || _(opts.fingers || 0).times(function() { return fakeTool() }),
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
@@ -91,7 +91,7 @@ var fakeHand = exports.fakeHand = function(opts) {
   }
 }
 
-var fakeFinger = exports.fakeFinger = function() {
+var fakeTool = exports.fakeTool = function() {
   fingerId++
   return {
     id: fingerId - 1,
@@ -107,4 +107,14 @@ var fakeFinger = exports.fakeFinger = function() {
     touchDistance: 5,
     timeVisible: 10
   }
+}
+
+var fakeFinger = exports.fakeFinger = function() {
+  var finger = fakeTool()
+  finger.dipPosition = [13, 13, 13];
+  finger.pipPosition = [12, 12, 12];
+  finger.mcpPosition = [11, 11, 11];
+  finger.extended = true;
+  finger.type = 7;
+  return finger;
 }
