@@ -19,5 +19,6 @@ describe('Finger', function(){
     it('should have timeVisible', function() { assert.property(pointable, 'timeVisible') })
     it('should have mcpPosition', function() { assert.property(pointable, 'mcpPosition') })
     it('should have positions', function() { assert.property(pointable, 'positions') })
+    it('should match Finger in #toString', function() { assert.match(pointable.toString(), /^Finger/); })
   });
 });

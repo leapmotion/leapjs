@@ -16,5 +16,6 @@ describe('Pointable', function(){
     it('should have touchDistance', function() { assert.property(pointable, 'touchDistance') })
     it('should have timeVisible', function() { assert.property(pointable, 'timeVisible') })
     it('should not have mcpPosition', function() { assert.notProperty(pointable, 'mcpPosition') })
+    it('should match Pointable in #toString', function() { assert.match(pointable.toString(), /^Pointable/); })
   });
 });
