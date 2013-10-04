@@ -373,7 +373,8 @@ _.extend(Controller.prototype, EventEmitter.prototype);
 
 })(require("__browserify_process"))
 },{"./circular_buffer":2,"./connection":3,"./frame":6,"./gesture":7,"./node_connection":17,"./pipeline":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
-var Pointable = require('./pointable');
+var Pointable = require('./pointable')
+  , _ = require('underscore');
 
 var Finger = module.exports = function(data) {
   Pointable.call(this, data); // use pointable as super-constructor
@@ -386,7 +387,7 @@ var Finger = module.exports = function(data) {
   this.positions = [this.mcpPosition, this.pipPosition, this.dipPosition, this.tipPosition];
 };
 
-Finger.prototype = Pointable.prototype;
+_.extend(Finger.prototype, Pointable.prototype);
 
 Finger.prototype.toString = function() {
   if(this.tool == true){
@@ -394,11 +395,11 @@ Finger.prototype.toString = function() {
   } else {
     return "Finger [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
   }
-}
+};
 
 Finger.Invalid = { valid: false };
 
-},{"./pointable":12}],6:[function(require,module,exports){
+},{"./pointable":12,"underscore":21}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -2130,11 +2131,7 @@ var Pointable = module.exports = function(data) {
  * @returns {String} A description of the Pointable object as a string.
  */
 Pointable.prototype.toString = function() {
-  if(this.tool == true){
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
+  return "Pointable [ id:" + this.id + " " + this.length + "mmx | with:" + this.width + "mm | direction:" + this.direction + ' ]';
 }
 
 /**
