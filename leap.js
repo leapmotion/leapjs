@@ -383,7 +383,7 @@ var Finger = module.exports = function(data) {
   this.extended = data.extended;
   this.type = data.type;
   this.finger = true;
-  this.positions = [this.tipPosition, this.dipPosition, this.pipPosition, this.mcpPosition];
+  this.positions = [this.mcpPosition, this.pipPosition, this.dipPosition, this.tipPosition];
 };
 
 Finger.prototype = Pointable.prototype;
