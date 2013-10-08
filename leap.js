@@ -9,6 +9,7 @@ var BaseConnection = module.exports = function(opts) {
     enableGestures: false,
     port: 6437,
     enableHeartbeat: true,
+    background: false,
     heartbeatInterval: 100,
     requestProtocolVersion: 3
   });
@@ -29,9 +30,16 @@ BaseConnection.prototype.getUrl = function() {
 }
 
 BaseConnection.prototype.sendHeartbeat = function() {
-  if (this.protocol) {
+  if (this.protocol && this.protocol.sendHeartbeat) {
     this.setHeartbeatState(true);
     this.protocol.sendHeartbeat(this);
+  }
+}
+
+BaseConnection.prototype.setBackground = function(state) {
+  if (this.protocol && this.protocol.sendBackground) {
+    this.opts.background = state;
+    this.protocol.sendBackground(this);
   }
 }
 
@@ -248,6 +256,10 @@ Controller.prototype.gesture = function(type, cb) {
     creator.stop(cb);
   }
   return creator;
+}
+
+Controller.prototype.setBackground = function(state) {
+  this.connection.setBackground(state);
 }
 
 Controller.prototype.inBrowser = function() {
@@ -2156,12 +2168,12 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
     case 1:
-      protocol = JSONProtocol(1, function(data) {
+      protocol = JSONProtocol(header.version, function(data) {
         return new Frame(data);
       });
       break;
     case 2:
-      protocol = JSONProtocol(2, function(data) {
+      protocol = JSONProtocol(header.version, function(data) {
         return new Frame(data);
       });
       protocol.sendHeartbeat = function(connection) {
@@ -2169,12 +2181,24 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
       }
       break;
     case 3:
-      protocol = JSONProtocol(3, function(data) {
+      protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
 
       });
       protocol.sendHeartbeat = function(connection) {
         connection.send(protocol.encode({heartbeat: true}));
+      }
+      break;
+    case 4:
+      protocol = JSONProtocol(header.version, function(data) {
+        return data.event ? new Event(data.event) : new Frame(data);
+
+      });
+      protocol.sendHeartbeat = function(connection) {
+        connection.send(protocol.encode({heartbeat: true}));
+      }
+      protocol.sendBackground = function(connection) {
+        connection.send(protocol.encode({background: connection.opts.background}));
       }
       break;
     default:

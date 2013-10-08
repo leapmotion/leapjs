@@ -45,6 +45,52 @@ describe('Connection', function(){
     })
   })
 
+  describe('background in protocol 3', function(){
+    it('should not send background', function(done){
+      var controller = fakeController({version: 3});
+      var connection = controller.connection;
+      controller.on('ready', function() {
+        controller.setBackground(false);
+        setTimeout(function() {
+          assert.notEqual('{"background":false}', connection.socket.messages[connection.socket.messages.length - 1]);
+          connection.disconnect();
+          done();
+        }, 100);
+      })
+      controller.connection.connect()
+    })
+  })
+
+  describe('background in protocol 4', function(){
+    it('should send background true', function(done){
+      var controller = fakeController({version: 4});
+      var connection = controller.connection;
+      controller.on('ready', function() {
+        controller.setBackground(true);
+        setTimeout(function() {
+          assert.equal('{"background":true}', connection.socket.messages[connection.socket.messages.length - 1]);
+          connection.disconnect();
+          done();
+        }, 100);
+      })
+      controller.connection.connect()
+    })
+
+    it('should send background false', function(done){
+      var controller = fakeController({version: 4});
+      var connection = controller.connection;
+      controller.on('ready', function() {
+        controller.setBackground(false);
+        setTimeout(function() {
+          assert.equal('{"background":false}', connection.socket.messages[connection.socket.messages.length - 1]);
+          connection.disconnect();
+          done();
+        }, 100);
+      })
+      controller.connection.connect()
+    })
+  })
+
   if (typeof(window) === 'undefined') {
     describe('heartbeating', function(){
       it('should heartbeat', function(done){
