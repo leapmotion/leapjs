@@ -120,3 +120,15 @@ This version introduced server-side events. Events are structured in the followi
 {event: {type: "deviceConnect", state: true}}
 
 These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
+
+## Version 4
+
+### Changes
+
+This version introduced the not receiving frames when not sending heartbeats. Now, when an application is not sending heartbeats, it will not get frames. Even sending heartbeats is not a guarantee that frames will be sent, as frame will be sent to the first connection which maintained heartbeating. In order to always receive frames, you must set `background` to true in the construction of the controller.
+
+    new Leap.Controller({background:true})
+
+
+
+These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
