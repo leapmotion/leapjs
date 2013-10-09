@@ -29,7 +29,7 @@ stress: stress/punisher.js
 
 watch: watch-test
 
-watch-build: 
+watch-build:
 	./node_modules/.bin/nodemon --watch lib --exec "make" build
 
 watch-test:
@@ -40,3 +40,6 @@ open-in-browsers: build
 	open -a /Applications/Firefox.app test/helpers/browser.html
 	open -a /Applications/Safari.app test/helpers/browser.html
 	open -a /Applications/Google\ Chrome.app test/helpers/browser.html
+
+serve:
+	./node_modules/.bin/http-server .
