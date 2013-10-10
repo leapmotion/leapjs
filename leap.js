@@ -171,10 +171,11 @@ Connection.prototype.startHeartbeat = function() {
     propertyName = undefined;
   }
 
-  var windowVisible = true;
-
-  var focusListener = window.addEventListener('focus', function(e) { windowVisible = true; });
-  var blurListener = window.addEventListener('blur', function(e) { windowVisible = false; });
+  if (connection.windowVisible === undefined) {
+    connection.windowVisible = propertyName === undefined ? true : document[propertyName] === false;
+  }
+  var focusListener = window.addEventListener('focus', function(e) { connection.windowVisible = true; });
+  var blurListener = window.addEventListener('blur', function(e) { connection.windowVisible = false; });
 
   this.on('disconnect', function() {
     if (connection.heartbeatTimer) {
@@ -187,7 +188,7 @@ Connection.prototype.startHeartbeat = function() {
 
   this.heartbeatTimer = setInterval(function() {
     var isVisible = propertyName === undefined ? true : document[propertyName] === false;
-    if (isVisible && windowVisible) {
+    if (isVisible && connection.windowVisible) {
       connection.sendHeartbeat();
     } else {
       connection.setHeartbeatState(false);
