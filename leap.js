@@ -117,6 +117,9 @@ BaseConnection.prototype.reportFocus = function(state) {
   if (this.focused !== state);
   this.focusedState = state;
   this.emit(this.focusedState ? 'focus' : 'blur');
+  if (this.protocol && this.protocol.sendFocused) {
+    this.protocol.sendFocused(this, this.focusedState);
+  }
 }
 
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
@@ -138,15 +141,9 @@ _.extend(BrowserConnection.prototype, BaseConnection.prototype);
 BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
   var socket = new WebSocket(this.getUrl());
+  socket.onopen = function() { connection.handleOpen(); };
+  socket.onclose = function() { connection.handleClose(); };
   socket.onmessage = function(message) { connection.handleData(message.data) };
-  socket.onopen = function() {
-    connection.handleOpen();
-    // start the loop
-  };
-  socket.onclose = function() {
-    connection.handleClose()
-    // stop the loop
-  };
   return socket;
 }
 
@@ -204,10 +201,10 @@ _.extend(NodeConnection.prototype, BaseConnection.prototype);
 NodeConnection.prototype.setupSocket = function() {
   var connection = this;
   var socket = new WebSocket(this.getUrl());
-  socket.on('open', function() { connection.handleOpen() });
-  socket.on('message', function(m) { connection.handleData(m) });
-  socket.on('close', function() { connection.handleClose() });
-  socket.on('error', function() { connection.startReconnection() });
+  socket.on('open', function() { connection.handleOpen(); });
+  socket.on('message', function(m) { connection.handleData(m); });
+  socket.on('close', function() { connection.handleClose(); });
+  socket.on('error', function() { connection.startReconnection(); });
   return socket;
 }
 
@@ -2202,7 +2199,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
       protocol.sendBackground = function(connection) {
         connection.send(protocol.encode({background: connection.opts.background}));
       }
-      protocol.sendFocusd = function(connection, state) {
+      protocol.sendFocused = function(connection, state) {
         connection.send(protocol.encode({focused: state}));
       }
       break;
