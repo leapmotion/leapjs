@@ -114,7 +114,7 @@ BaseConnection.prototype.send = function(data) {
 }
 
 BaseConnection.prototype.reportFocus = function(state) {
-  if (this.focused !== state);
+  if (this.focusedState === state) return;
   this.focusedState = state;
   this.emit(this.focusedState ? 'focus' : 'blur');
   if (this.protocol && this.protocol.sendFocused) {
