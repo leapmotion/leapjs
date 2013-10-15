@@ -45,33 +45,65 @@ describe('Connection', function(){
     })
   })
 
-  describe('background in protocol 4', function(){
-    it('should send background true', function(done){
-      var controller = fakeController({version: 4});
-      var connection = controller.connection;
-      controller.on('ready', function() {
-        controller.setBackground(true);
-        setTimeout(function() {
-          assert.equal('{"background":true}', connection.socket.messages[connection.socket.messages.length - 1]);
-          connection.disconnect();
-          done();
-        }, 100);
+  if (typeof(window) === 'undefined') {
+    describe('background in protocol 4', function(){
+      it('should send background true', function(done){
+        var controller = fakeController({version: 4});
+        var connection = controller.connection;
+        controller.on('ready', function() {
+          controller.setBackground(true);
+          setTimeout(function() {
+            assert.deepEqual([JSON.stringify({"enableGestures":false}), JSON.stringify({"background":true})], connection.socket.messages);
+            connection.disconnect();
+            done();
+          }, 100);
+        })
+        controller.connection.connect()
       })
-      controller.connection.connect()
-    })
 
-    it('should send background false', function(done){
-      var controller = fakeController({version: 4});
-      var connection = controller.connection;
-      controller.on('ready', function() {
-        controller.setBackground(false);
-        setTimeout(function() {
-          assert.equal('{"background":false}', connection.socket.messages[connection.socket.messages.length - 1]);
-          connection.disconnect();
-          done();
-        }, 100);
+      it('should send background false', function(done){
+        var controller = fakeController({version: 4});
+        var connection = controller.connection;
+        controller.on('ready', function() {
+          controller.setBackground(false);
+          setTimeout(function() {
+            assert.equal('{"background":false}', connection.socket.messages[connection.socket.messages.length - 1]);
+            connection.disconnect();
+            done();
+          }, 100);
+        })
+        controller.connection.connect()
       })
-      controller.connection.connect()
     })
-  })
+  } else {
+    describe('background in protocol 4', function(){
+      it('should send background true', function(done){
+        var controller = fakeController({version: 4});
+        var connection = controller.connection;
+        controller.on('ready', function() {
+          controller.setBackground(true);
+          setTimeout(function() {
+            assert.deepEqual([JSON.stringify({"enableGestures":false}), JSON.stringify({"background":true}), JSON.stringify({"focused":true})], connection.socket.messages);
+            connection.disconnect();
+            done();
+          }, 100);
+        })
+        controller.connection.connect()
+      })
+
+      it('should send background false', function(done){
+        var controller = fakeController({version: 4});
+        var connection = controller.connection;
+        controller.on('ready', function() {
+          controller.setBackground(false);
+          setTimeout(function() {
+            assert.deepEqual([JSON.stringify({"enableGestures":false}), JSON.stringify({"background":false}), JSON.stringify({"focused":true})], connection.socket.messages);
+            connection.disconnect();
+            done();
+          }, 100);
+        })
+        controller.connection.connect()
+      })
+    })
+  }
 })

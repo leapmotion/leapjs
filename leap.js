@@ -148,7 +148,7 @@ BrowserConnection.prototype.setupSocket = function() {
 }
 
 BrowserConnection.prototype.startFocusLoop = function() {
-  if (!this.focusDetectorTimer) return;
+  if (this.focusDetectorTimer) return;
   var connection = this;
   var propertyName = null;
   if (typeof document.hidden !== "undefined") {
@@ -166,18 +166,27 @@ BrowserConnection.prototype.startFocusLoop = function() {
   if (connection.windowVisible === undefined) {
     connection.windowVisible = propertyName === undefined ? true : document[propertyName] === false;
   }
-  var focusListener = window.addEventListener('focus', function(e) { connection.windowVisible = true; updateFocusState(); });
-  var blurListener = window.addEventListener('blur', function(e) { connection.windowVisible = false; updateFocusState(); });
+
+  var focusListener = window.addEventListener('focus', function(e) {
+    connection.windowVisible = true;
+    updateFocusState();
+  });
+
+  var blurListener = window.addEventListener('blur', function(e) {
+    connection.windowVisible = false;
+    updateFocusState();
+  });
+
+  this.on('disconnect', function() {
+    window.removeEventListener('focus', focusListener);
+    window.removeEventListener('blur', blurListener);
+  });
 
   var updateFocusState = function() {
     var isVisible = propertyName === undefined ? true : document[propertyName] === false;
     connection.reportFocus(isVisible && connection.windowVisible);
   }
 
-  this.on('disconnect', function() {
-    window.removeEventListener('focus', focusListener);
-    window.removeEventListener('blur', blurListener);
-  });
 
   this.focusDetectorTimer = setInterval(updateFocusState, 100);
 }
@@ -2194,7 +2203,6 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
     case 4:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
-
       });
       protocol.sendBackground = function(connection) {
         connection.send(protocol.encode({background: connection.opts.background}));

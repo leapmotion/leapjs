@@ -20,25 +20,25 @@
         document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
       });
       controller.on('ready', function() {
-          console.log("ready");
+        console.log("ready");
       });
       controller.on('connect', function() {
-          console.log("connect");
+        console.log("connect");
       });
       controller.on('disconnect', function() {
-          console.log("disconnect");
+        console.log("disconnect");
       });
       controller.on('focus', function() {
-          console.log("focus");
+        console.log("focus");
       });
       controller.on('blur', function() {
-          console.log("blur");
+        console.log("blur");
       });
       controller.on('deviceConnected', function() {
-          console.log("deviceConnected");
+        console.log("deviceConnected");
       });
       controller.on('deviceDisconnected', function() {
-          console.log("deviceDisconnected");
+        console.log("deviceDisconnected");
       });
     </script>
   </head>
