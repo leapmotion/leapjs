@@ -34,6 +34,7 @@ var BaseConnection = module.exports = function(opts) {
   this.port = this.opts.port;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
+    this.setBackground(this.opts.background);
   });
 }
 
@@ -42,9 +43,10 @@ BaseConnection.prototype.getUrl = function() {
 }
 
 BaseConnection.prototype.setBackground = function(state) {
-  if (this.protocol && this.protocol.sendBackground) {
-    this.opts.background = state;
-    this.protocol.sendBackground(this);
+  this.opts.background = state;
+  if (this.protocol && this.protocol.sendBackground && this.background !== this.opts.background) {
+    this.background = this.opts.background;
+    this.protocol.sendBackground(this, this.opts.background);
   }
 }
 
@@ -186,7 +188,6 @@ BrowserConnection.prototype.startFocusLoop = function() {
     var isVisible = propertyName === undefined ? true : document[propertyName] === false;
     connection.reportFocus(isVisible && connection.windowVisible);
   }
-
 
   this.focusDetectorTimer = setInterval(updateFocusState, 100);
 }
@@ -2204,8 +2205,8 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
-      protocol.sendBackground = function(connection) {
-        connection.send(protocol.encode({background: connection.opts.background}));
+      protocol.sendBackground = function(connection, state) {
+        connection.send(protocol.encode({background: state}));
       }
       protocol.sendFocused = function(connection, state) {
         connection.send(protocol.encode({focused: state}));

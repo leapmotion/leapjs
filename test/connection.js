@@ -50,8 +50,8 @@ describe('Connection', function(){
       it('should send background true', function(done){
         var controller = fakeController({version: 4});
         var connection = controller.connection;
+        connection.setBackground(true);
         controller.on('ready', function() {
-          controller.setBackground(true);
           setTimeout(function() {
             assert.deepEqual([JSON.stringify({"enableGestures":false}), JSON.stringify({"background":true})], connection.socket.messages);
             connection.disconnect();
@@ -67,7 +67,7 @@ describe('Connection', function(){
         controller.on('ready', function() {
           controller.setBackground(false);
           setTimeout(function() {
-            assert.equal('{"background":false}', connection.socket.messages[connection.socket.messages.length - 1]);
+            assert.deepEqual([JSON.stringify({"enableGestures":false}), JSON.stringify({"background":false})], connection.socket.messages);
             connection.disconnect();
             done();
           }, 100);
@@ -80,8 +80,8 @@ describe('Connection', function(){
       it('should send background true', function(done){
         var controller = fakeController({version: 4});
         var connection = controller.connection;
+        connection.setBackground(true);
         controller.on('ready', function() {
-          controller.setBackground(true);
           setTimeout(function() {
             assert.deepEqual([JSON.stringify({"enableGestures":false}), JSON.stringify({"background":true}), JSON.stringify({"focused":true})], connection.socket.messages);
             connection.disconnect();
