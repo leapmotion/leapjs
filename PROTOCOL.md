@@ -127,4 +127,4 @@ These were introduced to allow reliable reporting of events from the server. Cur
 
 This version removes heartbeating. Instead, applications request focus by sending focus events. When an application wants control, it sends `{focused: true}`. When it's ready to reliquish control it sends `{focused: false}`.
 
-In order to always receive frames, you must set `background` to true in the construction of the controller. This can be achieved by sending `{background:true}`.
+In order to always receive frames, you must enable background mode. This can be achieved by sending `{background:true}`.
