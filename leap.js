@@ -165,16 +165,20 @@ Connection.prototype.startHeartbeat = function() {
 
   var windowVisible = true;
 
-  var focusListener = window.addEventListener('focus', function(e) { windowVisible = true; });
-  var blurListener = window.addEventListener('blur', function(e) { windowVisible = false; });
+  var focusBlurHandler = function(e) {
+    windowVisible = e.type === 'focus';
+  };
+
+  window.addEventListener('focus', focusBlurHandler);
+  window.addEventListener('blur', focusBlurHandler);
 
   this.on('disconnect', function() {
     if (connection.heartbeatTimer) {
       clearTimeout(connection.heartbeatTimer);
       delete connection.heartbeatTimer;
     }
-    window.removeEventListener('focus', focusListener);
-    window.removeEventListener('blur', blurListener);
+    window.removeEventListener('focus', focusBlurHandler);
+    window.removeEventListener('blur', focusBlurHandler);
   });
 
   this.heartbeatTimer = setInterval(function() {
