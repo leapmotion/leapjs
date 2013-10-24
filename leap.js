@@ -10,7 +10,7 @@ var BaseConnection = module.exports = function(opts) {
     port: 6437,
     enableHeartbeat: true,
     heartbeatInterval: 100,
-    requestProtocolVersion: 4
+    requestProtocolVersion: 5
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
@@ -2199,8 +2199,8 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
         connection.send(protocol.encode({heartbeat: true}));
       }
       break;
-    case 4:
-      protocol = JSONProtocol(4);
+    case 5:
+      protocol = JSONProtocol(5);
       protocol.sendHeartbeat = function(connection) {
         connection.send(protocol.encode({heartbeat: true}));
       }
