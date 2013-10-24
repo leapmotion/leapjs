@@ -36,9 +36,10 @@ BaseConnection.prototype.sendHeartbeat = function() {
 }
 
 BaseConnection.prototype.handleOpen = function() {
-  if (this.connected === true) return;
-  this.connected = true;
-  this.emit('connect');
+  if (!this.connected) {
+    this.connected = true;
+    this.emit('connect');
+  }
 }
 
 BaseConnection.prototype.enableGestures = function(enabled) {
@@ -54,16 +55,27 @@ BaseConnection.prototype.handleClose = function() {
 
 BaseConnection.prototype.startReconnection = function() {
   var connection = this;
-  setTimeout(function() { connection.connect() }, 1000);
+  this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 1000);
 }
 
 BaseConnection.prototype.disconnect = function() {
   if (!this.socket) return;
   this.socket.close();
-  this.connected = false;
   delete this.socket;
   delete this.protocol;
-  this.emit('disconnect');
+  if (this.connected) {
+    this.connected = false;
+    this.emit('disconnect');
+  }
+}
+
+BaseConnection.prototype.reconnect = function() {
+  if (this.connected) {
+    clearInterval(this.reconnectionTimer);
+  } else {
+    this.disconnect();
+    this.connect();
+  }
 }
 
 BaseConnection.prototype.handleData = function(data) {
@@ -153,16 +165,20 @@ Connection.prototype.startHeartbeat = function() {
 
   var windowVisible = true;
 
-  var focusListener = window.addEventListener('focus', function(e) { windowVisible = true; });
-  var blurListener = window.addEventListener('blur', function(e) { windowVisible = false; });
+  var focusBlurHandler = function(e) {
+    windowVisible = e.type === 'focus';
+  };
+
+  window.addEventListener('focus', focusBlurHandler);
+  window.addEventListener('blur', focusBlurHandler);
 
   this.on('disconnect', function() {
     if (connection.heartbeatTimer) {
       clearTimeout(connection.heartbeatTimer);
       delete connection.heartbeatTimer;
     }
-    window.removeEventListener('focus', focusListener);
-    window.removeEventListener('blur', blurListener);
+    window.removeEventListener('focus', focusBlurHandler);
+    window.removeEventListener('blur', focusBlurHandler);
   });
 
   this.heartbeatTimer = setInterval(function() {
@@ -1060,9 +1076,15 @@ var Gesture = exports.Gesture = function(gesture, frame) {
 }
 
 Gesture.prototype.update = function(gesture, frame) {
+  this.lastGesture = gesture;
+  this.lastFrame = frame;
   this.gestures.push(gesture);
   this.frames.push(frame);
   this.emit(gesture.state, this);
+}
+
+Gesture.prototype.translation = function() {
+  return vec3.subtract(vec3.create(), this.lastGesture.startPosition, this.lastGesture.position);
 }
 
 _.extend(Gesture.prototype, EventEmitter.prototype);
