@@ -125,6 +125,12 @@ These were introduced to allow reliable reporting of events from the server. Cur
 
 ### Changes
 
-This version removes heartbeating. Instead, applications request focus by sending focus events. When an application wants control, it sends `{focused: true}`. When it's ready to reliquish control it sends `{focused: false}`.
+This version removes heartbeating. Instead, applications request focus by sending focus events.
 
-In order to always receive frames, you must enable background mode. This can be achieved by sending `{background:true}`.
+### Sending focus events
+
+When your application needs to take focus, it does so by sending `{focused: true}`. When an application loses focus, in informs `leapd` by sending `{focused: false}`.
+
+### Background mode
+
+In order to always receive frames, you must enable background mode. This can be achieved by sending `{background: true}`. By default, applications will not receive frames when they lose focus.
