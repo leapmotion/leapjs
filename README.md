@@ -8,6 +8,10 @@ For more information, please visit [http://js.leapmotion.com/](http://js.leapmot
 
 For examples, please see [http://js.leapmotion.com/examples](http://js.leapmotion.com/examples), as well, there are some basic examples included in the `examples` directory.
 
+## Compatibility
+
+Version 0.3.0 or greater of leapjs requires version 1.0.9 or greater of the tracking software which is available at [https://www.leapmotion.com/setup](https://www.leapmotion.com/setup).
+
 ## Protocol
 
 Details about the protocol used to communicate with `leapd` are detailed here [PROTOCOL.md](https://github.com/leapmotion/leapjs/blob/master/PROTOCOL.md).

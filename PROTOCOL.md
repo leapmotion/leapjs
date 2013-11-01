@@ -117,6 +117,20 @@ Clients heartbeat by sending `{heartbeat: true}`. Heartbeats must be sent <100 m
 
 This version introduced server-side events. Events are structured in the following way.
 
-{event: {type: "deviceConnect", state: true}}
+    {event: {type: "deviceConnect", state: true}}
 
 These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
+
+## Version 4
+
+### Changes
+
+This version removes heartbeating. Instead, applications request focus by sending focus events.
+
+### Sending focus events
+
+When your application needs to take focus, it does so by sending `{focused: true}`. When an application loses focus, in informs `leapd` by sending `{focused: false}`.
+
+### Background mode
+
+In order to always receive frames, you must enable background mode. This can be achieved by sending `{background: true}`. By default, applications will not receive frames when they lose focus.
