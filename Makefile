@@ -21,6 +21,9 @@ test-browser:
 test-node:
 	./node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot
 
+test-integration:
+	node integration_test/reconnection.js
+
 stress: stress/punisher.js
 	node stress/punisher.js
 
