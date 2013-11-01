@@ -1,6 +1,5 @@
 BROWSERIFY_ARGS=--ignore=./node_connection template/entry.js
 
-
 build: compile compress
 
 compile:
@@ -11,7 +10,6 @@ compress:
 
 docs:
 	./node_modules/jsdoc/jsdoc lib README.md -d docs
-
 
 test: build test-only
 
@@ -26,7 +24,6 @@ test-node:
 stress: stress/punisher.js
 	node stress/punisher.js
 
-
 watch: watch-test
 
 watch-build:
@@ -34,7 +31,6 @@ watch-build:
 
 watch-test:
 	./node_modules/.bin/nodemon --watch lib --exec "make" test
-
 
 open-in-browsers: build
 	open -a /Applications/Firefox.app test/helpers/browser.html

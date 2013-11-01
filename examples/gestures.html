@@ -1,0 +1,99 @@
+<html>
+<head>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script src="../leap.js"></script>
+  <script>
+
+  $(document).ready(function() {
+    var ctl = new Leap.Controller({enableGestures: true});
+
+    var swiper = ctl.gesture('swipe');
+
+    var totalDistance = 0;
+
+    var tolerance = 50;
+    var cooloff = 300;
+
+    var x = 2, y = 2;
+
+    var updateHighlight = function() {
+      $('.grid div').removeClass('highlight');
+      $('.grid #d'+x+"_"+y).addClass('highlight');
+    }
+
+    var slider = _.debounce(function(xDir, yDir) {
+      x += xDir;
+      x = (x + 5) % 5;
+      y += yDir;
+      y = (y + 5) % 5;
+      console.log("x:"+x);
+      console.log("y:"+y);
+
+      console.log('.grid #d'+x+"_"+y);
+      updateHighlight();
+    }, cooloff);
+
+    swiper.update(function(g) {
+      if (Math.abs(g.translation()[0]) > tolerance || Math.abs(g.translation()[1]) > tolerance) {
+        var xDir = Math.abs(g.translation()[0]) > tolerance ? (g.translation()[0] > 0 ? -1 : 1) : 0;
+        var yDir = Math.abs(g.translation()[1]) > tolerance ? (g.translation()[1] < 0 ? -1 : 1) : 0;
+        slider(xDir, yDir);
+      }
+    });
+
+    ctl.connect();
+    updateHighlight();
+  })
+  </script>
+  <style>
+  .highlight {
+    border: 5px red solid !important;
+  }
+
+  #slide {
+    background-color:white;
+    float: left;
+    width: 100%;
+    height: 100%;
+  }
+
+  .grid div {
+    width: 100px;
+    height: 100px;
+    float: left;
+    border: 5px black solid;
+  }
+
+  </style>
+</head>
+<body>
+  <div class="grid">
+    <div id="d0_0"></div>
+    <div id="d1_0"></div>
+    <div id="d2_0"></div>
+    <div id="d3_0"></div>
+    <div id="d4_0"></div><br clear=both>
+    <div id="d0_1"></div>
+    <div id="d1_1"></div>
+    <div id="d2_1"></div>
+    <div id="d3_1"></div>
+    <div id="d4_1"></div><br clear=both>
+    <div id="d0_2"></div>
+    <div id="d1_2"></div>
+    <div id="d2_2"></div>
+    <div id="d3_2"></div>
+    <div id="d4_2"></div><br clear=both>
+    <div id="d0_3"></div>
+    <div id="d1_3"></div>
+    <div id="d2_3"></div>
+    <div id="d3_3"></div>
+    <div id="d4_3"></div><br clear=both>
+    <div id="d0_4"></div>
+    <div id="d1_4"></div>
+    <div id="d2_4"></div>
+    <div id="d3_4"></div>
+    <div id="d4_4"></div><br clear=both>
+  </div>
+</body>
+</html>

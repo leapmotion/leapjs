@@ -171,19 +171,22 @@ Connection.prototype.startHeartbeat = function() {
     propertyName = undefined;
   }
 
-  if (connection.windowVisible === undefined) {
-    connection.windowVisible = propertyName === undefined ? true : document[propertyName] === false;
-  }
-  var focusListener = window.addEventListener('focus', function(e) { connection.windowVisible = true; });
-  var blurListener = window.addEventListener('blur', function(e) { connection.windowVisible = false; });
+  var windowVisible = true;
+
+  var focusBlurHandler = function(e) {
+    windowVisible = e.type === 'focus';
+  };
+
+  window.addEventListener('focus', focusBlurHandler);
+  window.addEventListener('blur', focusBlurHandler);
 
   this.on('disconnect', function() {
     if (connection.heartbeatTimer) {
       clearTimeout(connection.heartbeatTimer);
       delete connection.heartbeatTimer;
     }
-    window.removeEventListener('focus', focusListener);
-    window.removeEventListener('blur', blurListener);
+    window.removeEventListener('focus', focusBlurHandler);
+    window.removeEventListener('blur', focusBlurHandler);
   });
 
   this.heartbeatTimer = setInterval(function() {
@@ -502,6 +505,13 @@ var Frame = module.exports = function(data) {
    */
   this.fingers = [];
 
+  /**
+   * The InteractionBox associated with the current frame.
+   *
+   * @member interactionBox
+   * @memberof Leap.Frame.prototype
+   * @type {Leap.InteractionBox}
+   */
   if (data.interactionBox) {
     this.interactionBox = new InteractionBox(data.interactionBox);
   }
@@ -1078,9 +1088,15 @@ var Gesture = exports.Gesture = function(gesture, frame) {
 }
 
 Gesture.prototype.update = function(gesture, frame) {
+  this.lastGesture = gesture;
+  this.lastFrame = frame;
   this.gestures.push(gesture);
   this.frames.push(frame);
   this.emit(gesture.state, this);
+}
+
+Gesture.prototype.translation = function() {
+  return vec3.subtract(vec3.create(), this.lastGesture.startPosition, this.lastGesture.position);
 }
 
 _.extend(Gesture.prototype, EventEmitter.prototype);
@@ -1502,7 +1518,9 @@ var Hand = module.exports = function(data) {
   /**
    * Time the hand has been visible in seconds.
    *
-   * @member Hand.prototype.timeVisible {float}
+   * @member timeVisible
+   * @memberof Leap.Hand.prototype
+   * @type {number}
    */
    this.timeVisible = data.timeVisible;
 
@@ -1851,6 +1869,8 @@ var glMatrix = require("gl-matrix")
  * Leap Motion coordinate system to 2D or 3D coordinate systems used
  * for application drawing.
  *
+ * ![Interaction Box](images/Leap_InteractionBox.png)
+ *
  * The InteractionBox region is defined by a center and dimensions along the x, y, and z axes.
  */
 var InteractionBox = module.exports = function(data) {
@@ -1907,8 +1927,8 @@ var InteractionBox = module.exports = function(data) {
  *
  * @method denormalizePoint
  * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} normalizedPosition The input position in InteractionBox coordinates.
- * @returns {Leap.Vector} The corresponding denormalized position in device coordinates.
+ * @param {number[]} normalizedPosition The input position in InteractionBox coordinates.
+ * @returns {number[]} The corresponding denormalized position in device coordinates.
  */
 InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
   return vec3.fromValues(
@@ -1927,10 +1947,10 @@ InteractionBox.prototype.denormalizePoint = function(normalizedPosition) {
  *
  * @method normalizePoint
  * @memberof Leap.InteractionBox.prototype
- * @param {Leap.Vector} position The input position in device coordinates.
+ * @param {number[]} position The input position in device coordinates.
  * @param {Boolean} clamp Whether or not to limit the output value to the range [0,1]
  * when the input position is outside the InteractionBox. Defaults to true.
- * @returns {Leap.Vector} The normalized position.
+ * @returns {number[]} The normalized position.
  */
 InteractionBox.prototype.normalizePoint = function(position, clamp) {
   var vec = vec3.fromValues(
@@ -2098,7 +2118,7 @@ var Pointable = module.exports = function(data) {
    * Stabilized
    *
    * @member stabilizedTipPosition
-   * @type {Leap.Vector}
+   * @type {number[]}
    * @memberof Leap.Pointable.prototype
    */
   this.stabilizedTipPosition = data.stabilizedTipPosition;
@@ -2119,22 +2139,57 @@ var Pointable = module.exports = function(data) {
    */
   this.tipVelocity = data.tipVelocity;
   /**
-   * Human readable string describing the 'Touch Zone' of this pointable
+   * The current touch zone of this Pointable object.
    *
-   * @member Pointable.prototype.touchZone {String}
+   * The Leap Motion software computes the touch zone based on a floating touch
+   * plane that adapts to the user's finger movement and hand posture. The Leap
+   * Motion software interprets purposeful movements toward this plane as potential touch
+   * points. When a Pointable moves close to the adaptive touch plane, it enters the
+   * "hovering" zone. When a Pointable reaches or passes through the plane, it enters
+   * the "touching" zone.
+   *
+   * The possible states include:
+   *
+   * * "none" -- The Pointable is outside the hovering zone.
+   * * "hovering" -- The Pointable is close to, but not touching the touch plane.
+   * * "touching" -- The Pointable has penetrated the touch plane.
+   *
+   * The touchDistance value provides a normalized indication of the distance to
+   * the touch plane when the Pointable is in the hovering or touching zones.
+   *
+   * @member touchZone
+   * @type {String}
+   * @memberof Leap.Pointable.prototype
    */
   this.touchZone = data.touchZone;
   /**
-   * Distance from 'Touch Plane'
+   * A value proportional to the distance between this Pointable object and the
+   * adaptive touch plane.
    *
-   * @member Pointable.prototype.touchDistance {number}
+   * ![Touch Distance](images/Leap_Touch_Plane.png)
+   *
+   * The touch distance is a value in the range [-1, 1]. The value 1.0 indicates the
+   * Pointable is at the far edge of the hovering zone. The value 0 indicates the
+   * Pointable is just entering the touching zone. A value of -1.0 indicates the
+   * Pointable is firmly within the touching zone. Values in between are
+   * proportional to the distance from the plane. Thus, the touchDistance of 0.5
+   * indicates that the Pointable is halfway into the hovering zone.
+   *
+   * You can use the touchDistance value to modulate visual feedback given to the
+   * user as their fingers close in on a touch target, such as a button.
+   *
+   * @member touchDistance
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
    */
   this.touchDistance = data.touchDistance;
 
   /**
-   * Time the pointable has been visible in seconds.
+   * How long the pointable has been visible in seconds.
    *
-   * @member Pointable.prototype.timeVisible {float}
+   * @member timeVisible
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
    */
   this.timeVisible = data.timeVisible;
 }
