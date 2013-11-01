@@ -10,7 +10,7 @@ For examples, please see [http://js.leapmotion.com/examples](http://js.leapmotio
 
 ## Compatibility
 
-Version 0.3.0 and greater of leapjs requires version 1.0.9 or greater of the tracking software which is available at [https://www.leapmotion.com/setup](https://www.leapmotion.com/setup).
+Version 0.3.0 or greater of leapjs requires version 1.0.9 or greater of the tracking software which is available at [https://www.leapmotion.com/setup](https://www.leapmotion.com/setup).
 
 ## Protocol
 
