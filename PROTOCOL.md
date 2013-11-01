@@ -117,7 +117,7 @@ Clients heartbeat by sending `{heartbeat: true}`. Heartbeats must be sent <100 m
 
 This version introduced server-side events. Events are structured in the following way.
 
-{event: {type: "deviceConnect", state: true}}
+    {event: {type: "deviceConnect", state: true}}
 
 These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
 
@@ -125,10 +125,6 @@ These were introduced to allow reliable reporting of events from the server. Cur
 
 ### Changes
 
-This version introduced the not receiving frames when not sending heartbeats. Now, when an application is not sending heartbeats, it will not get frames. Even sending heartbeats is not a guarantee that frames will be sent, as frame will be sent to the first connection which maintained heartbeating. In order to always receive frames, you must set `background` to true in the construction of the controller.
+This version removes heartbeating. Instead, applications request focus by sending focus events. When an application wants control, it sends `{focused: true}`. When it's ready to reliquish control it sends `{focused: false}`.
 
-    new Leap.Controller({background:true})
-
-
-
-These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
+In order to always receive frames, you must enable background mode. This can be achieved by sending `{background:true}`.
