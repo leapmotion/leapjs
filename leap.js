@@ -62,9 +62,12 @@ BaseConnection.prototype.enableGestures = function(enabled) {
   this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
 }
 
-BaseConnection.prototype.handleClose = function() {
+BaseConnection.prototype.handleClose = function(code, reason) {
   if (!this.connected) return;
   this.disconnect();
+  if (code === 1001 && this.opts.requestProtocolVersion > 1) {
+    this.opts.requestProtocolVersion--;
+  }
   this.startReconnection();
 }
 
@@ -145,7 +148,7 @@ BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
   var socket = new WebSocket(this.getUrl());
   socket.onopen = function() { connection.handleOpen(); };
-  socket.onclose = function() { connection.handleClose(); };
+  socket.onclose = function(data) { connection.handleClose(data['code'], data['reason']); };
   socket.onmessage = function(message) { connection.handleData(message.data) };
   return socket;
 }
@@ -215,7 +218,7 @@ NodeConnection.prototype.setupSocket = function() {
   var socket = new WebSocket(this.getUrl());
   socket.on('open', function() { connection.handleOpen(); });
   socket.on('message', function(m) { connection.handleData(m); });
-  socket.on('close', function() { connection.handleClose(); });
+  socket.on('close', function(code, reason) { connection.handleClose(code, reason); });
   socket.on('error', function() { connection.startReconnection(); });
   return socket;
 }
@@ -2255,6 +2258,9 @@ var Event = function(data) {
 var chooseProtocol = exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
+    case 1:
+    case 2:
+    case 3:
     case 4:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
