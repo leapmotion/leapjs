@@ -82,6 +82,7 @@ BaseConnection.prototype.disconnect = function() {
     this.connected = false;
     this.emit('disconnect');
   }
+  return true;
 }
 
 BaseConnection.prototype.reconnect = function() {
@@ -200,7 +201,8 @@ BrowserConnection.prototype.stopFocusLoop = function() {
 
 },{"./base":2,"underscore":20}],4:[function(require,module,exports){
 var WebSocket = require('ws')
-  , BaseConnection = require('./base');
+  , BaseConnection = require('./base')
+  , _ = require('underscore');
 
 var NodeConnection = module.exports = function(opts) {
   BaseConnection.call(this, opts);
@@ -218,7 +220,7 @@ NodeConnection.prototype.setupSocket = function() {
   return socket;
 }
 
-},{"./base":2,"ws":21}],5:[function(require,module,exports){
+},{"./base":2,"underscore":20,"ws":21}],5:[function(require,module,exports){
 (function(process){var Frame = require('./frame')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")

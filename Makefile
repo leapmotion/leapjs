@@ -13,7 +13,7 @@ docs:
 
 test: build test-only
 
-test-only: test-node test-browser
+test-only: test-node test-browser test-integration
 
 test-browser:
 	./node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html
