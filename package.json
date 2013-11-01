@@ -4,7 +4,7 @@
   "description": "Javascript client for the Leapmotion",
   "main": "lib",
   "scripts": {
-    "test": "make test-node"
+    "test": "make test-node test-integration"
   },
   "repository" : {
     "type" : "git",
