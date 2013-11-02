@@ -22,7 +22,7 @@ test-node:
 	./node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot
 
 test-integration:
-	node integration_test/reconnection.js
+	node integration_test/reconnection.js && node integration_test/protocol_versions.js
 
 stress: stress/punisher.js
 	node stress/punisher.js
