@@ -1,42 +1,33 @@
-# Leapd -- the Leap Daemon
+# Websocket protocol for communicating with `leapd`
 
-Leap Motion has provided several APIs for communicating to the leapd daemon
-but for those who need direct access to the Leap data, here is some
-information on the low-level stream of data it communicates.
+The Leap Motion controller provides a protocol for communicating high-level
+hand data to applications using Websockets. This document outlines the usage
+of this protocol.
 
-## What is leapd?
+## What is `leapd`?
 
-When you communicate with the Leap Motion Controller you're not communicating
-directly with the hardware. Instead you are communicating with the piece of
-software you downloaded onto your computer -- a web socket server which in
-turn listens to information sent to it by the Leap Motion hardware.
+`leapd` is a service which interprets data coming from the Leap Motion
+controller and reconstructs hand position. That hand data is made available
+in via a web socket server within `leapd`. This web socket communication is
+done through an local service on your computer.
 
-This web socket communication is done through an http local connection on your
-computer. It is a two way communication in which the listener -- or client --
-sends information to leapd about its desired communication settings and which
-protocol -- or version -- it understands.
+## Client communication
 
-## What is a leapd client?
+A websocket client can connect and communicate with `leapd` via this web socket
+connection. Several clients exist already for this data, for example:
 
-A leapd client is a piece of software that subscribes to the leapd daemon. It
-may be a javascript, or a component of a Unity game. You can also write your
-own client software in Java, C++, or any other language capable of
-communicating to a webSocket server. Currently Leap Motion provides client
-scripts in
+* https://github.com/leapmotion/leapjs - Javascript client for Nodejs and
+browsers.
+* https://github.com/logotype/LeapMotionAS3 - Flash client
 
-  * javascript
-  * node.js
-  * &nbsp;_place_holder;Python
-  * Java
-  * C# (Unity)
-  * C++
+## Protocol versioning
 
-## The protocol versions of leapd
+The data sent by the websocket server is versioned. As new fields and features
+are added, the version of data sent gets incremented. Currently there are four
+versions available. The requested version is encoded in the URI used to conenct.
 
-Although the schema -- or format -- of data that leapd broadcasts has been
-consistent to date, it is possible in the future that fields present in one
-protocol version might not be present in earlier versions, or fields may be
-removed from future protocol versions.
+The current URL format is `/{version number}.{format}`. The only supported format
+is `json`.
 
 ### Currently supported protocols
 
@@ -46,7 +37,7 @@ described in a specific documentation sheet.
   * Version 1: accessed by '/' or '/v1.json'
   * Version 2: accessed by '/v2.json
   * Version 3: accessed by '/v3.json'
-  * Version 4: accessed by '/v4.json' -- the current (as of November 2013) latest protocol. 
+  * Version 4: accessed by '/v4.json' -- the current (as of November 2013) latest protocol.
 
 When you send this first message, you get back a single JSON object echoing
 the version that the leapd will be using in its communications with your
@@ -81,8 +72,8 @@ the stream when the application context changes.
 You can tell the leapd server one of four things:
 
   * "I have gained focus" --&nbsp;_place_holder;{focused: true}. Take focus away from the last "on top" client and send me frames.
-  * "I have lost focus" -- {focused: false}. I do not want to be on top. this will NOT&nbsp;_place_holder;give any other client the focus but it will un-register this client as the focused client. 
-  * "I always want to get frames" -- {background: true }. I want to receive frame data no matter which client has the focus. 
+  * "I have lost focus" -- {focused: false}. I do not want to be on top. this will NOT&nbsp;_place_holder;give any other client the focus but it will un-register this client as the focused client.
+  * "I always want to get frames" -- {background: true }. I want to receive frame data no matter which client has the focus.
   * "I only want to get frames when in focus" -- {background: false}. I do not want to receive frame data unless I have the focus. (note - this is the default status of all clients until you explicitly send {background: true}.
 
 ### Client State
