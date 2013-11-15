@@ -1,10 +1,10 @@
 {
   "name": "leapjs",
-  "version": "0.2.2",
+  "version": "0.3.0-beta2",
   "description": "Javascript client for the Leapmotion",
   "main": "lib",
   "scripts": {
-    "test": "make test-node"
+    "test": "make test-node test-integration"
   },
   "repository" : {
     "type" : "git",

@@ -69,15 +69,15 @@ describe('Controller', function(){
     it('should fire a protocol event', function(done) {
       var controller = fakeController()
       controller.on('protocol', function(protocol) {
-        assert.equal(1, protocol.version);
+        assert.equal(4, protocol.version);
         controller.disconnect();
         done();
       });
       controller.connect()
     });
 
-    it('should fire a connection event when using protocol 3', function(done) {
-      var controller = fakeController({version: 3})
+    it('should fire a connection event when using protocol 4', function(done) {
+      var controller = fakeController({version: 4})
       controller.on('ready', function(protocol) {
         controller.connection.handleData(JSON.stringify({event: {type: 'deviceConnect', state: true}}));
       });

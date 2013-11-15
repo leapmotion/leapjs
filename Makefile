@@ -13,13 +13,16 @@ docs:
 
 test: build test-only
 
-test-only: test-node test-browser
+test-only: test-node test-browser test-integration
 
 test-browser:
 	./node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html
 
 test-node:
 	./node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot
+
+test-integration:
+	node integration_test/reconnection.js && node integration_test/protocol_versions.js
 
 stress: stress/punisher.js
 	node stress/punisher.js
