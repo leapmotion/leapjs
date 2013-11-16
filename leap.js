@@ -1562,6 +1562,10 @@ var Hand = module.exports = function(data) {
    * @type {number[]}
    */
    this.stabilizedPalmPosition = data.stabilizedPalmPosition;
+
+   this.type = data.type;
+   this.grabStrength = data.grabStrength;
+   this.pinchStrength = data.pinchStrength;
 }
 
 /**

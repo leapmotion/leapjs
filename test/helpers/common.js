@@ -87,7 +87,10 @@ var fakeHand = exports.fakeHand = function(opts) {
     r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
     t: (opts && opts.translation) || [1, 2, 3],
     timeVisible: 10,
-    stabilizedPalmPosition: [1,2,3]
+    stabilizedPalmPosition: [1,2,3],
+    type: 'left',
+    grabStrength: 0.5,
+    pinchStrength: 0.5
   }
 }
 
