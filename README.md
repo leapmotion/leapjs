@@ -27,3 +27,5 @@ Some examples have been included in the <code>examples/</code> directory. To run
 Or in code:
 
 1. Run `node examples/node.js`
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/3b7f7ada70056bb107cee71c0814b263 "githalytics.com")](http://githalytics.com/leapmotion/leapjs)
