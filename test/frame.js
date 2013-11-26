@@ -87,6 +87,7 @@ describe('Frame', function(){
   })
 
   describe('Invalid', function() {
+    var assertUtil = require('./../lib/assertUtil');
     it('should be invalid', function() { assert(!Leap.Frame.Invalid.valid)})
     it('should have empty fingers', function() { assert.equal(0, Leap.Frame.Invalid.fingers.length)})
     it('should have empty tools', function() { assert.equal(0, Leap.Frame.Invalid.tools.length)})
@@ -94,8 +95,8 @@ describe('Frame', function(){
     it('should return an invalid #pointable', function() { assert(!Leap.Frame.Invalid.pointable().valid)})
     it('should return an invalid #finger', function() { assert(!Leap.Frame.Invalid.finger().valid)})
     it('should return 0.0 from #rotationAngle', function() { assert.equal(0.0, Leap.Frame.Invalid.rotationAngle())})
-    it('should return an identity matrix from #rotationMatrix', function() { assert.deepEqual(Leap.mat3.create(), Leap.Frame.Invalid.rotationMatrix())})
-    it('should return a null vector from #rotationAxis', function() { assert.deepEqual(Leap.vec3.create(), Leap.Frame.Invalid.rotationAxis())})
+    it('should return an identity matrix from #rotationMatrix', function() { assertUtil.matrixCloseTo(Leap.mat3.create(), Leap.Frame.Invalid.rotationMatrix())})
+    it('should return a null vector from #rotationAxis', function() { assertUtil.vectorCloseTo(Leap.vec3.create(), Leap.Frame.Invalid.rotationAxis())})
     it('should return 1.0 from #scaleFactor', function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
     it('should return a null vector from #translation', function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
   })
