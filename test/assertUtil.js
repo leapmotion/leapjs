@@ -1,7 +1,47 @@
-(function () {
+(function (window) {
+
+    if (typeof module != 'undefined') {
+        var assert = require('assert');
+        var util = require('util');
+        var _ = require('underscore');
+    } else {
+        var assert = window.assert;
+        var _ = window._;
+    }
+
+    function ok(ok, c) {
+        if (assert && assert.ok) {
+            assert.ok(ok, c);
+        } else {
+            assert.equal(!!ok, c);
+        }
+    }
+
+    function isObject(o){
+        if (_){
+            return _.isObject(o);
+        } else {
+            return typeof o == 'object';
+        }
+    }
+
     var _DEFAULT_RANGE = 1e-6;
 
     var _DEBUG = 0;
+
+    function f(v1, v2, v3) {
+        var args = arguments || [v1, v2, v3];
+        if (typeof util !== 'undefined') {
+
+            return            util.format.apply(util, args);
+        } else {
+            try {
+                return args.join(',');// very sloppy hack of util.format
+            } catch (er) {
+                return args[0];
+            }
+        }
+    }
 
     var lib = {
 
@@ -23,8 +63,8 @@
          */
         validThreshold: function (threshold, comment) {
             if (!comment) comment = 'threshold violation';
-            assert.ok(_.isNumber(threshold), "matrix3CloseTo: third argument must be a number");
-            assert.ok(threshold >= 0, 'matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
+            ok(!isNaN(threshold), "matrix3CloseTo: third argument must be a number");
+            ok(threshold >= 0, 'matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
         },
 
         /**
@@ -44,18 +84,18 @@
         vectorCloseTo: function (vecA, vecB, threshold, comment) {
             try {
                 if (!comment) comment = 'vectorCloseTo';
-                module.exports.validThreshold(threshold, 'vectorCloseTo: ' + comment);
+                lib.validThreshold(threshold, 'vectorCloseTo: ' + comment);
 
-                assert.ok(vecA && _.isObject(vecA), util.format('vectorCloseTo bad argument 1: %s', vecA));
-                assert.ok(vecB && _.isObject(vecB), util.format('vectorCloseTo bad argument 2: %s', vecB));
+                ok(vecA && isObject(vecA), f('vectorCloseTo bad argument 1: %s', vecA));
+                ok(vecB && isObject(vecB), f('vectorCloseTo bad argument 2: %s', vecB));
 
-                if (_DEBUG) console.log('veca: %s', util.inspect(vecA));
-                if (!threshold) threshold = module.exports.DEFAULT_RANGE();
+                if (_DEBUG) console.log('veca: %s', f(vecA));
+                if (!threshold) threshold = lib.DEFAULT_RANGE();
                 _.each(_.range(0, 3), function (dim) {
-                    module.exports.closeTo(vecA[dim], vecB[dim], threshold, comment, dim);
+                    lib.closeTo(vecA[dim], vecB[dim], threshold, comment, dim);
                 });
             } catch (e) {
-                console.log('vct error: %s', e, util.inspect(vecA), util.inspect(vecB));
+                console.log('vct error: %s', e, f(vecA), f(vecB));
                 throw e;
             }
         },
@@ -74,39 +114,36 @@
 
             try {
                 if (!comment) comment = 'matrix3CloseTo';
-                module.exports.validThreshold(threshold, 'matrix3CloseTo: ' + comment);
+                lib.validThreshold(threshold, 'matrix3CloseTo: ' + comment);
 
                 if (!_.isNumber(threshold)) throw new Error("matrix3CloseTo: third argument must be a number");
                 if (threshold < 0) throw new Error('matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
 
-                assert.ok(matA && _.isObject(matA), util.format('vectorCloseTo bad argument 1: %s', matA));
-                assert.ok(matB && _.isObject(matB), util.format('vectorCloseTo bad argument 2: %s', matB));
+                ok(matA && isObject(matA), f('vectorCloseTo bad argument 1: %s', matA));
+                ok(matB && isObject(matB), f('vectorCloseTo bad argument 2: %s', matB));
 
-                if (!threshold) threshold = module.exports.DEFAULT_RANGE();
+                if (!threshold) threshold = lib.DEFAULT_RANGE();
 
                 _.each(_.range(0, 9), function (dim) {
-                    module.exports.closeTo(matB[dim], matA[dim], threshold, dim + ': ' + comment, dim);
+                    lib.closeTo(matB[dim], matA[dim], threshold, dim + ': ' + comment, dim);
                 });
             } catch (e) {
-                console.log('mct error: %s -- %s, %s', e, util.inspect(matA), util.inspect(matB));
+                console.log('mct error: %s -- %s, %s', e, f(matA), f(matB));
                 throw e;
             }
         },
         closeTo: function (a, b, threshold, comment, dim) {
-            assert.ok(!_.isNaN(a), 'bad number a: ' + comment);
-            assert.ok(!_.isNaN(b), 'bad number b: ' + comment);
+            ok(!_.isNaN(a), 'bad number a: ' + comment);
+            ok(!_.isNaN(b), 'bad number b: ' + comment);
             var dd = Math.abs(a - b);
             if (_DEBUG) console.log('dim: %s, dd: %s, threshold: %s ', dim, dd, threshold);
-            assert.ok(dd <= threshold, comment);
+            ok(dd <= threshold, comment);
         }
     };
 
-    if (typeof module !== 'undefined') {
-        var assert = require('assert');
-        var util = require('util');
-        var _ = require('underscore');
-        module.exports = lib;
+    if (typeof module == 'undefined') {
+        window.assertUtil = lib;
     } else {
-        assertUtil = lib;
+        module.exports = lib;
     }
-})();
+})(this);
