@@ -87,7 +87,6 @@ describe('Frame', function(){
   })
 
   describe('Invalid', function() {
-    var assertUtil = require('./../lib/assertUtil');
     it('should be invalid', function() { assert(!Leap.Frame.Invalid.valid)})
     it('should have empty fingers', function() { assert.equal(0, Leap.Frame.Invalid.fingers.length)})
     it('should have empty tools', function() { assert.equal(0, Leap.Frame.Invalid.tools.length)})
