@@ -18,6 +18,7 @@ setInterval(function() {
 
 controller.on('ready', function() {
     console.log("ready");
+    controller.connection.send(JSON.stringify({"focused":true}));
 });
 controller.on('connect', function() {
     console.log("connect");
