@@ -4,27 +4,27 @@
   "description": "Javascript client for the Leapmotion",
   "main": "lib",
   "scripts": {
-    "test": "make test-node"
+    "test": "make test-node test-integration"
   },
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/leapmotion/leapjs.git"
+  "repository" : {
+    "type" : "git",
+    "url" : "http://github.com/leapmotion/leapjs.git"
   },
   "license": "BSD-2-Clause",
   "dependencies": {
-    "ws": "~0.4.31",
-    "underscore": "~1.5.2",
-    "gl-matrix": "~2.0.0"
+    "ws": "0.4.25",
+    "underscore": "1.4.4",
+    "gl-matrix": "2.0.0"
   },
   "devDependencies": {
-    "browserify": "~2.35.4",
-    "mocha": "~1.14.0",
-    "mocha-phantomjs": "*",
-    "phantomjs": "~1.9.2-4",
-    "uglify-js": "~2.4.3",
-    "chai": "~1.8.1",
+    "browserify": "2.25.0",
+    "mocha": "1.7.4",
+    "mocha-phantomjs": "3.0.0",
+    "phantomjs": "1.9.0-6",
+    "uglify-js": "2.3.6",
+    "chai": "1.6.1",
     "nodemon": "0.7.8",
-    "jsdoc": "~3.3.0-alpha2",
+    "jsdoc": "3.2.0-dev",
     "http-server": "*"
   }
 }
