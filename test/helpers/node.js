@@ -3,6 +3,7 @@ _ = require("underscore")
 
 Leap = require('../../lib')
 
+assertUtil = require('./../assertUtil')
 fakeHand = require('./common').fakeHand
 fakeFrame = require('./common').fakeFrame
 fakeFinger = require('./common').fakeFinger
