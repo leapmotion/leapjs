@@ -9,11 +9,11 @@
         var _ = window._;
     }
 
-    function ok(ok, c) {
+    function ok(test, message) {
         if (assert && assert.ok) {
-            assert.ok(ok, c);
+            assert.ok(test, message);
         } else {
-            assert.equal(!!ok, c);
+            assert.equal(!!test, message);
         }
     }
 
