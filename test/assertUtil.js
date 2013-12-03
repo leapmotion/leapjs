@@ -75,8 +75,8 @@
          * 2) nobody has/should add extra properties to either vecA, vecB
          * 3) these properties are numeric.
          *
-         * @param vecA {Object}
-         * @param vecB {Object}
+         * @param vecA {Object|array}
+         * @param vecB {Object|array}
          * @param threshold {float}
          * @param comment {string}
          */
