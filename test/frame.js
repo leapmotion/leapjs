@@ -97,6 +97,6 @@ describe('Frame', function(){
     it('should return an identity matrix from #rotationMatrix', function() { assertUtil.matrix3CloseTo(Leap.mat3.create(), Leap.Frame.Invalid.rotationMatrix(), assertUtil.DEFAULT_RANGE())})
     it('should return a null vector from #rotationAxis', function() { assertUtil.vectorCloseTo(Leap.vec3.create(),Leap.Frame.Invalid.rotationAxis(),  assertUtil.DEFAULT_RANGE())})
     it('should return 1.0 from #scaleFactor', function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
-    it('should return a null vector from #translation', function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
+    it('should return a null vector from #translation', function() {  assertUtil.vectorCloseTo(Leap.vec3.create(),Leap.Frame.Invalid.translation(),  assertUtil.DEFAULT_RANGE())})
   })
 })
