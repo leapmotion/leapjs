@@ -32,8 +32,7 @@
     function f(v1, v2, v3) {
         var args = arguments || [v1, v2, v3];
         if (typeof util !== 'undefined') {
-
-            return            util.format.apply(util, args);
+            return util.format.apply(util, args);
         } else {
             try {
                 return args.join(',');// very sloppy hack of util.format
