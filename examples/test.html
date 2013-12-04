@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>  Test </title>
+    <body>
+      <h1> TEST </h1>
+
+    </body>
+
+<script src = "../leap.js" ></script>
+
+<script>
+
+  var controller = new Leap.Controller({enableGestures:true});
+
+
+  controller.loop( function( frame ){
+
+    console.log( 's' ); 
+    if( frame.hands[0] ){
+      console.log( frame );
+    }
+
+
+  });
+
+  //controller.connect();
+
+
+</script>

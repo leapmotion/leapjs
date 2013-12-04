@@ -1,0 +1,225 @@
+<html>
+<body>
+
+
+<script src = "../leap.js" >          </script>
+<script src = "lib/three.min.js" >    </script>
+<script src = "lib/stats.min.js" >    </script>
+<script src = "lib/underscore.js" >   </script>
+
+<script>
+
+  var container , camera, scene, renderer , stats;
+
+  var frame;
+  var sceneSize = 100;
+
+  var contoller;
+
+  /*
+
+  Color Scheme
+
+  https://kuler.adobe.com/create/color-wheel/?base=2&rule=Analogous&selected=4&name=My%20Kuler%20Theme&mode=rgb&rgbvalues=0.7073409074930184,1,0.17586440237170664,0.91,0.7042459023689379,0.16003660615825305,1,0.41464737066594837,0.22586440237170669,0.903532294899481,0.5579055534730547,0.91,0.17586440237170664,0.20628019674568376,1&swatchOrder=0,1,2,3,4
+
+  */
+
+  var lineColorArray = [
+
+    [ 0xB4FF2D , 0x92DD0B , 0x70BB09 , 0x509907  ],
+    [ 0xE8B429 , 0xC69207 , 0xA47005 , 0x925003  ],
+    [ 0xFF6A3A , 0xDD4818 , 0xBB2606 , 0x990404  ],
+    [ 0xE68EE8 , 0xC46CC6 , 0xA24AA4 , 0x902992  ],
+    [ 0x2D35FF , 0x0B13DD , 0x0901BB , 0x070099  ]
+
+  ]
+
+
+  var fingers = [];
+
+  init();
+  animate();
+
+
+  function init(){
+
+
+    controller = new Leap.Controller({ enableGestures:true });
+
+    scene = new THREE.Scene();
+    
+    camera = new THREE.PerspectiveCamera( 
+      50 ,
+      window.innerWidth / window.innerHeight,
+      sceneSize / 100 ,
+      sceneSize * 4
+    );
+
+    camera.position.z = sceneSize;
+
+    // Getting the container in the right location
+    container                   = document.createElement( 'div' );
+    container.style.width       = '100%';
+    container.style.height      = '100%';
+    container.style.position    = 'absolute';
+    container.style.top         = '0px';
+    container.style.left        = '0px';
+    container.style.background  = '#000';
+
+    document.body.appendChild( container );
+
+
+    // Getting the stats in the right position
+    stats                             = new Stats();
+    stats.domElement.style.position   = 'absolute';
+    stats.domElement.style.bottom     = '0px';
+    stats.domElement.style.right      = '0px';
+    stats.domElement.style.zIndex     = '999';
+
+    document.body.appendChild( stats.domElement );
+
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
+
+    // Making sure our renderer is always the right size
+    window.addEventListener( 'resize', onWindowResize , false );
+
+    initFingers();
+
+    controller.connect();
+
+  }
+
+
+
+  function initFingers(){
+
+    // Creating dramatically more finger points than needed
+    // just in case 4 hands are in the field
+    for( var i = 0 ; i < 20; i++ ){
+
+      var finger      = {};
+      finger.strings  = [];
+
+      for( var j = 0; j < 4; j++ ){
+
+        var stringGeo = new THREE.Geometry();
+
+        stringGeo.vertices.push( new THREE.Vector3(0 , 0 , -sceneSize) );
+        stringGeo.vertices.push( new THREE.Vector3() );
+
+        // Each finger has to have its own material, 
+        // so we can dynamically change its color / size
+        var mat       = new THREE.LineBasicMaterial();   
+        var string    = new THREE.Line( stringGeo , mat );
+
+        finger.strings.push( string );
+        scene.add( string );
+
+      }
+
+      fingers.push( finger );
+
+    }
+
+  }
+
+
+  function leapToScene( position ){
+
+    var x = position[0] - frame.interactionBox.center[0];
+    var y = position[1] - frame.interactionBox.center[1];
+    var z = position[2] - frame.interactionBox.center[2];
+      
+    x /= frame.interactionBox.size[0];
+    y /= frame.interactionBox.size[1];
+    z /= frame.interactionBox.size[2];
+
+    x *= sceneSize;
+    y *= sceneSize;
+    z *= sceneSize;
+
+    // Moving everything back a bit to see more of the hands
+    z -= sceneSize;
+
+    return new THREE.Vector3( x , y , z );
+
+  }
+
+  function update(){
+
+    if( frame.fingers ){
+
+      for( var i = 0; i < fingers.length; i++ ){ 
+
+        if( frame.fingers[i] ){ // if there are fingers, place them
+        
+          var leapFinger  = frame.fingers[i];     // Leap Finger Position
+          var finger      = fingers[i];           // Our array of finger objects
+
+          for( var j = 0; j < finger.strings.length; j++ ){
+
+            position = leapToScene( leapFinger.positions[j] );
+
+            // Placing the vertices for the string
+            // the z of the first vertex is set every frame
+            // because it will be moved offscreen when 
+            // the hand is not present
+            finger.strings[j].geometry.vertices[0].z = -2 * sceneSize;
+            finger.strings[j].geometry.vertices[1] = position;
+            finger.strings[j].geometry.verticesNeedUpdate = true;
+
+            // The color is based on the type of finger it is
+            finger.strings[j].material.color.setHex( lineColorArray[ leapFinger.type ][j] );
+            finger.strings[j].material.linewidth = 5 - j;
+
+          }
+
+        }else{ // If there aren't fingers, move them offscreen
+
+          var finger  = fingers[i];
+
+          for( var j = 0; j < finger.strings.length; j++ ){
+
+            finger.strings[j].geometry.vertices[0].z = sceneSize * 100;
+            finger.strings[j].geometry.vertices[1].z = sceneSize * 100;
+            finger.strings[j].geometry.verticesNeedUpdate = true;
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+
+  function animate(){
+
+    frame = controller.frame();
+    update();
+    stats.update();
+    renderer.render( scene , camera );
+    requestAnimationFrame( animate );
+
+  }
+
+  function onWindowResize(){
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+  }
+
+
+</script>
+
+
+</body>
+</html>
