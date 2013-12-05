@@ -158,6 +158,8 @@
 
       var fM = fingerMaterialArray[i];
 
+      // Uses the parts of the finger material array to assign 
+      // an aesthetic material
       var material = new THREE.MeshPhongMaterial({
         color:                 fM[0],
         specular:              fM[1],
@@ -242,7 +244,7 @@
       var length;
       for( var i = 0; i < fingers.length; i++ ){ 
 
-        if( frame.fingers[i] ){ // if there are fingers, place the
+        if( frame.fingers[i] ){ 
         
           var leapFinger  = frame.fingers[i];     // Leap Finger Position
           var finger      = fingers[i];           // Our array of finger objects
@@ -277,6 +279,7 @@
   function animate(){
 
     frame = controller.frame();
+    console.log( frame );
     update();
     stats.update();
     renderer.render( scene , camera );
