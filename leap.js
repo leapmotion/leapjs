@@ -224,7 +224,7 @@ NodeConnection.prototype.setupSocket = function() {
 }
 
 },{"./base":2,"underscore":21,"ws":22}],5:[function(require,module,exports){
-(function(process){var Frame = require('./frame')
+var process=require("__browserify_process");var Frame = require('./frame')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
@@ -423,7 +423,6 @@ Controller.prototype.setupConnectionEvents = function() {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-})(require("__browserify_process"))
 },{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":7,"./gesture":8,"./pipeline":12,"__browserify_process":19,"events":18,"underscore":21}],6:[function(require,module,exports){
 var Pointable = require('./pointable')
   , _ = require('underscore');
@@ -1932,7 +1931,7 @@ Hand.Invalid = {
 };
 
 },{"./pointable":13,"gl-matrix":20,"underscore":21}],10:[function(require,module,exports){
-(function(){/**
+/**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
  */
@@ -1992,7 +1991,6 @@ module.exports = {
   }
 }
 
-})()
 },{"./circular_buffer":1,"./controller":5,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./protocol":14,"./ui":15,"gl-matrix":20}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
@@ -2381,6 +2379,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
     case 2:
     case 3:
     case 4:
+    case 5:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
@@ -2541,7 +2540,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 
 _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":18,"underscore":21}],18:[function(require,module,exports){
-(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
 var isArray = typeof Array.isArray === 'function'
@@ -2725,7 +2724,17 @@ EventEmitter.prototype.listeners = function(type) {
   return this._events[type];
 };
 
-})(require("__browserify_process"))
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (typeof emitter._events[type] === 'function')
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
 },{"__browserify_process":19}],19:[function(require,module,exports){
 // shim for using process in browser
 
@@ -2781,7 +2790,7 @@ process.chdir = function (dir) {
 };
 
 },{}],20:[function(require,module,exports){
-(function(){/**
+/**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
  * @author Colin MacKenzie IV
@@ -5853,9 +5862,8 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-})()
 },{}],21:[function(require,module,exports){
-(function(){//     Underscore.js 1.4.4
+//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
 //     Underscore may be freely distributed under the MIT license.
@@ -7082,15 +7090,13 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-})()
 },{}],22:[function(require,module,exports){
-(function(global){/// shim for browser packaging
+var global=self;/// shim for browser packaging
 
 module.exports = function() {
   return global.WebSocket || global.MozWebSocket;
 }
 
-})(self)
 },{}],23:[function(require,module,exports){
 if (typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
