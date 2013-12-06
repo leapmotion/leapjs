@@ -15,6 +15,9 @@ describe('Hand', function(){
       it('should have 5 fingers', function() { assert.equal(5, hand.fingers.length) })
       it('should have timeVisible', function() { assert(hand.timeVisible) })
       it('should have stabilizedPalmPosition', function() { assert(hand.stabilizedPalmPosition) })
+      it('should have type', function() { assert(hand.type) })
+      it('should have grabStrength', function() { assert(hand.grabStrength) })
+      it('should have pinchStrength', function() { assert(hand.pinchStrength) })
     });
 
     describe("#finger", function() {

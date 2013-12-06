@@ -4,17 +4,17 @@ The Leap Motion service provides a locally running WebSocket server listening to
 
 ## Typical sequence of events on connecting
 
-* Connects to `/v2.json`
-* Server resonds with `{version: 2}`
+* Connects to `/v4.json`
+* Server resonds with `{version: 4}`
 * Client sends `{enableGestures:true}`
+* Client sends `{focused:true}`
 * Servers sends frames (one message per frame)
-* Client sends `{heartbeat:true}` every 100ms
+* Client loses the OSLeap Motion control focus and sends `{focused:false}`
+* Servers stops sending frames
 
 ## Negotiating protocol
 
-The client requests a specific version of the protocol by requesting a specific path. Currently the only supported paths are `/`, `/v1.json` and `/v2.json`. The server responds with a message indicating what protocol it can respond with. It is assumed that any client can currently speak and protocol lower than what it is requesting. Support for a minimum supported protocol will be added later.
-
-Currently, version 1 and version 2 of the protocol are differentiated only by the use heartbeats. Heartbeats are used to inform the Leap service that the current application wants exclusive use of the Leap. If the server responds with version 1, you should not send it heartbeats.
+The client requests a specific version of the protocol by requesting a specific path. The server responds with a message indicating what protocol it can respond with. It is assumed that any client can currently speak and protocol lower than what it is requesting. Support for a minimum supported protocol will be added later. The latest version of the protocol is: `v4.json`.
 
 ## Version 1
 
@@ -111,12 +111,32 @@ This version introduced *heartbeats*. Heartbeats are used to signal that you'd l
 
 Clients heartbeat by sending `{heartbeat: true}`. Heartbeats must be sent <100 ms from each other.
 
+*Note:* the heartbeat mechanism has been replaced by "focused" messages as of protocol version #4. Only use heartbeat messages with versions 2 and 3 of the protocol.
+
 ## Version 3
 
 ### Changes
 
 This version introduced server-side events. Events are structured in the following way.
 
-{event: {type: "deviceConnect", state: true}}
+    {event: {type: "deviceConnect", state: true}}
 
 These were introduced to allow reliable reporting of events from the server. Currently only `deviceConnect` events are supported.
+
+## Version 4
+
+### Changes
+
+This version removes heartbeating. Instead, applications request focus by sending focus events.
+
+### Sending focus events
+
+To receive frame messages containing tracking data, your application must take the Leap Motion control focus by sending the message: `{focused: true}` to the WebSocket server. 
+
+When your application does not need frames -- for example, when your application moves to the background of the user's desktop -- send a `{focused: false}` message to the WebSocket server. Sending this message prevents the user from accidentally making changes in your application with Leap Motion interaction intended for another app. It can also reduce the CPU footprint of your app when it is in the background. To resume processing frames of tracking data, send another `{focused: true}` message.
+
+If another application takes the Leap Motion control focus, your application loses focus automatically and won't receive frame messages even if you don't send a `{focused: false}` message.
+
+### Background mode
+
+In order to always receive frames, you must enable background mode. This can be achieved by sending `{background: true}`. By default, applications will not receive frames when they lose focus.
