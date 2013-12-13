@@ -36,7 +36,7 @@ var fakeController = exports.fakeController = function(opts) {
 }
 
 var createFrame = exports.createFrame = function(data) {
-  return Leap.JSONProtocol(3)(data);
+  return Leap.JSONProtocol(5)(data);
 }
 
 var fakeFrame = exports.fakeFrame = function(opts) {
@@ -67,6 +67,8 @@ var fakeGesture = exports.fakeGesture = function(opts) {
     type:"circle",
     center:[2,3,4],
     normal:[5,6,7],
+    handIds: [0, 1],
+    pointableIds: [4,5,6],
     progress: 10,
     radius: 20
   };
