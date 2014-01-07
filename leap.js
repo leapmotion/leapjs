@@ -2608,7 +2608,8 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
@@ -6952,7 +6953,7 @@ module.exports = function() {
 }
 
 },{}],22:[function(require,module,exports){
-if (typeof(window.requestAnimationFrame) !== 'function') {
+if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
     window.mozRequestAnimationFrame      ||
