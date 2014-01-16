@@ -131,7 +131,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":13,"events":17,"underscore":20}],3:[function(require,module,exports){
+},{"../protocol":13,"events":17,"underscore":21}],3:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -146,6 +146,17 @@ _.extend(BrowserConnection.prototype, BaseConnection.prototype);
 
 BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
+
+  if (typeof WebSocket == 'undefined'){
+    try {
+        var fs = require('fs');
+        // PROBABLY in node.js; there are situations in which (Browserify) this might actually pass...
+        throw new Error('your code is acting in the browser context, but it seems to be be running by node.js mode; pass isNode as a parameter to your controller options.');
+    } catch(err){ // PROBABLY not in node.js
+        throw new Error('your environment does not provide the WebSocket class. If you are in node.js make sure that the inNode property of your options is set to true. If you are in a Browser, you need to use a more moern Browser that supports web sockets.');
+    }
+  }
+
   var socket = new WebSocket(this.getUrl());
   socket.onopen = function() { connection.handleOpen(); };
   socket.onclose = function(data) { connection.handleClose(data['code'], data['reason']); };
@@ -202,7 +213,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":2,"underscore":20}],4:[function(require,module,exports){
+},{"./base":2,"fs":18,"underscore":21}],4:[function(require,module,exports){
 var WebSocket = require('ws')
   , BaseConnection = require('./base')
   , _ = require('underscore');
@@ -225,7 +236,7 @@ NodeConnection.prototype.setupSocket = function() {
   return socket;
 }
 
-},{"./base":2,"underscore":20,"ws":21}],5:[function(require,module,exports){
+},{"./base":2,"underscore":21,"ws":22}],5:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
@@ -425,7 +436,7 @@ Controller.prototype.setupConnectionEvents = function() {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./pipeline":11,"__browserify_process":18,"events":17,"underscore":20}],6:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./pipeline":11,"__browserify_process":19,"events":17,"underscore":21}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -891,7 +902,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":19,"underscore":20}],7:[function(require,module,exports){
+},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1386,7 +1397,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":17,"gl-matrix":19,"underscore":20}],8:[function(require,module,exports){
+},{"events":17,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -1813,7 +1824,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":12,"gl-matrix":19,"underscore":20}],9:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":20,"underscore":21}],9:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -1873,7 +1884,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":1,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"gl-matrix":19}],10:[function(require,module,exports){
+},{"./circular_buffer":1,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"gl-matrix":20}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2015,7 +2026,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":19}],11:[function(require,module,exports){
+},{"gl-matrix":20}],11:[function(require,module,exports){
 var Pipeline = module.exports = function() {
   this.steps = [];
 }
@@ -2247,7 +2258,7 @@ Pointable.prototype.toString = function() {
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":19}],13:[function(require,module,exports){
+},{"gl-matrix":20}],13:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2393,7 +2404,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":17,"underscore":20}],17:[function(require,module,exports){
+},{"events":17,"underscore":21}],17:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2589,7 +2600,10 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":18}],18:[function(require,module,exports){
+},{"__browserify_process":19}],18:[function(require,module,exports){
+// nothing to see here... no file methods for the browser
+
+},{}],19:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2608,8 +2622,7 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
+            if (ev.source === window && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
@@ -2644,7 +2657,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -5717,7 +5730,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -6945,14 +6958,14 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var global=self;/// shim for browser packaging
 
 module.exports = function() {
   return global.WebSocket || global.MozWebSocket;
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -6965,5 +6978,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":9}]},{},[22])
+},{"../lib/index":9}]},{},[23])
 ;
