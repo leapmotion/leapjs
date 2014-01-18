@@ -40,6 +40,14 @@
       controller.on('deviceDisconnected', function() {
         console.log("deviceDisconnected");
       });
+	  controller.on('hardwareDetected', function(deviceInfo) {
+	    console.log("hardwareDetected");
+		console.log(deviceInfo);
+	  });
+	  controller.on('hardwareDetached', function(deviceInfo) {
+        console.log("hardwareDetached");
+        console.log(deviceInfo);
+      });
     </script>
   </head>
   <body>

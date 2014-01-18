@@ -420,6 +420,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('focus', function() { controller.emit('focus') });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  this.connection.on('hardwareDetected', function(evt) { controller.emit(evt.state.attached ? 'hardwareDetected' : 'hardwareDetached', evt.state) });
   this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
 }
 
