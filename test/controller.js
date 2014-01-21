@@ -90,4 +90,26 @@ describe('Controller', function(){
       controller.connect()
     });
   });
+  
+  describe('Hardware Events', function() {
+    it('should fire hardwareDetected/Detached', function(done) {
+	  var controller = fakeController({version: 4})
+	  controller.on('protocol', function(protocol) {
+	    assert.equal(4, protocol.version);
+		controller.disconnect();
+		done();
+	  });
+	  
+	  controller.on('ready', function(protocol) {
+	    controller.connection.handleData(JSON.stringify({event: {type:'hardwareDetected', state: { deviceType:'peripheral', isEmbedded: false, isStreaming: true, attached: true}}}));
+		controller.connection.handleData(JSON.stringify({event: {type:'hardwareDetected', state: { deviceType: 'peripheral', isEmbedded: false, isStreaming: true, attached: false}}}));
+	  });
+	  
+	  controller.on('hardwareDetached', function(data) {
+	    assert.equal('peripheral', data.deviceType);
+		assert.equal(false, data.isEmbedded);
+		done();
+	});
+	controller.connect();
+  });
 })
