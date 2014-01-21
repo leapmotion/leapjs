@@ -169,5 +169,21 @@ describe('Controller', function(){
       assert.equal(Leap.Hand.prototype.testFn(), 'hand')
       assert.equal(Leap.Pointable.prototype.testFn(), 'pointable')
     });
+
+    it('should use registered plugins when the flag is set', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        }
+      }));
+
+      var controller = fakeController({useAllPlugins: true})
+      controller.on('frame', function(frame){
+        assert.equal(frame.foo, 'bar')
+      });
+      controller.connect();
+      controller.processFrame(fakeFrame())
+    });
   });
 })

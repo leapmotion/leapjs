@@ -278,6 +278,7 @@ var Controller = module.exports = function(opts) {
 
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
   this.frameEventName = opts.frameEventName;
+  this.useAllPlugins = opts.useAllPlugins || false;
   this.history = new CircularBuffer(200);
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
@@ -289,6 +290,7 @@ var Controller = module.exports = function(opts) {
     this.connectionType = opts.connectionType;
   }
   this.connection = new this.connectionType(opts);
+  if (opts.useAllPlugins) this.useRegisteredPlugins();
   this.setupConnectionEvents();
 }
 
@@ -598,6 +600,12 @@ Controller.prototype.use = function(pluginName, options) {
 
   }
 };
+
+Controller.prototype.useRegisteredPlugins = function(){
+  for (var plugin in Controller._pluginFactories){
+    this.use(plugin);
+  }
+}
 
 
 _.extend(Controller.prototype, EventEmitter.prototype);
@@ -2043,9 +2051,17 @@ module.exports = {
       callback = opts;
       opts = {};
     }
+    opts.useAllPlugins || (opts.useAllPlugins = true)
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
     return this.loopController;
+  },
+
+  /*
+   * Convenience method for Leap.Controller.plugin
+   */
+  plugin: function(name, options){
+    this.Controller.plugin(name, options)
   }
 }
 
