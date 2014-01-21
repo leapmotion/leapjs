@@ -90,4 +90,84 @@ describe('Controller', function(){
       controller.connect()
     });
   });
+
+  describe('plugins', function(){
+    Leap.Controller._pluginFactories = {}
+    it('should register plugins', function(){
+      Leap.Controller.plugin('testPlugin', fakePluginFactory());
+      assert.equal(Leap.Controller.plugins()[0], 'testPlugin');
+    });
+
+    it('should decorate frames', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        }
+      }));
+
+      var controller = fakeController()
+      controller.use('testPlugin')
+      controller.on('frame', function(frame){
+        assert.equal(frame.foo, 'bar')
+      });
+      controller.connect();
+      controller.processFrame(fakeFrame())
+    });
+
+    it('should decorate hands, fingers, and pointables', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        },
+        hand: function(hand){
+          hand.idWithExclamation = hand.id + '!'
+        },
+        finger: function(finger){
+          finger.testFinger = true
+        },
+        pointable: function(pointable){
+          pointable.testPointable = true
+        }
+      }));
+
+      var controller = fakeController()
+      controller.use('testPlugin')
+      controller.on('frame', function(frame){
+        assert.equal(frame.hands[0].idWithExclamation, '0!')
+        assert.equal(frame.fingers[0].testFinger, true)
+        assert.equal(frame.pointables[0].testPointable, true)
+      });
+      controller.connect();
+      controller.processFrame(fakeFrame({hands: 1, fingers: 1}))
+    });
+
+    it('should extend frame, hand, and pointable prototypes', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory({
+        frame: {
+          testFn: function(){
+            return 'frame';
+          }
+        },
+        hand: {
+          testFn: function(){
+            return 'hand';
+          }
+        },
+        pointable: {
+          testFn: function(){
+            return 'pointable';
+          }
+        }
+      }));
+      var controller = fakeController()
+      controller.use('testPlugin')
+      // our test doubles are not actual instances of the class, so we test the prototype
+      assert.equal(Leap.Frame.prototype.testFn(), 'frame')
+      assert.equal(Leap.Hand.prototype.testFn(), 'hand')
+      assert.equal(Leap.Pointable.prototype.testFn(), 'pointable')
+    });
+  });
 })

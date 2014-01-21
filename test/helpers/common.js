@@ -35,6 +35,15 @@ var fakeController = exports.fakeController = function(opts) {
   return controller;
 }
 
+var fakePluginFactory = exports.fakePluginFactory = function (returning) {
+  returning || (returning = {
+      frame: function (frame) {}
+  })
+  return function(){
+    return returning
+  }
+}
+
 var fakeFrame = exports.fakeFrame = function(opts) {
   if (opts === undefined) opts = {};
 
@@ -46,12 +55,18 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     valid: true,
     timestamp: frameId,
     pointables: _(opts.fingers || 0).times(function() { return fakeFinger() }),
+    tools: [],
+    fingers: [],
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
     interactionBox: {center: [1,2,3], size: [1,2,3]},
     currentFrameRate: 10
   };
+  for (var i = 0; i != frame.pointables.length; i++) {
+    (frame.pointables[i].tool ? frame.tools : frame.fingers).push(frame.pointables[i]);
+  }
+
   if (opts.gestures) {
     frame.gestures = opts.gestures;
   }
