@@ -28,7 +28,7 @@ var BaseConnection = module.exports = function(opts) {
     enableGestures: false,
     port: 6437,
     background: false,
-    requestProtocolVersion: 4
+    requestProtocolVersion: 5
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
@@ -420,8 +420,16 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('focus', function() { controller.emit('focus') });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
-  this.connection.on('hardwareDetected', function(evt) { controller.emit(evt.state.attached ? 'hardwareDetected' : 'hardwareDetached', evt.state) });
-  this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
+  this.connection.on('deviceEvent', function(evt) {
+    var outEvent = 'deviceEvent';
+    if( evt.state.changed == 'attached' ) {
+	  outEvent = evt.state.attached ? 'deviceAttached' : 'deviceRemoved';
+	}
+	else if( evt.state.changed == 'isStreaming') {
+	  outEvent = evt.state.isStreaming ? 'deviceStreaming' : 'deviceStopped';
+	}
+    controller.emit(outEvent, evt.state);
+  });
 }
 
 _.extend(Controller.prototype, EventEmitter.prototype);
@@ -2263,6 +2271,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
     case 2:
     case 3:
     case 4:
+	case 5:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
