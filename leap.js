@@ -2437,6 +2437,13 @@ Pointable.prototype.toString = function() {
 }
 
 /**
+ * Returns the hand which the pointable is attached to.
+ */
+Pointable.prototype.hand = function(){
+  return this.frame.hand(this.handId);
+}
+
+/**
  * An invalid Pointable object.
  *
  * You can use this Pointable instance in comparisons testing
