@@ -109,7 +109,8 @@ describe('Controller', function(){
 	    assert.equal('peripheral', data.deviceType);
 		assert.equal(false, data.isEmbedded);
 		done();
-	});
-	controller.connect();
+	  });
+	  controller.connect();
+    });
   });
 })
