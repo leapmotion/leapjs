@@ -20,6 +20,7 @@ downgradeProtocol = function(){
       if (!passed){
         passed = true;
         // no testing framework here, we manually advance to the next case
+        console.log('passed downgradeProtocol');
         saveGoodProtocol();
       }
     } else if (ws.upgradeReq.url == expected[0]) {
