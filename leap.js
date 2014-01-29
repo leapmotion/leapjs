@@ -1051,23 +1051,12 @@ var createGesture = exports.createGesture = function(data) {
   return gesture;
 }
 
+/*
+ * Returns a builder object, which uses method chaining for gesture callback binding.
+ */
 var gestureListener = exports.gestureListener = function(controller, type) {
   var handlers = {};
   var gestureMap = {};
-
-  var gestureCreator = function() {
-    var candidateGesture = gestureMap[gesture.id];
-    if (candidateGesture !== undefined) gesture.update(gesture, frame);
-    if (gesture.state == "start" || gesture.state == "stop") {
-      if (type == gesture.type && gestureMap[gesture.id] === undefined) {
-        gestureMap[gesture.id] = new Gesture(gesture, frame);
-        gesture.update(gesture, frame);
-      }
-      if (gesture.state == "stop") {
-        delete gestureMap[gesture.id];
-      }
-    }
-  };
 
   controller.on('gesture', function(gesture, frame) {
     if (gesture.type == type) {
@@ -2608,8 +2597,7 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
+            if (ev.source === window && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
