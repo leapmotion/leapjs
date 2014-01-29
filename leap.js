@@ -32,6 +32,7 @@ var BaseConnection = module.exports = function(opts) {
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
+  this.protocolVersionVerified = false;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
@@ -65,8 +66,15 @@ BaseConnection.prototype.enableGestures = function(enabled) {
 BaseConnection.prototype.handleClose = function(code, reason) {
   if (!this.connected) return;
   this.disconnect();
+
+  // 1001 - an active connection is closed
+  // 1006 - cannot connect
   if (code === 1001 && this.opts.requestProtocolVersion > 1) {
-    this.opts.requestProtocolVersion--;
+    if (this.protocolVersionVerified) {
+      this.protocolVersionVerified = false;
+    }else{
+      this.opts.requestProtocolVersion--;
+    }
   }
   this.startReconnection();
 }
@@ -99,9 +107,11 @@ BaseConnection.prototype.reconnect = function() {
 
 BaseConnection.prototype.handleData = function(data) {
   var message = JSON.parse(data);
+
   var messageEvent;
   if (this.protocol === undefined) {
     messageEvent = this.protocol = chooseProtocol(message);
+    this.protocolVersionVerified = true;
     this.emit('ready');
   } else {
     messageEvent = this.protocol(message);
@@ -383,10 +393,12 @@ Controller.prototype.processFrame = function(frame) {
     frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
+  // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.emit('deviceFrame', frame);
 }
 
+// on a deviceFrame or animationFrame, this emits a 'frame'
 Controller.prototype.processFinishedFrame = function(frame) {
   this.lastFrame = frame;
   if (frame.valid) {
@@ -1051,23 +1063,12 @@ var createGesture = exports.createGesture = function(data) {
   return gesture;
 }
 
+/*
+ * Returns a builder object, which uses method chaining for gesture callback binding.
+ */
 var gestureListener = exports.gestureListener = function(controller, type) {
   var handlers = {};
   var gestureMap = {};
-
-  var gestureCreator = function() {
-    var candidateGesture = gestureMap[gesture.id];
-    if (candidateGesture !== undefined) gesture.update(gesture, frame);
-    if (gesture.state == "start" || gesture.state == "stop") {
-      if (type == gesture.type && gestureMap[gesture.id] === undefined) {
-        gestureMap[gesture.id] = new Gesture(gesture, frame);
-        gesture.update(gesture, frame);
-      }
-      if (gesture.state == "stop") {
-        delete gestureMap[gesture.id];
-      }
-    }
-  };
 
   controller.on('gesture', function(gesture, frame) {
     if (gesture.type == type) {
