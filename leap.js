@@ -262,8 +262,10 @@ var process=require("__browserify_process");var Frame = require('./frame')
  * Polling is an appropriate strategy for applications which already have an
  * intrinsic update loop, such as a game.
  */
+
+
 var Controller = module.exports = function(opts) {
-  var inNode = typeof(process) !== 'undefined' && process.title === 'node';
+  var inNode = (process && process.versions && process.versions.node);
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
