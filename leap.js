@@ -146,12 +146,6 @@ _.extend(BrowserConnection.prototype, BaseConnection.prototype);
 
 BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
-  debugger;
-
-  if (typeof WebSocket == 'undefined'){
-    throw new Error('WebSocket not available.  Upgrade your browser, or if running in node, set inNode to true manually');
-  }
-
   var socket = new WebSocket(this.getUrl());
   socket.onopen = function() { connection.handleOpen(); };
   socket.onclose = function(data) { connection.handleClose(data['code'], data['reason']); };
@@ -269,9 +263,7 @@ var Frame = require('./frame')
  * intrinsic update loop, such as a game.
  */
 var Controller = module.exports = function(opts) {
-//  var inNode = typeof(process) !== 'undefined' && process.title === 'node';
-//  var inNode = typeof module !== 'undefined' && module.exports;
-  var inNode = false;
+  var inNode = typeof module !== 'undefined' && module.exports;
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
@@ -2239,6 +2231,13 @@ Pointable.prototype.toString = function() {
   } else {
     return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
   }
+}
+
+/**
+ * Returns the hand which the pointable is attached to.
+ */
+Pointable.prototype.hand = function(){
+  return this.frame.hand(this.handId);
 }
 
 /**
