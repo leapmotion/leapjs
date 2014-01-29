@@ -15,5 +15,6 @@ describe('Pointable', function(){
     it('should have touchZone', function() { assert(pointable.touchZone) })
     it('should have touchDistance', function() { assert(pointable.touchDistance) })
     it('should have timeVisible', function() { assert(pointable.timeVisible) })
+    it('should respond to hand()', function() { assert.equal(pointable.hand(), frame.hands[0]) })
   });
 });
