@@ -32,6 +32,7 @@ var BaseConnection = module.exports = function(opts) {
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
+  this.protocolVersionVerified = false;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
@@ -65,7 +66,8 @@ BaseConnection.prototype.enableGestures = function(enabled) {
 BaseConnection.prototype.handleClose = function(code, reason) {
   if (!this.connected) return;
   this.disconnect();
-  if (code === 1001 && this.opts.requestProtocolVersion > 1) {
+
+  if (!this.protocolVersionVerified && code === 1001 && this.opts.requestProtocolVersion > 1) {
     this.opts.requestProtocolVersion--;
   }
   this.startReconnection();
@@ -99,9 +101,11 @@ BaseConnection.prototype.reconnect = function() {
 
 BaseConnection.prototype.handleData = function(data) {
   var message = JSON.parse(data);
+
   var messageEvent;
   if (this.protocol === undefined) {
     messageEvent = this.protocol = chooseProtocol(message);
+    this.protocolVersionVerified = true;
     this.emit('ready');
   } else {
     messageEvent = this.protocol(message);
@@ -383,10 +387,12 @@ Controller.prototype.processFrame = function(frame) {
     frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
+  // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.emit('deviceFrame', frame);
 }
 
+// on a deviceFrame or animationFrame, this emits a 'frame'
 Controller.prototype.processFinishedFrame = function(frame) {
   this.lastFrame = frame;
   if (frame.valid) {
