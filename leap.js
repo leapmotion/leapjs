@@ -226,7 +226,7 @@ NodeConnection.prototype.setupSocket = function() {
 }
 
 },{"./base":2,"underscore":20,"ws":21}],5:[function(require,module,exports){
-var process=require("__browserify_process");var Frame = require('./frame')
+var Frame = require('./frame')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
@@ -263,7 +263,7 @@ var process=require("__browserify_process");var Frame = require('./frame')
  * intrinsic update loop, such as a game.
  */
 var Controller = module.exports = function(opts) {
-  var inNode = typeof(process) !== 'undefined' && process.title === 'node';
+  var inNode = typeof module !== 'undefined' && module.exports;
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
@@ -425,7 +425,7 @@ Controller.prototype.setupConnectionEvents = function() {
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./pipeline":11,"__browserify_process":18,"events":17,"underscore":20}],6:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./pipeline":11,"events":17,"underscore":20}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
