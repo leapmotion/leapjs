@@ -38,7 +38,7 @@ described in a specific documentation sheet.
   * Version 2: accessed by '/v2.json
   * Version 3: accessed by '/v3.json'
   * Version 4: accessed by '/v4.json'
-  * Version 5: accessed by '/v4.json' -- the current (as of January 2014) latest protocol. adds 'deviceEvent's
+  * Version 5: accessed by '/v5.json' -- the current (as of January 2014) latest protocol. adds 'deviceEvent's
 
 When you send this first message, you get back a single JSON object echoing
 the version that the leapd will be using in its communications with your
@@ -222,9 +222,7 @@ will have.
  Property  | Description
  --------  | -----------
  attached  | The physical connection of the device.  This is only ever false once, when disconnecting.
- id        | A leapd-session unique serially assigned identifier for the device. These are not garunteed
- to be the same between sessions, but they will uniquely identify a particular device,
- even between disconnect events for as long as leapd is active.
+ id        | A leapd-session unique serially assigned identifier for the device.  These are not garunteed to be the same between sessions, but they will uniquely identify a particular device, even between disconnect events for as long as leapd is active.
  streaming | True if the device is currently contributing frame data.
  type      | The type of the device.  Currently values will be one of "peripheral", "laptop", or "keyboard".
 
