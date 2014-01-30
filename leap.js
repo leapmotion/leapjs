@@ -5,7 +5,7 @@
  *
  * Copyright 2013 LeapMotion, Inc. and other contributors
  * Released under the BSD-2-Clause license
- * http://jquery.org/license
+ * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt
  */
 },{}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
