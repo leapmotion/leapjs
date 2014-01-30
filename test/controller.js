@@ -91,26 +91,68 @@ describe('Controller', function(){
     });
   });
   
-  describe('Hardware Events', function() {
-    it('should fire hardwareDetected/Detached', function(done) {
-	  var controller = fakeController({version: 4})
-	  controller.on('protocol', function(protocol) {
-	    assert.equal(4, protocol.version);
-		controller.disconnect();
-		done();
-	  });
-	  
-	  controller.on('ready', function(protocol) {
-	    controller.connection.handleData(JSON.stringify({event: {type:'hardwareDetected', state: { deviceType:'peripheral', isEmbedded: false, isStreaming: true, attached: true}}}));
-		controller.connection.handleData(JSON.stringify({event: {type:'hardwareDetected', state: { deviceType: 'peripheral', isEmbedded: false, isStreaming: true, attached: false}}}));
-	  });
-	  
-	  controller.on('hardwareDetached', function(data) {
-	    assert.equal('peripheral', data.deviceType);
-		assert.equal(false, data.isEmbedded);
-		done();
-	  });
-	  controller.connect();
+  describe('device events', function() {
+    it('should fire deviceAttached/Removed ', function(done) {
+	    var controller = fakeController({version: 5});
+      var count = 0;
+      
+	    controller.on('protocol', function(protocol) {
+	      assert.equal(5, protocol.version);
+		    controller.disconnect();
+		    done();
+	    });
+	    
+	    controller.on('ready', function(protocol) {
+	      controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: { type: 'peripheral', streaming: false, attached: true}}}));
+		    controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: { type: 'peripheral', streaming: false, attached: false}}}));
+	    });
+	    
+      var assertFalseFunc = function(deviceInfo) {
+        assert.equal(true,false); //I'm sure there's a better way to do this...
+      };
+      
+      controller.on('deviceStreaming', assertFalseFunc);
+      controller.on('deviceStopped', assertFalseFunc);
+      controller.on('streamingStarted', assertFalseFunc);
+      controller.on('streamingStopped', assertFalseFunc);
+      controller.on('deviceAttached', function(deviceInfo) {
+        count++;
+      });
+	    controller.on('deviceRemoved', function(deviceInfo) {
+	      assert.equal('peripheral', deviceInfo.type);
+        assert.equal(count, 1);
+	    });
+      
+	    controller.connect();
+    });
+    
+    it('should fire both deviceAttached AND deviceStreaming', function(done) {
+      var controller = fakeController({version: 5});
+      var count = 0;
+      
+	    controller.on('protocol', function(protocol) {
+	      assert.equal(5, protocol.version);
+		    controller.disconnect();
+	    });
+	    
+	    controller.on('ready', function(protocol) {
+	      controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: { type: 'peripheral', streaming: true, attached: true}}}));
+	    });
+	    
+	    controller.on('deviceAttached', function(deviceInfo) {
+	      assert.equal(count, 0);
+        count++;
+	    });
+      controller.on('deviceStreaming', function(deviceInfo) {
+       assert.equal(count, 1);
+       count++;
+      });
+      controller.on('streamingStarted', function(deviceInfo) {
+        assert.equal(count, 2);
+        done();
+      });
+ 
+	    controller.connect();
     });
   });
 })
