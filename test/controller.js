@@ -96,6 +96,7 @@ describe('Controller', function(){
     it('should register plugins', function(){
       Leap.Controller.plugin('testPlugin', fakePluginFactory());
       assert.equal(Leap.Controller.plugins()[0], 'testPlugin');
+      Leap.Controller._pluginFactories = {}
     });
 
     it('should decorate frames', function(){
@@ -113,6 +114,7 @@ describe('Controller', function(){
       });
       controller.connect();
       controller.processFrame(fakeFrame())
+      Leap.Controller._pluginFactories = {}
     });
 
     it('should decorate hands, fingers, and pointables', function(){
@@ -141,6 +143,7 @@ describe('Controller', function(){
       });
       controller.connect();
       controller.processFrame(fakeFrame({hands: 1, fingers: 1}))
+      Leap.Controller._pluginFactories = {}
     });
 
     it('should extend frame, hand, and pointable prototypes', function(){
@@ -168,6 +171,10 @@ describe('Controller', function(){
       assert.equal(Leap.Frame.prototype.testFn(), 'frame')
       assert.equal(Leap.Hand.prototype.testFn(), 'hand')
       assert.equal(Leap.Pointable.prototype.testFn(), 'pointable')
+      assert.equal(Leap.Frame.Invalid.testFn(), 'frame')
+      assert.equal(Leap.Hand.Invalid.testFn(), 'hand')
+      assert.equal(Leap.Pointable.Invalid.testFn(), 'pointable')
+      Leap.Controller._pluginFactories = {}
     });
 
     it('should use registered plugins when the flag is set', function(){
@@ -184,6 +191,43 @@ describe('Controller', function(){
       });
       controller.connect();
       controller.processFrame(fakeFrame())
+      Leap.Controller._pluginFactories = {}
     });
   });
+
+  describe('method chaining', function(){
+    it('should allow return a controller from .connect()', function(){
+      var controller = new Leap.Controller
+      assert.equal(controller.connect(), controller);
+    });
+
+    it('should allow return a controller from .on()', function(){
+      var controller = new Leap.Controller
+      assert.equal(controller.on('frame', function(){}), controller);
+    });
+    it('should allow return a controller from .use()', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        }
+      }));
+      var controller = new Leap.Controller
+
+      assert.equal(controller.use('testPlugin'), controller);
+      Leap.Controller._pluginFactories = {}
+    });
+
+    it('should allow return a controller from .disconnect()', function(){
+      var controller = new Leap.Controller
+      assert.equal(controller.disconnect(), controller);
+    });
+
+    it('should allow return a controller from .setBackground()', function(){
+      var controller = new Leap.Controller
+      assert.equal(controller.setBackground(true), controller);
+    });
+
+
+  })
 })
