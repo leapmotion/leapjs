@@ -146,6 +146,36 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
     });
 
+    it('should stop decorating hands, fingers, and pointables', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        },
+        hand: function(hand){
+          hand.idWithExclamation = hand.id + '!'
+        },
+        finger: function(finger){
+          finger.testFinger = true
+        },
+        pointable: function(pointable){
+          pointable.testPointable = true
+        }
+      }));
+
+      var controller = fakeController();
+      controller.use('testPlugin')
+      controller.on('frame', function(frame){
+        assert.equal(frame.hands[0].idWithExclamation, undefined)
+        assert.equal(frame.fingers[0].testFinger, undefined)
+        assert.equal(frame.pointables[0].testPointable, undefined)
+      });
+      controller.connect();
+      controller.stopUsing('testPlugin');
+      controller.processFrame(fakeFrame({hands: 1, fingers: 1}))
+      Leap.Controller._pluginFactories = {}
+    });
+
     it('should extend frame, hand, and pointable prototypes', function(){
       Leap.Controller._pluginFactories = {}
       Leap.Controller.plugin('testPlugin', fakePluginFactory({

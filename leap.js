@@ -299,8 +299,8 @@ var Controller = module.exports = function(opts) {
     this.connectionType = opts.connectionType;
   }
   this.connection = new this.connectionType(opts);
+  this.pluginPipelineSteps = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
-  this.plugins = [];
   this.setupConnectionEvents();
 }
 
@@ -573,7 +573,9 @@ Controller.prototype.use = function(pluginName, options) {
 
     if (typeof functionOrHash === 'function') {
       if (!this.pipeline) this.pipeline = new Pipeline(this);
-      this.pipeline.addWrappedStep(key, functionOrHash);
+      if (!this.pluginPipelineSteps[pluginName]) this.pluginPipelineSteps[pluginName] = [];
+
+      this.pluginPipelineSteps[pluginName].push( this.pipeline.addWrappedStep(key, functionOrHash) );
     } else {
       switch (key) {
         case 'frame':
@@ -595,6 +597,15 @@ Controller.prototype.use = function(pluginName, options) {
   }
   return this;
 };
+
+Controller.prototype.stopUsing = function(pluginName){
+  var steps = this.pluginPipelineSteps[pluginName]
+  if(!steps) return;
+  for (var i = 0; i < steps.length; i++){
+    this.pipeline.removeStep(steps[i]);
+  }
+  return this;
+}
 
 Controller.prototype.plugin = function(pluginName){
   this.plugins
@@ -2225,6 +2236,12 @@ Pipeline.prototype.run = function (frame) {
     frame = this.steps[i](frame);
   }
   return frame;
+}
+
+Pipeline.prototype.removeStep = function(step){
+  var index = this.steps.indexOf(step);
+  if (index === -1) throw "Step not found in pipeline";
+  this.steps.splice(index, 1);
 }
 
 /*
