@@ -34,18 +34,28 @@
       controller.on('blur', function() {
         console.log("blur");
       });
-      controller.on('deviceConnected', function() {
-        console.log("deviceConnected");
-      });
-      controller.on('deviceDisconnected', function() {
-        console.log("deviceDisconnected");
-      });
-	  controller.on('hardwareDetected', function(deviceInfo) {
-	    console.log("hardwareDetected");
+	  controller.on('deviceAttached', function(deviceInfo) {
+	    console.log("deviceAttached");
 		console.log(deviceInfo);
 	  });
-	  controller.on('hardwareDetached', function(deviceInfo) {
-        console.log("hardwareDetached");
+	  controller.on('deviceRemoved', function(deviceInfo) {
+        console.log("deviceRemoved");
+        console.log(deviceInfo);
+      });
+	  controller.on('deviceStreaming', function(deviceInfo) {
+        console.log("deviceStreaming");
+        console.log(deviceInfo);
+      });
+	  controller.on('deviceStopped', function(deviceInfo) {
+        console.log("deviceStopped");
+        console.log(deviceInfo);
+      });
+	  controller.on('streamingStarted', function(deviceInfo) {
+        console.log("streamingStarted");
+        console.log(deviceInfo);
+      });
+	  controller.on('streamingStopped', function(deviceInfo) {
+        console.log("streamingStopped");
         console.log(deviceInfo);
       });
     </script>
