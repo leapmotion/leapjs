@@ -265,7 +265,7 @@ var process=require("__browserify_process");var Frame = require('./frame')
 
 
 var Controller = module.exports = function(opts) {
-  var inNode = (process && process.versions && process.versions.node);
+  var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node);
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
