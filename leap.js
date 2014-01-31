@@ -481,7 +481,6 @@ Controller.prototype.setupConnectionEvents = function() {
         }
       }
       //Since when devices are attached all fields have changed, don't send events for streaming being false.
-      
       else if(!(changed.attached && info.attached)) { 
         controller.streamingCount--;
         controller.emit('deviceStopped', info);
@@ -2686,8 +2685,7 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
+            if (ev.source === window && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
