@@ -7,7 +7,7 @@ controller.connect();
 
 setTimeout(function() {process.exit(1);}, 30000);
 
-var expected = ['/v4.json', '/v3.json', '/v2.json', '/v1.json'];
+var expected = ['/v5.json', '/v4.json', '/v3.json', '/v2.json', '/v1.json'];
 
 var wss = new WebSocketServer({port: 9494})
 wss.on('connection', function(ws) {
