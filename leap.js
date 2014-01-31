@@ -32,6 +32,7 @@ var BaseConnection = module.exports = function(opts) {
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
+  this.protocolVersionVerified = false;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
@@ -51,6 +52,7 @@ BaseConnection.prototype.setBackground = function(state) {
 }
 
 BaseConnection.prototype.handleOpen = function() {
+  console.log('handle open', this.connected);
   if (!this.connected) {
     this.connected = true;
     this.emit('connect');
@@ -63,20 +65,34 @@ BaseConnection.prototype.enableGestures = function(enabled) {
 }
 
 BaseConnection.prototype.handleClose = function(code, reason) {
+  console.log('handle close', this.connected);
   if (!this.connected) return;
   this.disconnect();
+
+  // 1001 - an active connection is closed
+  // 1006 - cannot connect
   if (code === 1001 && this.opts.requestProtocolVersion > 1) {
-    this.opts.requestProtocolVersion--;
-    console.log('decremented to', this.opts.requestProtocolVersion);
+    if (this.protocolVersionVerified) {
+      console.log('verified, not dec');
+      this.protocolVersionVerified = false;
+    }else{
+      console.log('decrementing');
+      this.opts.requestProtocolVersion--;
+    }
   }else{
-    console.log('decremented skipped, still at', this.opts.requestProtocolVersion, code, code === 1001, this.opts.requestProtocolVersion > 1);
+    if (code === 1001){
+      console.log('nod dec, invalid v');
+    }else{
+      console.log('nod dec, invalid code');
+    }
   }
   this.startReconnection();
 }
 
 BaseConnection.prototype.startReconnection = function() {
   var connection = this;
-  this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 1000);
+  this.reconnectionTimer = setInterval(function() { connection.reconnect(); console.log('timer resolved'); }, 1000);
+  console.log('new timer')
 }
 
 BaseConnection.prototype.disconnect = function() {
@@ -92,7 +108,9 @@ BaseConnection.prototype.disconnect = function() {
 }
 
 BaseConnection.prototype.reconnect = function() {
+  console.log('reconnect', this.connected);
   if (this.connected) {
+    console.log('timer removed');
     clearInterval(this.reconnectionTimer);
   } else {
     this.disconnect();
@@ -102,9 +120,11 @@ BaseConnection.prototype.reconnect = function() {
 
 BaseConnection.prototype.handleData = function(data) {
   var message = JSON.parse(data);
+
   var messageEvent;
   if (this.protocol === undefined) {
     messageEvent = this.protocol = chooseProtocol(message);
+    this.protocolVersionVerified = true;
     this.emit('ready');
   } else {
     messageEvent = this.protocol(message);
@@ -265,8 +285,10 @@ var process=require("__browserify_process");var Frame = require('./frame')
  * Polling is an appropriate strategy for applications which already have an
  * intrinsic update loop, such as a game.
  */
+
+
 var Controller = module.exports = function(opts) {
-  var inNode = typeof(process) !== 'undefined' && process.title === 'node';
+  var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node);
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
@@ -388,10 +410,12 @@ Controller.prototype.processFrame = function(frame) {
     frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
+  // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.emit('deviceFrame', frame);
 }
 
+// on a deviceFrame or animationFrame, this emits a 'frame'
 Controller.prototype.processFinishedFrame = function(frame) {
   this.lastFrame = frame;
   if (frame.valid) {
@@ -1129,23 +1153,12 @@ var createGesture = exports.createGesture = function(data) {
   return gesture;
 }
 
+/*
+ * Returns a builder object, which uses method chaining for gesture callback binding.
+ */
 var gestureListener = exports.gestureListener = function(controller, type) {
   var handlers = {};
   var gestureMap = {};
-
-  var gestureCreator = function() {
-    var candidateGesture = gestureMap[gesture.id];
-    if (candidateGesture !== undefined) gesture.update(gesture, frame);
-    if (gesture.state == "start" || gesture.state == "stop") {
-      if (type == gesture.type && gestureMap[gesture.id] === undefined) {
-        gestureMap[gesture.id] = new Gesture(gesture, frame);
-        gesture.update(gesture, frame);
-      }
-      if (gesture.state == "stop") {
-        delete gestureMap[gesture.id];
-      }
-    }
-  };
 
   controller.on('gesture', function(gesture, frame) {
     if (gesture.type == type) {
@@ -2309,6 +2322,13 @@ Pointable.prototype.toString = function() {
   } else {
     return "Pointable [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
   }
+}
+
+/**
+ * Returns the hand which the pointable is attached to.
+ */
+Pointable.prototype.hand = function(){
+  return this.frame.hand(this.handId);
 }
 
 /**
