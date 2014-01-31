@@ -113,6 +113,11 @@ describe('Controller', function(){
 	      controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: { type: 'peripheral', streaming: true, attached: true}}}));
 	    });
 	    
+      //This shouldn't happen since we're emulating a pre-existing device
+      controller.on('deviceConnected', function() {
+        assert.equal(true,false);
+      });
+      
 	    controller.on('deviceAttached', function(deviceInfo) {
 	      assert.equal(count, 0);
         count++;
@@ -127,6 +132,36 @@ describe('Controller', function(){
       });
  
 	    controller.connect();
+    });
+
+    it('Should fire deviceConnected & deviceRemoved', function(done) {
+      var controller = fakeController({version: 5});
+      var count = 0;
+      
+      controller.on('protocol', function(protocol) {
+        assert.equal(5, protocol.version);
+        controller.disconnect();
+      });
+      
+      controller.on('ready', function(protocol) {
+        controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: {
+        type: 'peripheral', streaming: false, attached: true}}}));
+        controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: {
+        type: 'peripheral', streaming: true, attached: true}}}));
+        controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: {
+        type: 'peripheral', streaming: false, attached: false}}}));
+      });
+      
+      controller.on('deviceConnected', function() {
+        assert.equal(count, 0);
+        count++;
+      });
+      controller.on('deviceDisconnected', function() {
+        assert.equal(count, 1);
+        done();
+      });
+      
+      controller.connect();
     });
   });
 })
