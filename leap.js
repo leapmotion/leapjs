@@ -469,9 +469,9 @@ Controller.prototype.setupConnectionEvents = function() {
    
 	  if(changed.streaming) {
       if(info.streaming) {
-        this.streamingCount++;
+        controller.streamingCount++;
         controller.emit('deviceStreaming', info);
-        if( this.streamingCount == 1 ) {
+        if( controller.streamingCount == 1 ) {
           controller.emit('streamingStarted', info);
         }
         //if attached & streaming both change to true at the same time, that device was streaming
@@ -481,10 +481,11 @@ Controller.prototype.setupConnectionEvents = function() {
         }
       }
       //Since when devices are attached all fields have changed, don't send events for streaming being false.
+      
       else if(!(changed.attached && info.attached)) { 
-        this.streamingCount--;
+        controller.streamingCount--;
         controller.emit('deviceStopped', info);
-        if(this.streamingCount == 0){
+        if(controller.streamingCount == 0){
           controller.emit('streamingStopped', info);
         }
         controller.emit('deviceDisconnected');

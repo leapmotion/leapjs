@@ -65,32 +65,6 @@ describe('Controller', function(){
     });
   });
 
-  describe('events', function() {
-    it('should fire a protocol event', function(done) {
-      var controller = fakeController()
-      controller.on('protocol', function(protocol) {
-        assert.equal(4, protocol.version);
-        controller.disconnect();
-        done();
-      });
-      controller.connect()
-    });
-
-    it('should fire a connection event when using protocol 4', function(done) {
-      var controller = fakeController({version: 4})
-      controller.on('ready', function(protocol) {
-        controller.connection.handleData(JSON.stringify({event: {type: 'deviceConnect', state: true}}));
-      });
-      controller.on('deviceConnected', function() {
-        controller.connection.handleData(JSON.stringify({event: {type: 'deviceConnect', state: false}}));
-      });
-      controller.on('deviceDisconnected', function() {
-        done();
-      });
-      controller.connect()
-    });
-  });
-  
   describe('device events', function() {
     it('should fire deviceAttached/Removed ', function(done) {
 	    var controller = fakeController({version: 5});
