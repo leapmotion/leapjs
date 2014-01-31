@@ -52,7 +52,6 @@ BaseConnection.prototype.setBackground = function(state) {
 }
 
 BaseConnection.prototype.handleOpen = function() {
-  console.log('handle open', this.connected);
   if (!this.connected) {
     this.connected = true;
     this.emit('connect');
@@ -65,7 +64,6 @@ BaseConnection.prototype.enableGestures = function(enabled) {
 }
 
 BaseConnection.prototype.handleClose = function(code, reason) {
-  console.log('handle close', this.connected);
   if (!this.connected) return;
   this.disconnect();
 
@@ -73,17 +71,9 @@ BaseConnection.prototype.handleClose = function(code, reason) {
   // 1006 - cannot connect
   if (code === 1001 && this.opts.requestProtocolVersion > 1) {
     if (this.protocolVersionVerified) {
-      console.log('verified, not dec');
       this.protocolVersionVerified = false;
     }else{
-      console.log('decrementing');
       this.opts.requestProtocolVersion--;
-    }
-  }else{
-    if (code === 1001){
-      console.log('nod dec, invalid v');
-    }else{
-      console.log('nod dec, invalid code');
     }
   }
   this.startReconnection();
@@ -91,8 +81,7 @@ BaseConnection.prototype.handleClose = function(code, reason) {
 
 BaseConnection.prototype.startReconnection = function() {
   var connection = this;
-  this.reconnectionTimer = setInterval(function() { connection.reconnect(); console.log('timer resolved'); }, 1000);
-  console.log('new timer')
+  this.reconnectionTimer = setInterval(function() { connection.reconnect(); }, 1000);
 }
 
 BaseConnection.prototype.disconnect = function() {
@@ -108,9 +97,7 @@ BaseConnection.prototype.disconnect = function() {
 }
 
 BaseConnection.prototype.reconnect = function() {
-  console.log('reconnect', this.connected);
   if (this.connected) {
-    console.log('timer removed');
     clearInterval(this.reconnectionTimer);
   } else {
     this.disconnect();

@@ -27,8 +27,8 @@ downgradeProtocol = function(){
     } else if (ws.upgradeReq.url == expected[0]) {
       expected.shift();
       // for some reason, the response gets eaten without this.
-      //setTimeout(function(){ws.close(1001);}, 100)
-      ws.close(1001);
+      setTimeout(function(){ws.close(1001);}, 100)
+//      ws.close(1001);
     } else {
       console.log("failed downgradeProtocol, expected: "+JSON.stringify(expected[0])+" , got ws.upgradeReq.url:"+ws.upgradeReq.url);
       process.exit(1);
