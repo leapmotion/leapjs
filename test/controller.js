@@ -223,19 +223,69 @@ describe('Controller', function(){
       controller.processFrame(fakeFrame())
       Leap.Controller._pluginFactories = {}
     });
+
+    it('should stop extending frame, hand, and pointable prototypes', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory({
+        frame: {
+          testFn: function(){
+            return 'frame';
+          }
+        },
+        hand: {
+          testFn: function(){
+            return 'hand';
+          }
+        },
+        pointable: {
+          testFn: function(){
+            return 'pointable';
+          }
+        }
+      }));
+      var controller = fakeController();
+      controller.use('testPlugin');
+      controller.stopUsing('testPlugin');
+      // our test doubles are not actual instances of the class, so we test the prototype
+      assert.equal(Leap.Frame.prototype.testFn, undefined);
+      assert.equal(Leap.Hand.prototype.testFn, undefined);
+      assert.equal(Leap.Pointable.prototype.testFn, undefined);
+      assert.equal(Leap.Frame.Invalid.testFn, undefined);
+      assert.equal(Leap.Hand.Invalid.testFn, undefined);
+      assert.equal(Leap.Pointable.Invalid.testFn, undefined);
+      Leap.Controller._pluginFactories = {}
+    });
+
+    it('should use registered plugins when the flag is set', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        }
+      }));
+
+      var controller = fakeController({useAllPlugins: true})
+      controller.on('frame', function(frame){
+        assert.equal(frame.foo, 'bar')
+      });
+      controller.connect();
+      controller.processFrame(fakeFrame())
+      Leap.Controller._pluginFactories = {}
+    });
   });
 
   describe('method chaining', function(){
-    it('should allow return a controller from .connect()', function(){
+    it('should return a controller from .connect()', function(){
       var controller = new Leap.Controller
       assert.equal(controller.connect(), controller);
     });
 
-    it('should allow return a controller from .on()', function(){
+    it('should return a controller from .on()', function(){
       var controller = new Leap.Controller
       assert.equal(controller.on('frame', function(){}), controller);
     });
-    it('should allow return a controller from .use()', function(){
+
+    it('should return a controller from .use()', function(){
       Leap.Controller._pluginFactories = {}
       Leap.plugin('testPlugin', fakePluginFactory({
         frame: function(frame){
@@ -248,12 +298,25 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
     });
 
-    it('should allow return a controller from .disconnect()', function(){
+    it('should return a controller from .stopUsing()', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.plugin('testPlugin', fakePluginFactory({
+        frame: function(frame){
+          frame.foo = 'bar'
+        }
+      }));
+      var controller = new Leap.Controller
+      controller.use('testPlugin')
+      assert.equal(controller.stopUsing('testPlugin'), controller);
+      Leap.Controller._pluginFactories = {}
+    });
+
+    it('should return a controller from .disconnect()', function(){
       var controller = new Leap.Controller
       assert.equal(controller.disconnect(), controller);
     });
 
-    it('should allow return a controller from .setBackground()', function(){
+    it('should return a controller from .setBackground()', function(){
       var controller = new Leap.Controller
       assert.equal(controller.setBackground(true), controller);
     });

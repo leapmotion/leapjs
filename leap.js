@@ -299,7 +299,8 @@ var Controller = module.exports = function(opts) {
     this.connectionType = opts.connectionType;
   }
   this.connection = new this.connectionType(opts);
-  this.pluginPipelineSteps = {};
+  this._pluginPipelineSteps = {};
+  this._pluginExtendedMethods = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
   this.setupConnectionEvents();
 }
@@ -546,18 +547,19 @@ Controller.plugins = function() {
 };
 
 /*
- * Tells a controller to begin using a registered plugin.  The plugin's functionality will be added to all frames
+ * Begin using a registered plugin.  The plugin's functionality will be added to all frames
  * returned by the controller (and/or added to the objects within the frame).
  *  - The order of plugin execution inside the loop will match the order in which use is called by the application.
  *  - The plugin be run for both deviceFrames and animationFrames.
  *
  * @method use
  * @memberOf Leap.Controller.prototype
+ * @param pluginName
  * @param {Hash} Options to be passed to the plugin's factory.
  * @returns the controller
  */
 Controller.prototype.use = function(pluginName, options) {
-  var functionOrHash, pluginFactory, key, pluginInstance;
+  var functionOrHash, pluginFactory, key, pluginInstance, klass;
 
   pluginFactory = Controller._pluginFactories[pluginName];
 
@@ -573,37 +575,66 @@ Controller.prototype.use = function(pluginName, options) {
 
     if (typeof functionOrHash === 'function') {
       if (!this.pipeline) this.pipeline = new Pipeline(this);
-      if (!this.pluginPipelineSteps[pluginName]) this.pluginPipelineSteps[pluginName] = [];
+      if (!this._pluginPipelineSteps[pluginName]) this._pluginPipelineSteps[pluginName] = [];
 
-      this.pluginPipelineSteps[pluginName].push( this.pipeline.addWrappedStep(key, functionOrHash) );
+      this._pluginPipelineSteps[pluginName].push( this.pipeline.addWrappedStep(key, functionOrHash) );
     } else {
+      if (!this._pluginExtendedMethods[pluginName]) this._pluginExtendedMethods[pluginName] = [];
+
       switch (key) {
         case 'frame':
-          _.extend(Leap.Frame.prototype, functionOrHash);
-          _.extend(Leap.Frame.Invalid, functionOrHash);
+          klass = Leap.Frame
           break;
         case 'hand':
-          _.extend(Leap.Hand.prototype, functionOrHash);
-          _.extend(Leap.Hand.Invalid, functionOrHash);
+          klass = Leap.Hand
           break;
         case 'pointable':
-          _.extend(Leap.Pointable.prototype, functionOrHash);
-          _.extend(Leap.Pointable.Invalid, functionOrHash);
+          klass = Leap.Pointable
           break;
         default:
           throw pluginName + ' specifies invalid object type "' + key + '" for prototypical extension'
       }
+
+      _.extend(klass.prototype, functionOrHash);
+      _.extend(klass.Invalid, functionOrHash);
+      this._pluginExtendedMethods[pluginName].push([klass, functionOrHash])
     }
   }
   return this;
 };
 
-Controller.prototype.stopUsing = function(pluginName){
-  var steps = this.pluginPipelineSteps[pluginName]
-  if(!steps) return;
-  for (var i = 0; i < steps.length; i++){
-    this.pipeline.removeStep(steps[i]);
+/*
+ * Stop using a used plugin.  This will remove any of the plugin's pipeline methods (those called on every frame)
+ * and remove any methods which extend frame-object prototypes.
+ *
+ * @method stopUsing
+ * @memberOf Leap.Controller.prototype
+ * @param pluginName
+ * @returns the controller
+ */
+Controller.prototype.stopUsing = function (pluginName) {
+  var steps = this._pluginPipelineSteps[pluginName],
+      extMethodHashes = this._pluginExtendedMethods[pluginName],
+      i = 0, klass, extMethodHash;
+
+  if (steps) {
+    for (i = 0; i < steps.length; i++) {
+      this.pipeline.removeStep(steps[i]);
+    }
   }
+
+  if (extMethodHashes){
+    for (i = 0; i < extMethodHashes.length; i++){
+      klass = extMethodHashes[i][0]
+      extMethodHash = extMethodHashes[i][1]
+      console.log('deleting from',  'method:', extMethodHash, klass.prototype[extMethodHash]);
+      for (var methodName in extMethodHash) {
+        delete klass.prototype[methodName]
+        delete klass.Invalid[methodName]
+      }
+    }
+  }
+
   return this;
 }
 
