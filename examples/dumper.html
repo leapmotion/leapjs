@@ -19,7 +19,6 @@
         latestFrame = frame;
         document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") +
                 "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
-            if (frame.hands.length){ debugger; }
       });
       controller.on('ready', function() {
         console.log("ready");
