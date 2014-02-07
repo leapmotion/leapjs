@@ -638,10 +638,6 @@ Controller.prototype.stopUsing = function (pluginName) {
   return this;
 }
 
-Controller.prototype.plugin = function(pluginName){
-  this.plugins
-}
-
 Controller.prototype.useRegisteredPlugins = function(){
   for (var plugin in Controller._pluginFactories){
     this.use(plugin);
