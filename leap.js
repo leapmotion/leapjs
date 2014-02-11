@@ -627,7 +627,6 @@ Controller.prototype.stopUsing = function (pluginName) {
     for (i = 0; i < extMethodHashes.length; i++){
       klass = extMethodHashes[i][0]
       extMethodHash = extMethodHashes[i][1]
-      console.log('deleting from',  'method:', extMethodHash, klass.prototype[extMethodHash]);
       for (var methodName in extMethodHash) {
         delete klass.prototype[methodName]
         delete klass.Invalid[methodName]
@@ -2662,11 +2661,10 @@ Region.prototype.mapToXY = function(position, width, height) {
 _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":19,"underscore":22}],18:[function(require,module,exports){
 module.exports = {
-  full: "0.4.0-beta1",
+  full: "0.4.0",
   major: 0,
   minor: 4,
-  dot: 0,
-  patch: 'beta1'
+  dot: 0
 }
 },{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
