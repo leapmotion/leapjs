@@ -35,3 +35,9 @@ Or in code:
 1. Run `node examples/node.js`
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/f4522a98d0918ac69a49119ac3249bdb "githalytics.com")](http://githalytics.com/leapmotion/leapjs)
+
+Contributing
+===============
+
+ - Add your name, email, and github account to the CONTRIBUTORS.txt list, thereby agreeing to the terms and conditions of the Contributor License Agreement.
+ - Open a Pull Request. If your information is not in the CONTRIBUTORS file, your pull request will not be reviewed.
