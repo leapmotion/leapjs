@@ -575,7 +575,7 @@ Controller.plugins = function() {
 Controller.prototype.use = function(pluginName, options) {
   var functionOrHash, pluginFactory, key, pluginInstance, klass;
 
-  pluginFactory = Controller._pluginFactories[pluginName];
+	pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
 
   if (!pluginFactory) {
     throw 'Leap Plugin ' + pluginName + ' not found.';

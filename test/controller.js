@@ -117,6 +117,16 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
     });
 
+		describe('use', function(){
+			it('should accept plugin factories directly', function(){
+				var controller = fakeController()
+				controller.use(function(options){
+					assert.equal(options.x, 2)
+					return {}
+				}, {x: 2})
+			});
+		});
+
     it('should decorate hands, fingers, and pointables', function(){
       Leap.Controller._pluginFactories = {}
       Leap.Controller.plugin('testPlugin', fakePluginFactory({
