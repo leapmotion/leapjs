@@ -136,3 +136,11 @@ Email: Arjunkumartk@gmail.com
 5. Rob Witoff
 Github account: witoff
 Email: leap@pspct.com
+
+6. Richard Pearson
+Github account: catdevnull
+Email: github@catdevnull.co.uk
+
+7. Ben Nortier
+Github account: bjnortier
+Email: bjnortier@gmail.com
