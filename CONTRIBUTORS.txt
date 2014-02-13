@@ -144,3 +144,7 @@ Email: github@catdevnull.co.uk
 7. Ben Nortier
 Github account: bjnortier
 Email: bjnortier@gmail.com
+
+8. Andrew Kennedy
+Github account: L1fescape
+Email: andrew@akenn.org
