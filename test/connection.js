@@ -45,65 +45,47 @@ describe('Connection', function(){
     })
   })
 
-  if (typeof(window) === 'undefined') {
-    describe('background in protocol 4', function(){
-      it('should send background true', function(done){
-        var controller = fakeController({version: 4});
-        var connection = controller.connection;
-        connection.setBackground(true);
-        controller.on('ready', function() {
-          setTimeout(function() {
-            assert.deepEqual(connection.socket.messages, [JSON.stringify({"enableGestures":false}), JSON.stringify({"background":true})]);
-            connection.disconnect();
-            done();
-          }, 100);
-        });
-        controller.connection.connect()
+  describe('background in protocol 4', function(){
+    it('should send background true', function(done){
+      var controller = fakeController({version: 4});
+      var connection = controller.connection;
+      connection.setBackground(true);
+      controller.on('ready', function() {
+        setTimeout(function() {
+          assert.include(connection.socket.messages, JSON.stringify({"background":true}));
+          connection.disconnect();
+          done();
+        }, 100);
       })
-
-      it('should send background false', function(done){
-        var controller = fakeController({version: 4});
-        var connection = controller.connection;
-        controller.on('ready', function() {
-          controller.setBackground(false);
-          setTimeout(function() {
-            assert.deepEqual(connection.socket.messages, [JSON.stringify({"enableGestures":false}), JSON.stringify({"background":false})]);
-            connection.disconnect();
-            done();
-          }, 100);
-        });
-        controller.connection.connect()
-      })
+      controller.connection.connect()
     })
-  } else {
-    describe('background in protocol 4', function(){
-      it('should send background true', function(done){
-        var controller = fakeController({version: 4});
-        var connection = controller.connection;
-        connection.setBackground(true);
-        controller.on('ready', function() {
-          setTimeout(function() {
-            assert.deepEqual(connection.socket.messages, [JSON.stringify({"enableGestures":false}), JSON.stringify({"background":true}), JSON.stringify({"focused":true})]);
-            connection.disconnect();
-            done();
-          }, 100);
-        })
-        controller.connection.connect()
-      })
 
-      it('should send background false', function(done){
-        var controller = fakeController({version: 4});
-        var connection = controller.connection;
-        controller.on('ready', function() {
-          controller.setBackground(false);
-          setTimeout(function() {
-            assert.deepEqual(connection.socket.messages, [JSON.stringify({"enableGestures":false}), JSON.stringify({"background":false}), JSON.stringify({"focused":true})]);
-            connection.disconnect();
-            done();
-          }, 100);
-        })
-        controller.connection.connect()
+    it('should send background false', function(done){
+      var controller = fakeController({version: 4});
+      var connection = controller.connection;
+      controller.on('ready', function() {
+        controller.setBackground(false);
+        setTimeout(function() {
+          assert.include(connection.socket.messages, JSON.stringify({"background":false}));
+          connection.disconnect();
+          done();
+        }, 100);
       })
+      controller.connection.connect()
     })
-  }
+
+    it('should send focused true', function(done){
+      var controller = fakeController({version: 4});
+      var connection = controller.connection;
+      controller.on('ready', function() {
+        controller.setBackground(false);
+        setTimeout(function() {
+          assert.include(connection.socket.messages, JSON.stringify({"focused":true}));
+          connection.disconnect();
+          done();
+        }, 100);
+      })
+      controller.connection.connect()
+    })
+  })
 })

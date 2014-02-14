@@ -55,9 +55,7 @@ describe('Hand', function(){
       var data2 = fakeFrame({handData: [fakeHand({rotation: [[0,4,5], [1,3,7], [5,4,2]]})]})
       var frame2 = createFrame(data2);
       var result = frame1.hand(0).rotationAxis(frame2);
-      assert.closeTo(-0.74278, result[0], 0.0001)
-      assert.closeTo(-0.55708, result[1], 0.0001)
-      assert.closeTo(-0.37139, result[2], 0.0001)
+      assertUtil.vectorCloseTo([-0.74278, -0.55708,-0.37139], result, 0.0001, 'rotation axis');
     })
 
     it('should return a null vector if the hand is invalid', function(){
@@ -67,9 +65,7 @@ describe('Hand', function(){
       var frame2 = createFrame(data2);
       var result = frame1.hand(0).rotationAxis(frame2);
       assert(!frame2.hand(0).valid);
-      assert.closeTo(0, result[0], 0.0001)
-      assert.closeTo(0, result[1], 0.0001)
-      assert.closeTo(0, result[2], 0.0001)
+      assertUtil.vectorCloseTo(result, Leap.vec3.create(), 0.0001, 'result is zero vector');
     });
   })
 
@@ -92,9 +88,9 @@ describe('Hand', function(){
     it('should return an invalid #pointable', function() { assert(!Leap.Hand.Invalid.pointable().valid)})
     it('should return an invalid #finger', function() { assert(!Leap.Hand.Invalid.finger().valid)})
     it('should return 0.0 from #rotationAngle', function() { assert.equal(0.0, Leap.Hand.Invalid.rotationAngle())})
-    it('should return an identity matrix from #rotationMatrix', function() { assert.deepEqual(Leap.mat3.create(), Leap.Hand.Invalid.rotationMatrix())})
-    it('should return a null vector from #rotationAxis', function() { assert.deepEqual(Leap.vec3.create(), Leap.Hand.Invalid.rotationAxis())})
+    it('should return an identity matrix from #rotationMatrix', function() { assertUtil.matrix3CloseTo(Leap.mat3.create(), Leap.Hand.Invalid.rotationMatrix(),  assertUtil.DEFAULT_RANGE())})
+    it('should return a null vector from #rotationAxis', function() { assertUtil.vectorCloseTo(Leap.vec3.create(), Leap.Hand.Invalid.rotationAxis(),  assertUtil.DEFAULT_RANGE())})
     it('should return 1.0 from #scaleFactor', function() { assert.equal(1.0, Leap.Hand.Invalid.scaleFactor())})
-    it('should return a null vector from #translation', function() { assert.equal(1.0, Leap.Hand.Invalid.scaleFactor())})
+    it('should return a null vector from #translation', function() {  assertUtil.vectorCloseTo(Leap.vec3.create(),Leap.Hand.Invalid.rotationAxis(),  assertUtil.DEFAULT_RANGE())})
   })
 });
