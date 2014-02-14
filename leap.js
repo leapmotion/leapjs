@@ -1,6 +1,6 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 /*!
- * LeapJS v0.4.0
+ * LeapJS v0.4.1
  * http://github.com/leapmotion/leapjs/
  *
  * Copyright 2013 LeapMotion, Inc. and other contributors
@@ -246,6 +246,8 @@ NodeConnection.prototype.setupSocket = function() {
 
 },{"./base":3,"underscore":22,"ws":23}],6:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
+  , Hand = require('./hand')
+  , Pointable = require('./pointable')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
@@ -575,7 +577,7 @@ Controller.plugins = function() {
 Controller.prototype.use = function(pluginName, options) {
   var functionOrHash, pluginFactory, key, pluginInstance, klass;
 
-  pluginFactory = Controller._pluginFactories[pluginName];
+  pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
 
   if (!pluginFactory) {
     throw 'Leap Plugin ' + pluginName + ' not found.';
@@ -597,13 +599,13 @@ Controller.prototype.use = function(pluginName, options) {
 
       switch (key) {
         case 'frame':
-          klass = Leap.Frame
+          klass = Frame
           break;
         case 'hand':
-          klass = Leap.Hand
+          klass = Hand
           break;
         case 'pointable':
-          klass = Leap.Pointable
+          klass = Pointable
           break;
         default:
           throw pluginName + ' specifies invalid object type "' + key + '" for prototypical extension'
@@ -660,7 +662,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./frame":7,"./gesture":8,"./pipeline":12,"__browserify_process":20,"events":19,"underscore":22}],7:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":20,"events":19,"underscore":22}],7:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -2672,10 +2674,10 @@ Region.prototype.mapToXY = function(position, width, height) {
 _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":19,"underscore":22}],18:[function(require,module,exports){
 module.exports = {
-  full: "0.4.0",
+  full: "0.4.1",
   major: 0,
   minor: 4,
-  dot: 0
+  dot: 1
 }
 },{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
