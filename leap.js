@@ -246,8 +246,8 @@ NodeConnection.prototype.setupSocket = function() {
 
 },{"./base":3,"underscore":22,"ws":23}],6:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
-    Hand = require('./hand')
-    Pointable = require('./pointable')
+  , Hand = require('./hand')
+  , Pointable = require('./pointable')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
@@ -577,7 +577,7 @@ Controller.plugins = function() {
 Controller.prototype.use = function(pluginName, options) {
   var functionOrHash, pluginFactory, key, pluginInstance, klass;
 
-	pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
+  pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
 
   if (!pluginFactory) {
     throw 'Leap Plugin ' + pluginName + ' not found.';
