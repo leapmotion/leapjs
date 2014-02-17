@@ -1883,7 +1883,7 @@ Hand.prototype.translation = function(sinceFrame) {
  * @returns {String} A description of the Hand as a string.
  */
 Hand.prototype.toString = function() {
-  return "Hand [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
+  return "Hand (" + this.type + ") [ id: "+ this.id + " | palm velocity:"+this.palmVelocity+" | sphere center:"+this.sphereCenter+" ] ";
 }
 
 /**
@@ -2559,6 +2559,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 
 _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":18,"underscore":21}],18:[function(require,module,exports){
+<<<<<<< HEAD
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2583,6 +2584,23 @@ _.extend(Region.prototype, EventEmitter.prototype)
 function EventEmitter() {
   this._events = this._events || {};
   this._maxListeners = this._maxListeners || undefined;
+=======
+var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
+
+var EventEmitter = exports.EventEmitter = process.EventEmitter;
+var isArray = typeof Array.isArray === 'function'
+    ? Array.isArray
+    : function (xs) {
+        return Object.prototype.toString.call(xs) === '[object Array]'
+    }
+;
+function indexOf (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (x === xs[i]) return i;
+    }
+    return -1;
+>>>>>>> refs/heads/master
 }
 module.exports = EventEmitter;
 
@@ -2848,6 +2866,7 @@ function isFunction(arg) {
   return typeof arg === 'function';
 }
 
+<<<<<<< HEAD
 function isNumber(arg) {
   return typeof arg === 'number';
 }
@@ -2861,6 +2880,20 @@ function isUndefined(arg) {
 }
 
 },{}],19:[function(require,module,exports){
+=======
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (typeof emitter._events[type] === 'function')
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
+},{"__browserify_process":19}],19:[function(require,module,exports){
+>>>>>>> refs/heads/master
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2879,7 +2912,8 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
@@ -7216,7 +7250,11 @@ if(typeof(exports) !== 'undefined') {
 }).call(this);
 
 },{}],22:[function(require,module,exports){
+<<<<<<< HEAD
 var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};/// shim for browser packaging
+=======
+var global=self;/// shim for browser packaging
+>>>>>>> refs/heads/master
 
 module.exports = function() {
   return global.WebSocket || global.MozWebSocket;

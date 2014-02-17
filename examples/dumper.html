@@ -6,7 +6,7 @@
       var pausedFrame = null;
       var latestFrame = null;
       window.onkeypress = function(e) {
-        if (e.charCode == 32) {
+        if (e.charCode == 32) { //spacebar
           if (pausedFrame == null) {
             pausedFrame = latestFrame;
           } else {
@@ -17,7 +17,8 @@
       var controller = new Leap.Controller({enableGestures: true});
       controller.loop(function(frame) {
         latestFrame = frame;
-        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
+        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") +
+                "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
       });
       controller.on('ready', function() {
         console.log("ready");
