@@ -130,7 +130,6 @@ describe('Frame', function(){
         ], "s": 1.05194, "t": [-94.6385, 218.232, 114.818], "timestamp": 9523277878}
 
         var frame = new Leap.Frame(data);
-        frame.postprocessData();
 
         it('should have ten pointables', function(){
             assert.equal(frame.pointables.length, 10, 'ten pointables found');
