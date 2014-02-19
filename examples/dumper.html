@@ -19,6 +19,7 @@
         latestFrame = frame;
         document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
       });
+
       controller.on('ready', function() {
         console.log("ready");
       });
@@ -34,12 +35,26 @@
       controller.on('blur', function() {
         console.log("blur");
       });
-      controller.on('deviceConnected', function() {
-        console.log("deviceConnected");
+
+      controller.on('deviceAttached', function(deviceInfo) {
+        console.log("deviceAttached", deviceInfo);
       });
-      controller.on('deviceDisconnected', function() {
-        console.log("deviceDisconnected");
+      controller.on('deviceRemoved', function(deviceInfo) {
+        console.log("deviceRemoved", deviceInfo);
       });
+      controller.on('deviceStreaming', function(deviceInfo) {
+        console.log("deviceStreaming", deviceInfo);
+      });
+      controller.on('deviceStopped', function(deviceInfo) {
+        console.log("deviceStopped", deviceInfo);
+      });
+      controller.on('streamingStarted', function(deviceInfo) {
+        console.log("streamingStarted", deviceInfo);
+      });
+      controller.on('streamingStopped', function(deviceInfo) {
+        console.log("streamingStopped", deviceInfo);
+      });
+
     </script>
   </head>
   <body>
