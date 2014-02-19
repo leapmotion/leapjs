@@ -1,4 +1,13 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+/*!
+ * LeapJS v0.4.1
+ * http://github.com/leapmotion/leapjs/
+ *
+ * Copyright 2013 LeapMotion, Inc. and other contributors
+ * Released under the BSD-2-Clause license
+ * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt
+ */
+},{}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -17,7 +26,7 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var chooseProtocol = require('../protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -141,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":13,"events":17,"underscore":20}],3:[function(require,module,exports){
+},{"../protocol":14,"events":19,"underscore":22}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -212,7 +221,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":2,"underscore":20}],4:[function(require,module,exports){
+},{"./base":3,"underscore":22}],5:[function(require,module,exports){
 var WebSocket = require('ws')
   , BaseConnection = require('./base')
   , _ = require('underscore');
@@ -235,8 +244,10 @@ NodeConnection.prototype.setupSocket = function() {
   return socket;
 }
 
-},{"./base":2,"underscore":20,"ws":21}],5:[function(require,module,exports){
+},{"./base":3,"underscore":22,"ws":23}],6:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
+  , Hand = require('./hand')
+  , Pointable = require('./pointable')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
@@ -290,6 +301,7 @@ var Controller = module.exports = function(opts) {
 
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
   this.frameEventName = opts.frameEventName;
+  this.useAllPlugins = opts.useAllPlugins || false;
   this.history = new CircularBuffer(200);
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
@@ -303,6 +315,9 @@ var Controller = module.exports = function(opts) {
   this.connection = new this.connectionType(opts);
   this.streamingCount = 0;
   this.deviceList = new Array();
+  this._pluginPipelineSteps = {};
+  this._pluginExtendedMethods = {};
+  if (opts.useAllPlugins) this.useRegisteredPlugins();
   this.setupConnectionEvents();
 }
 
@@ -314,8 +329,12 @@ Controller.prototype.gesture = function(type, cb) {
   return creator;
 }
 
+/*
+ * @returns the controller
+ */
 Controller.prototype.setBackground = function(state) {
   this.connection.setBackground(state);
+  return this;
 }
 
 Controller.prototype.inBrowser = function() {
@@ -326,6 +345,9 @@ Controller.prototype.useAnimationLoop = function() {
   return this.inBrowser() && typeof(chrome) === "undefined";
 }
 
+/*
+ * @returns the controller
+ */
 Controller.prototype.connect = function() {
   var controller = this;
   if (this.connection.connect() && this.inBrowser() && !controller.suppressAnimationLoop) {
@@ -335,10 +357,15 @@ Controller.prototype.connect = function() {
     }
     window.requestAnimationFrame(callback);
   }
+  return this;
 }
 
+/*
+ * @returns the controller
+ */
 Controller.prototype.disconnect = function() {
   this.connection.disconnect();
+  return this;
 }
 
 /**
@@ -381,7 +408,7 @@ Controller.prototype.loop = function(callback) {
       this.once(this.frameEventName, immediateRunnerCallback);
       break;
   }
-  this.connect();
+  return this.connect();
 }
 
 Controller.prototype.addStep = function(step) {
@@ -512,9 +539,205 @@ Controller.prototype.setupConnectionEvents = function() {
   });
 }
 
+
+Controller._pluginFactories = {};
+
+/*
+ * Registers a plugin, making is accessible to controller.use later on.
+ *
+ * @member plugin
+ * @memberof Leap.Controller.prototype
+ * @param {String} name The name of the plugin (usually camelCase).
+ * @param {function} factory A factory method which will return an instance of a plugin.
+ * The factory receives an optional hash of options, passed in via controller.use.
+ *
+ * Valid keys for the object include frame, hand, finger, tool, and pointable.  The value
+ * of each key can be either a function or an object.  If given a function, that function
+ * will be called once for every instance of the object, with that instance injected as an
+ * argument.  This allows decoration of objects with additional data:
+ *
+ * ```javascript
+ * Leap.Controller.plugin('testPlugin', function(options){
+ *   return {
+ *     frame: function(frame){
+ *       frame.foo = 'bar';
+ *     }
+ *   }
+ * });
+ * ```
+ *
+ * When hand is used, the callback is called for every hand in `frame.hands`.  Note that
+ * hand objects are recreated with every new frame, so that data saved on the hand will not
+ * persist.
+ *
+ * ```javascript
+ * Leap.Controller.plugin('testPlugin', function(){
+ *   return {
+ *     hand: function(hand){
+ *       console.log('testPlugin running on hand ' + hand.id);
+ *     }
+ *   }
+ * });
+ * ```
+ *
+ * A factory can return an object to add custom functionality to Frames, Hands, or Pointables.
+ * The methods are added directly to the object's prototype.  Finger and Tool cannot be used here, Pointable
+ * must be used instead.
+ * This is encouraged for calculations which may not be necessary on every frame.
+ * Memoization is also encouraged, for cases where the method may be called many times per frame by the application.
+ *
+ * ```javascript
+ * // This plugin allows hand.usefulData() to be called later.
+ * Leap.Controller.plugin('testPlugin', function(){
+ *   return {
+ *     hand: {
+ *       usefulData: function(){
+ *         console.log('usefulData on hand', this.id);
+ *         // memoize the results on to the hand, preventing repeat work:
+ *         this.x || this.x = someExpensiveCalculation();
+ *         return this.x;
+ *       }
+ *     }
+ *   }
+ * });
+ *
+ * Note that the factory pattern allows encapsulation for every plugin instance.
+ *
+ * ```javascript
+ * Leap.Controller.plugin('testPlugin', function(options){
+ *   options || options = {}
+ *   options.center || options.center = [0,0,0]
+ *
+ *   privatePrintingMethod = function(){
+ *     console.log('privatePrintingMethod - options', options);
+ *   }
+ *
+ *   return {
+ *     pointable: {
+ *       publicPrintingMethod: function(){
+ *         privatePrintingMethod();
+ *       }
+ *     }
+ *   }
+ * });
+ *
+ */
+Controller.plugin = function(pluginName, factory) {
+  if (this._pluginFactories[pluginName]) {
+    throw "Plugin \"" + pluginName + "\" already registered";
+  }
+  return this._pluginFactories[pluginName] = factory;
+};
+
+/*
+ * Returns a list of registered plugins.
+ * @returns {Array} Plugin Factories.
+ */
+Controller.plugins = function() {
+  return _.keys(this._pluginFactories);
+};
+
+/*
+ * Begin using a registered plugin.  The plugin's functionality will be added to all frames
+ * returned by the controller (and/or added to the objects within the frame).
+ *  - The order of plugin execution inside the loop will match the order in which use is called by the application.
+ *  - The plugin be run for both deviceFrames and animationFrames.
+ *
+ * @method use
+ * @memberOf Leap.Controller.prototype
+ * @param pluginName
+ * @param {Hash} Options to be passed to the plugin's factory.
+ * @returns the controller
+ */
+Controller.prototype.use = function(pluginName, options) {
+  var functionOrHash, pluginFactory, key, pluginInstance, klass;
+
+  pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
+
+  if (!pluginFactory) {
+    throw 'Leap Plugin ' + pluginName + ' not found.';
+  }
+
+  options || (options = {});
+  pluginInstance = pluginFactory.call(this, options);
+
+  for (key in pluginInstance) {
+    functionOrHash = pluginInstance[key];
+
+    if (typeof functionOrHash === 'function') {
+      if (!this.pipeline) this.pipeline = new Pipeline(this);
+      if (!this._pluginPipelineSteps[pluginName]) this._pluginPipelineSteps[pluginName] = [];
+
+      this._pluginPipelineSteps[pluginName].push( this.pipeline.addWrappedStep(key, functionOrHash) );
+    } else {
+      if (!this._pluginExtendedMethods[pluginName]) this._pluginExtendedMethods[pluginName] = [];
+
+      switch (key) {
+        case 'frame':
+          klass = Frame
+          break;
+        case 'hand':
+          klass = Hand
+          break;
+        case 'pointable':
+          klass = Pointable
+          break;
+        default:
+          throw pluginName + ' specifies invalid object type "' + key + '" for prototypical extension'
+      }
+
+      _.extend(klass.prototype, functionOrHash);
+      _.extend(klass.Invalid, functionOrHash);
+      this._pluginExtendedMethods[pluginName].push([klass, functionOrHash])
+    }
+  }
+  return this;
+};
+
+/*
+ * Stop using a used plugin.  This will remove any of the plugin's pipeline methods (those called on every frame)
+ * and remove any methods which extend frame-object prototypes.
+ *
+ * @method stopUsing
+ * @memberOf Leap.Controller.prototype
+ * @param pluginName
+ * @returns the controller
+ */
+Controller.prototype.stopUsing = function (pluginName) {
+  var steps = this._pluginPipelineSteps[pluginName],
+      extMethodHashes = this._pluginExtendedMethods[pluginName],
+      i = 0, klass, extMethodHash;
+
+  if (steps) {
+    for (i = 0; i < steps.length; i++) {
+      this.pipeline.removeStep(steps[i]);
+    }
+  }
+
+  if (extMethodHashes){
+    for (i = 0; i < extMethodHashes.length; i++){
+      klass = extMethodHashes[i][0]
+      extMethodHash = extMethodHashes[i][1]
+      for (var methodName in extMethodHash) {
+        delete klass.prototype[methodName]
+        delete klass.Invalid[methodName]
+      }
+    }
+  }
+
+  return this;
+}
+
+Controller.prototype.useRegisteredPlugins = function(){
+  for (var plugin in Controller._pluginFactories){
+    this.use(plugin);
+  }
+}
+
+
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./pipeline":11,"__browserify_process":18,"events":17,"underscore":20}],6:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":20,"events":19,"underscore":22}],7:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -980,7 +1203,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":19,"underscore":20}],7:[function(require,module,exports){
+},{"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1464,7 +1687,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":17,"gl-matrix":19,"underscore":20}],8:[function(require,module,exports){
+},{"events":19,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -1891,7 +2114,8 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":12,"gl-matrix":19,"underscore":20}],9:[function(require,module,exports){
+},{"./pointable":13,"gl-matrix":21,"underscore":22}],10:[function(require,module,exports){
+require("./_header")
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -1909,6 +2133,7 @@ module.exports = {
   mat3: require("gl-matrix").mat3,
   vec3: require("gl-matrix").vec3,
   loopController: undefined,
+  version: require('./version.js'),
   /**
    * The Leap.loop() function passes a frame of Leap data to your
    * callback function and then calls window.requestAnimationFrame() after
@@ -1945,13 +2170,21 @@ module.exports = {
       callback = opts;
       opts = {};
     }
+    opts.useAllPlugins || (opts.useAllPlugins = true)
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
     return this.loopController;
+  },
+
+  /*
+   * Convenience method for Leap.Controller.plugin
+   */
+  plugin: function(name, options){
+    this.Controller.plugin(name, options)
   }
 }
 
-},{"./circular_buffer":1,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"gl-matrix":19}],10:[function(require,module,exports){
+},{"./_header":1,"./circular_buffer":2,"./controller":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./ui":15,"./version.js":18,"gl-matrix":21}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2093,16 +2326,17 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":19}],11:[function(require,module,exports){
-var Pipeline = module.exports = function() {
+},{"gl-matrix":21}],12:[function(require,module,exports){
+var Pipeline = module.exports = function (controller) {
   this.steps = [];
+  this.controller = controller;
 }
 
-Pipeline.prototype.addStep = function(step) {
+Pipeline.prototype.addStep = function (step) {
   this.steps.push(step);
 }
 
-Pipeline.prototype.run = function(frame) {
+Pipeline.prototype.run = function (frame) {
   var stepsLength = this.steps.length;
   for (var i = 0; i != stepsLength; i++) {
     if (!frame) break;
@@ -2111,7 +2345,42 @@ Pipeline.prototype.run = function(frame) {
   return frame;
 }
 
-},{}],12:[function(require,module,exports){
+Pipeline.prototype.removeStep = function(step){
+  var index = this.steps.indexOf(step);
+  if (index === -1) throw "Step not found in pipeline";
+  this.steps.splice(index, 1);
+}
+
+/*
+ * Wraps a plugin callback method in method which can be run inside the pipeline.
+ * This wrapper method loops the callback over objects within the frame as is appropriate,
+ * calling the callback for each in turn.
+ *
+ * @method createStepFunction
+ * @memberOf Leap.Controller.prototype
+ * @param {Controller} The controller on which the callback is called.
+ * @param {String} type What frame object the callback is run for and receives.
+ *       Can be one of 'frame', 'finger', 'hand', 'pointable', 'tool'
+ * @param {function} callback The method which will be run inside the pipeline loop.  Receives one argument, such as a hand.
+ * @private
+ */
+Pipeline.prototype.addWrappedStep = function (type, callback) {
+  var controller = this.controller,
+    step = function (frame) {
+      var dependencies, i, len;
+      dependencies = (type == 'frame') ? [frame] : (frame[type + 's'] || []);
+
+      for (i = 0, len = dependencies.length; i < len; i++) {
+        callback.call(controller, dependencies[i]);
+      }
+
+      return frame;
+    };
+
+  this.addStep(step);
+  return step;
+};
+},{}],13:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2332,7 +2601,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":19}],13:[function(require,module,exports){
+},{"gl-matrix":21}],14:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2375,12 +2644,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":6}],14:[function(require,module,exports){
+},{"./frame":7}],15:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
+},{"./ui/cursor":16,"./ui/region":17}],16:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2391,7 +2660,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2479,7 +2748,14 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":17,"underscore":20}],17:[function(require,module,exports){
+},{"events":19,"underscore":22}],18:[function(require,module,exports){
+module.exports = {
+  full: "0.4.1",
+  major: 0,
+  minor: 4,
+  dot: 1
+}
+},{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2675,7 +2951,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":18}],18:[function(require,module,exports){
+},{"__browserify_process":20}],20:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2729,7 +3005,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -5802,7 +6078,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -7030,14 +7306,14 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var global=self;/// shim for browser packaging
 
 module.exports = function() {
   return global.WebSocket || global.MozWebSocket;
 }
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7050,5 +7326,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":9}]},{},[22])
+},{"../lib/index":10}]},{},[24])
 ;
