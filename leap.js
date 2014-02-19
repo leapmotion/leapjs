@@ -2347,7 +2347,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
     case 2:
     case 3:
     case 4:
-	  case 5:
+    case 5:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
