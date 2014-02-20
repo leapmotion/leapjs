@@ -1,0 +1,76 @@
+{
+    "$schema":    "http://json-schema.org/draft-04/schema#",
+    "required":   ["id", "handId", "length", "tool", "direction", "stabilizedTipPosition", "tipPosition"],
+    "type":       "object",
+    "properties": {
+        "id":                    {
+            "type": "number"
+        },
+        "handId":                {
+            "type": "number"
+        },
+        "length":                {
+            "type":    "number",
+            "default": 45
+        },
+        "tool":                  {
+            "type":    "boolean",
+            "default": false
+        },
+        "direction":             {
+            "$ref": "#/definitions/angle"
+        },
+        "stabilizedTipPosition": {
+            "$ref": "#/definitions/point"
+        },
+        "tipPosition":           {
+            "$ref": "#/definitions/point"
+        },
+        "tipVelocity":           {
+            "$ref":    "#/definitions/point",
+            "default": 0
+        }
+    },
+
+    "definitions": {
+        "point": {
+            "type":     "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items":    [
+                {
+                    "type":    "number",
+                    "default": 0
+                },
+                {
+                    "type":    "number",
+                    "default": 0
+                },
+                {
+                    "type":    "number",
+                    "default": 0
+                }
+            ]
+        },
+        "angle": {
+            "type":     "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items":    [
+                {
+                    "type":    "number",
+                    "default": 0
+                },
+                {
+                    "type":    "number",
+                    "default": 0
+                },
+                {
+                    "type":    "number",
+                    "default": 1
+                }
+            ]
+        }
+
+    }
+}

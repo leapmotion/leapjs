@@ -86,15 +86,31 @@ var fakeGesture = exports.fakeGesture = function(opts) {
 
 var fakeHand = exports.fakeHand = function(opts) {
   if (opts === undefined) opts = {};
-  handId++
+  handId++;
+
+  var tools = [];
+  var fingers = [];
+  var numFingers = Math.random() * 6
+  var numTools = Math.random() * 3;
+  for (var i = 0; i <= numTools; ++i) {
+        tools.push(fakeTool());
+  }
+  for (var f = 0; f < numFingers; ++f) {
+        fingers.push(fakeFinger());
+  }
+  fingers = fingers.slice(0, 5);
   return {
     id: handId - 1,
     valid: true,
     palmPosition: [1,2,3],
-    direction: [1,2,3],
+    direction: [1, 0, 0],
+    palmDirection: [0, 1, 0],
     palmVelocity: [1,2,3],
-    palmNormal: [1,2,3],
+    palmNormal: [1,0, 0],
     sphereCenter:[1,2,3],
+    pointables: tools.concat(fingers),
+    tools: tools,
+    fingers: fingers,
     r: (opts && opts.rotation) || [[0,1,2], [2,3,4], [2,3,4]],
     t: (opts && opts.translation) || [1, 2, 3],
     timeVisible: 10,
@@ -103,19 +119,37 @@ var fakeHand = exports.fakeHand = function(opts) {
 }
 
 var fakeFinger = exports.fakeFinger = function() {
-  fingerId++
-  return {
-    id: fingerId - 1,
-    handId: 0,
-    length: 5,
-    tool: false,
-    width: 5,
-    direction: [10, 10, 10],
-    tipPosition: [10, 10, 10],
-    stabilizedTipPosition: [10, 10, 10],
-    tipVelocity: [10, 10, 10],
-    touchZone: "none",
-    touchDistance: 5,
-    timeVisible: 10
-  }
+    fingerId++
+    return {
+        id: fingerId - 1,
+        handId: 0,
+        length: 5,
+        tool: false,
+        width: 5,
+        direction: [1, 0, 0],
+        tipPosition: [10, 10, 10],
+        stabilizedTipPosition: [10, 10, 10],
+        tipVelocity: [10, 10, 10],
+        touchZone: "none",
+        touchDistance: 5,
+        timeVisible: 10
+    }
+}
+
+var fakeTool = exports.fakeTool = function() {
+    fingerId++
+    return {
+        id: fingerId - 1,
+        handId: 0,
+        length: 5,
+        tool: true,
+        width: 5,
+        direction: [1, 0, 0],
+        tipPosition: [10, 10, 10],
+        stabilizedTipPosition: [10, 10, 10],
+        tipVelocity: [10, 10, 10],
+        touchZone: "none",
+        touchDistance: 5,
+        timeVisible: 10
+    }
 }

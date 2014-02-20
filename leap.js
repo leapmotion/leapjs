@@ -848,6 +848,7 @@ Frame.prototype.tool = function(id) {
   return pointable.tool ? pointable : Pointable.Invalid;
 }
 
+Frame.prototype.name ='frame';
 /**
  * The Pointable object with the specified ID in this frame.
  *
@@ -1095,6 +1096,11 @@ Frame.prototype.dump = function() {
   out += "<br/><br/>Raw JSON:<br/>";
   out += JSON.stringify(this.data);
   return out;
+};
+
+Frame.prototype.toJSON = function(){
+    return Leap._jsonify(this, ['id', 'timestamp', 'pointables', 'tools', 'fingers', 'hands', 'valid'])
+
 }
 
 /**
@@ -1784,6 +1790,13 @@ var Hand = module.exports = function(data) {
    this.stabilizedPalmPosition = data.stabilizedPalmPosition;
 }
 
+Hand.prototype.name = 'hand';
+
+Hand.prototype.toJSON = function(){
+    return Leap._jsonify(this,
+    ['id', 'palmPosition', 'palmVelocity', 'palmNormal', 'sphereCenter', 'stabilizedPalmPosition', 'direction', 'sphereRadius', 'valid', 'pointables', 'fingers', 'tools']);
+};
+
 /**
  * The finger with the specified ID attached to this hand.
  *
@@ -2106,9 +2119,47 @@ module.exports = {
    */
   plugin: function(name, options){
     this.Controller.plugin(name, options)
-  }
-}
+  },
 
+    _jsonify: function(object, properties){
+        var out = {};
+
+        if (_.isArray(object)) {
+            out = _.map(object, Leap._jsonify);
+        } else if (!_.isObject(object)) {
+            out = object;
+        } else if (object.toJSON && ! properties) {
+            out = object.toJSON();
+        } else {
+            if (!properties) {
+                properties = _.keys(object);
+            }
+            if (!_.isArray(properties)){
+                throw new Error('bad properties ');
+            }
+            properties.forEach(function (field) {
+                if (!object.hasOwnProperty(field)) {
+                    return;
+                }
+                var value = object[field];
+                if (_.isArray(value)) {
+                    out[field] = value.map(function(obj){
+                        return Leap._jsonify(obj);
+                    });
+                } else if (_.isNumber(value) || _.isString(value)) {
+                    out[field] = value;
+                } else if (_.isObject(value)) {
+                    out[field] = value.toJSON ? value.toJSON() : Leap._jsonify(value);
+                } else {
+                    out[field] = value;
+                }
+            }, this);
+        }
+
+        return out;
+
+    }
+}
 },{"./_header":1,"./circular_buffer":2,"./controller":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./ui":15,"./version.js":18,"gl-matrix":21}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
@@ -2489,6 +2540,7 @@ var Pointable = module.exports = function(data) {
   this.timeVisible = data.timeVisible;
 }
 
+Pointable.prototype.name = 'pointable';
 /**
  * A string containing a brief, human readable description of the Pointable
  * object.
@@ -2526,6 +2578,10 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
+Pointable.prototype.toJSON = function(){
+    return Leap._jsonify(this,
+    ['id', 'handId', 'length', 'tool', 'width', 'direction', 'valid', 'tipPosition', 'stabilizedTipPosition', 'touchZone', 'thouchDistance', 'timeVisible']);
+};
 },{"gl-matrix":21}],14:[function(require,module,exports){
 var Frame = require('./frame')
 

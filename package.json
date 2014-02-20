@@ -1,20 +1,21 @@
 {
   "name": "leapjs",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "JavaScript client for the Leap Motion Controller",
   "main": "lib",
   "scripts": {
     "test": "make test-node test-integration"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "http://github.com/leapmotion/leapjs.git"
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/leapmotion/leapjs.git"
   },
   "license": "BSD-2-Clause",
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
-    "gl-matrix": "2.0.0"
+    "gl-matrix": "2.0.0",
+    "z-schema": "~2.4.4"
   },
   "devDependencies": {
     "browserify": "2.25.0",

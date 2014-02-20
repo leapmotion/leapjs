@@ -1,5 +1,9 @@
 # Changelog
 
+##0.4.2 - 2014-02-20
+ - added schema for frame
+ - added toJSON for objects
+
 ##0.4.1 - 2014-02-11
  - Allow controller.use to accept a factory directly (node support)
 
