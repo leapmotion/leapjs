@@ -849,6 +849,7 @@ Frame.prototype.tool = function(id) {
 }
 
 Frame.prototype.name ='frame';
+
 /**
  * The Pointable object with the specified ID in this frame.
  *

@@ -14,8 +14,7 @@
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
-    "gl-matrix": "2.0.0",
-    "z-schema": "~2.4.4"
+    "gl-matrix": "2.0.0"
   },
   "devDependencies": {
     "browserify": "2.25.0",
@@ -26,6 +25,8 @@
     "chai": "1.6.1",
     "nodemon": "0.7.8",
     "jsdoc": "3.2.0-dev",
-    "http-server": "*"
+    "http-server": "*",
+      "bluebird": "~1.0.5",
+      "request": "~2.34.0"
   }
 }
