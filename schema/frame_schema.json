@@ -2,11 +2,16 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
 
     "definitions": {
-        "hand": {
+        "gesture": {
+            "type":       "object",
+            "properties": {}
+        },
+        "hand":    {
             "required":   ["pointables", "id", "stabilizedPalmPosition", "tools", "palmPosition", "fingers", "direction"],
             "properties": {
                 "id":      {
-                    "type": "number"
+                    "type":    "number",
+                    "default": -1
                 },
                 "fingers": {
                     "type":  "array",
@@ -79,7 +84,8 @@
                 },
                 "sphereRadius":           {
                     "type":    "number",
-                    "minimum": 0
+                    "minimum": 0,
+                    "default": 100
                 }
             }
         },
@@ -110,6 +116,15 @@
                 "tipVelocity":           {
                     "$ref":    "#/definitions/point",
                     "default": 0
+                },
+                "valid":                 {
+                    "type":    "boolean",
+                    "default": false
+                },
+                "touchZone":             {
+                    "type":    "string",
+                    "enum":    ["none", "hovering", "touching"],
+                    "default": "none"
                 }
             }
         },
@@ -161,9 +176,11 @@
     },
 
     "required":   ["id", "fingers", "valid", "tools", "hands", "pointables"],
+    "type":       "object",
     "properties": {
         "id":      {
-            "type": "number"
+            "type":    "number",
+            "default": -1
         },
         "fingers": {
             "type":  "array",
@@ -185,8 +202,9 @@
             }
         },
 
-        "valid":   {
-            "type": "boolean"
+        "valid": {
+            "type":    "boolean",
+            "default": true
         },
 
         "pointables": {
@@ -230,6 +248,12 @@
             "type":  "array",
             "items": {
                 "$ref": "#/definitions/hand"
+            }
+        },
+        "gestures":   {
+            "type":  "array",
+            "items": {
+                "$ref": "#/definitions/gesture"
             }
         }
     }

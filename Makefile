@@ -1,6 +1,6 @@
 BROWSERIFY_ARGS=--ignore=./node_connection template/entry.js
 
-build: compile compress
+build: grunt compile compress
 
 compile:
 	./node_modules/.bin/browserify ${BROWSERIFY_ARGS} -o leap.js
@@ -34,6 +34,9 @@ watch-build:
 
 watch-test:
 	./node_modules/.bin/nodemon --watch lib --exec "make" test
+
+grunt:
+	grunt
 
 open-in-browsers: build
 	open -a /Applications/Firefox.app test/helpers/browser.html

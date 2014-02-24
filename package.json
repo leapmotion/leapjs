@@ -14,7 +14,10 @@
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
-    "gl-matrix": "2.0.0"
+    "bluebird": "~1.0.5",
+    "request": "~2.34.0",
+    "gl-matrix": "2.0.0",
+    "random-seed": "~0.1.0"
   },
   "devDependencies": {
     "browserify": "2.25.0",
@@ -26,7 +29,9 @@
     "nodemon": "0.7.8",
     "jsdoc": "3.2.0-dev",
     "http-server": "*",
-      "bluebird": "~1.0.5",
-      "request": "~2.34.0"
+    "grunt": "~0.4.2",
+    "grunt-execute": "~0.1.5",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-template": "~0.2.3"
   }
 }

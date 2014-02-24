@@ -1,21 +1,181 @@
 {
-    "$schema":    "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+
+    "definitions": {
+        "hand": {
+            "required":   ["pointables", "id", "stabilizedPalmPosition", "tools", "palmPosition", "fingers", "direction"],
+            "properties": {
+                "id":      {
+                    "type":    "number",
+                    "default": 0
+                },
+                "fingers": {
+                    "type":  "array",
+                    "items": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/pointable_base"
+                            },
+                            {
+                                "properties": {
+                                    "tool": {
+                                        "type":    "boolean",
+                                        "default": false,
+                                        "enum":    [false]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+
+                "pointables":             {
+                    "type":  "array",
+                    "items": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/pointable_base"
+                            },
+                            {
+                                "properties": {
+                                    "tool": {
+                                        "type":    "boolean",
+                                        "default": true
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "tools":                  {
+                    "type":  "array",
+                    "items": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/pointable_base"
+                            },
+                            {
+                                "properties": {
+                                    "tool": {
+                                        "type":    "boolean",
+                                        "default": false,
+                                        "enum":    [true]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "palmPosition":           {
+                    "$ref": "#/definitions/point"
+                },
+                "stabilizedPalmPosition": {
+                    "$ref": "#/definitions/point"
+                },
+                "direction":              {
+                    "$ref": "#/definitions/angle"
+                },
+                "palmNormal":             {
+                    "$ref": "#/definitions/point"
+                },
+                "sphereRadius":           {
+                    "type":    "number",
+                    "minimum": 0
+                }
+            }
+        },
+
+        "pointable_base": {
+            "required":   ["id", "handId", "length", "tool", "direction", "stabilizedTipPosition", "tipPosition"],
+            "type":       "object",
+            "properties": {
+                "id":                    {
+                    "type": "number"
+                },
+                "handId":                {
+                    "type":    "number",
+                    "default": 0
+                },
+                "length":                {
+                    "type":    "number",
+                    "default": 45
+                },
+                "direction":             {
+                    "$ref": "#/definitions/angle"
+                },
+                "stabilizedTipPosition": {
+                    "$ref": "#/definitions/point"
+                },
+                "tipPosition":           {
+                    "$ref": "#/definitions/point"
+                },
+                "tipVelocity":           {
+                    "$ref":    "#/definitions/point",
+                    "default": 0
+                }
+            }
+        },
+        "point":          {
+            "type":     "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items":    [
+                {
+                    "type":    "number",
+                    "default": 0
+                },
+                {
+                    "type":    "number",
+                    "default": 0
+                },
+                {
+                    "type":    "number",
+                    "default": 0
+                }
+            ]
+        },
+        "angle":          {
+            "type":     "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items":    [
+                {
+                    "type":    "number",
+                    "default": 0,
+                    "minimum": -1,
+                    "maximum": 1
+                },
+                {
+                    "type":    "number",
+                    "default": 0,
+                    "minimum": -1,
+                    "maximum": 1
+                },
+                {
+                    "type":    "number",
+                    "default": 1,
+                    "minimum": -1,
+                    "maximum": 1
+                }
+            ]
+        }
+
+    },
+
     "required":   ["id", "handId", "length", "tool", "direction", "stabilizedTipPosition", "tipPosition"],
     "type":       "object",
     "properties": {
         "id":                    {
-            "type": "number"
+            "type":    "number",
+            "default": -1
         },
         "handId":                {
-            "type": "number"
+            "type":    "number",
+            "default": -1
         },
         "length":                {
             "type":    "number",
             "default": 45
-        },
-        "tool":                  {
-            "type":    "boolean",
-            "default": false
         },
         "direction":             {
             "$ref": "#/definitions/angle"
@@ -29,47 +189,19 @@
         "tipVelocity":           {
             "$ref":    "#/definitions/point",
             "default": 0
-        }
-    },
-
-    "definitions": {
-        "point": {
-            "type":     "array",
-            "minItems": 3,
-            "maxItems": 3,
-            "items":    [
-                {
-                    "type":    "number",
-                    "default": 0
-                },
-                {
-                    "type":    "number",
-                    "default": 0
-                },
-                {
-                    "type":    "number",
-                    "default": 0
-                }
-            ]
         },
-        "angle": {
-            "type":     "array",
-            "minItems": 3,
-            "maxItems": 3,
-            "items":    [
-                {
-                    "type":    "number",
-                    "default": 0
-                },
-                {
-                    "type":    "number",
-                    "default": 0
-                },
-                {
-                    "type":    "number",
-                    "default": 1
-                }
-            ]
+        "tool":                  {
+            "type":    "boolean",
+            "default": false
+        },
+        "valid":                 {
+            "type":    "boolean",
+            "default": false
+        },
+        "touchZone":             {
+            "type":    "string",
+            "enum":    ["none", "hovering", "touching"],
+            "default": "none"
         }
 
     }

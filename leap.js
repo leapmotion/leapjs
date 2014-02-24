@@ -150,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":14,"events":19,"underscore":22}],4:[function(require,module,exports){
+},{"../protocol":15,"events":20,"underscore":23}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -221,7 +221,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":3,"underscore":22}],5:[function(require,module,exports){
+},{"./base":3,"underscore":23}],5:[function(require,module,exports){
 var WebSocket = require('ws')
   , BaseConnection = require('./base')
   , _ = require('underscore');
@@ -244,7 +244,7 @@ NodeConnection.prototype.setupSocket = function() {
   return socket;
 }
 
-},{"./base":3,"underscore":22,"ws":23}],6:[function(require,module,exports){
+},{"./base":3,"underscore":23,"ws":24}],6:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -662,7 +662,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":20,"events":19,"underscore":22}],7:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":13,"./pointable":14,"__browserify_process":21,"events":20,"underscore":23}],7:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1103,39 +1103,7 @@ Frame.prototype.toJSON = function(){
     return Leap._jsonify(this, ['id', 'timestamp', 'pointables', 'tools', 'fingers', 'hands', 'valid'])
 
 }
-
-/**
- * An invalid Frame object.
- *
- * You can use this invalid Frame in comparisons testing
- * whether a given Frame instance is valid or invalid. (You can also check the
- * [Frame.valid]{@link Leap.Frame#valid} property.)
- *
- * @static
- * @type {Leap.Frame}
- * @name Invalid
- * @memberof Leap.Frame
- */
-Frame.Invalid = {
-  valid: false,
-  hands: [],
-  fingers: [],
-  tools: [],
-  gestures: [],
-  pointables: [],
-  pointable: function() { return Pointable.Invalid },
-  finger: function() { return Pointable.Invalid },
-  hand: function() { return Hand.Invalid },
-  toString: function() { return "invalid frame" },
-  dump: function() { return this.toString() },
-  rotationAngle: function() { return 0.0; },
-  rotationMatrix: function() { return mat3.create(); },
-  rotationAxis: function() { return vec3.create(); },
-  scaleFactor: function() { return 1.0; },
-  translation: function() { return vec3.create(); }
-};
-
-},{"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
+},{"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":14,"gl-matrix":22,"underscore":23}],8:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1619,7 +1587,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":19,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
+},{"events":20,"gl-matrix":22,"underscore":23}],9:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2025,117 +1993,100 @@ Hand.prototype.roll = function() {
   return Math.atan2(this.palmNormal[0], -this.palmNormal[1]);
 }
 
-/**
- * An invalid Hand object.
- *
- * You can use an invalid Hand object in comparisons testing
- * whether a given Hand instance is valid or invalid. (You can also use the
- * Hand valid property.)
- *
- * @static
- * @type {Leap.Hand}
- * @name Invalid
- * @memberof Leap.Hand
- */
-Hand.Invalid = {
-  valid: false,
-  fingers: [],
-  tools: [],
-  pointables: [],
-  pointable: function() { return Pointable.Invalid },
-  finger: function() { return Pointable.Invalid },
-  toString: function() { return "invalid frame" },
-  dump: function() { return this.toString(); },
-  rotationAngle: function() { return 0.0; },
-  rotationMatrix: function() { return mat3.create(); },
-  rotationAxis: function() { return vec3.create(); },
-  scaleFactor: function() { return 1.0; },
-  translation: function() { return vec3.create(); }
-};
-
-},{"./pointable":13,"gl-matrix":21,"underscore":22}],10:[function(require,module,exports){
-require("./_header")
+},{"./pointable":14,"gl-matrix":22,"underscore":23}],10:[function(require,module,exports){
+require("./_header");
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
  */
+
+var Pointable = require("./pointable");
+var Frame = require("./frame");
+var Hand = require("./hand");
+var Gesture = require("./gesture");
+var matrix = require("gl-matrix");
+
+require('./invalid')(Pointable, Frame, Hand, Gesture);
+
 module.exports = {
-  Controller: require("./controller"),
-  Frame: require("./frame"),
-  Gesture: require("./gesture"),
-  Hand: require("./hand"),
-  Pointable: require("./pointable"),
-  InteractionBox: require("./interaction_box"),
-  CircularBuffer: require("./circular_buffer"),
-  UI: require("./ui"),
-  glMatrix: require("gl-matrix"),
-  mat3: require("gl-matrix").mat3,
-  vec3: require("gl-matrix").vec3,
-  loopController: undefined,
-  version: require('./version.js'),
-  /**
-   * The Leap.loop() function passes a frame of Leap data to your
-   * callback function and then calls window.requestAnimationFrame() after
-   * executing your callback function.
-   *
-   * Leap.loop() sets up the Leap controller and WebSocket connection for you.
-   * You do not need to create your own controller when using this method.
-   *
-   * Your callback function is called on an interval determined by the client
-   * browser. Typically, this is on an interval of 60 frames/second. The most
-   * recent frame of Leap data is passed to your callback function. If the Leap
-   * is producing frames at a slower rate than the browser frame rate, the same
-   * frame of Leap data can be passed to your function in successive animation
-   * updates.
-   *
-   * As an alternative, you can create your own Controller object and use a
-   * {@link Controller#onFrame onFrame} callback to process the data at
-   * the frame rate of the Leap device. See {@link Controller} for an
-   * example.
-   *
-   * @method Leap.loop
-   * @param {function} callback A function called when the browser is ready to
-   * draw to the screen. The most recent {@link Frame} object is passed to
-   * your callback function.
-   *
-   * ```javascript
-   *    Leap.loop( function( frame ) {
+    Controller:     require("./controller"),
+    Frame:          Frame,
+    Gesture:        Gesture,
+    Hand:           Hand,
+    Pointable:      Pointable,
+    InteractionBox: require("./interaction_box"),
+    CircularBuffer: require("./circular_buffer"),
+    UI:             require("./ui"),
+    glMatrix:       matrix,
+    mat3:           matrix.mat3,
+    vec3:           matrix.vec3,
+    loopController: undefined,
+    version:        require('./version.js'),
+    /**
+     * The Leap.loop() function passes a frame of Leap data to your
+     * callback function and then calls window.requestAnimationFrame() after
+     * executing your callback function.
+     *
+     * Leap.loop() sets up the Leap controller and WebSocket connection for you.
+     * You do not need to create your own controller when using this method.
+     *
+     * Your callback function is called on an interval determined by the client
+     * browser. Typically, this is on an interval of 60 frames/second. The most
+     * recent frame of Leap data is passed to your callback function. If the Leap
+     * is producing frames at a slower rate than the browser frame rate, the same
+     * frame of Leap data can be passed to your function in successive animation
+     * updates.
+     *
+     * As an alternative, you can create your own Controller object and use a
+     * {@link Controller#onFrame onFrame} callback to process the data at
+     * the frame rate of the Leap device. See {@link Controller} for an
+     * example.
+     *
+     * @method Leap.loop
+     * @param {function} callback A function called when the browser is ready to
+     * draw to the screen. The most recent {@link Frame} object is passed to
+     * your callback function.
+     *
+     * ```javascript
+     *    Leap.loop( function( frame ) {
    *        // ... your code here
    *    })
-   * ```
-   */
-  loop: function(opts, callback) {
-    if (callback === undefined) {
-      callback = opts;
-      opts = {};
-    }
-    opts.useAllPlugins || (opts.useAllPlugins = true)
-    if (!this.loopController) this.loopController = new this.Controller(opts);
-    this.loopController.loop(callback);
-    return this.loopController;
-  },
+     * ```
+     */
+    loop:           function (opts, callback) {
+        if (callback === undefined) {
+            callback = opts;
+            opts = {};
+        }
+        opts.useAllPlugins || (opts.useAllPlugins = true)
+        if (!this.loopController) {
+            this.loopController = new this.Controller(opts);
+        }
+        this.loopController.loop(callback);
+        return this.loopController;
+    },
 
-  /*
-   * Convenience method for Leap.Controller.plugin
-   */
-  plugin: function(name, options){
-    this.Controller.plugin(name, options)
-  },
+    /*
+     * Convenience method for Leap.Controller.plugin
+     */
+    plugin:         function (name, options) {
+        this.Controller.plugin(name, options)
+    },
 
-    _jsonify: function(object, properties){
+    _jsonify: function (object, properties) {
         var out = {};
 
         if (_.isArray(object)) {
             out = _.map(object, Leap._jsonify);
         } else if (!_.isObject(object)) {
             out = object;
-        } else if (object.toJSON && ! properties) {
+        } else if (object.toJSON && !properties) {
             out = object.toJSON();
         } else {
             if (!properties) {
                 properties = _.keys(object);
             }
-            if (!_.isArray(properties)){
+            if (!_.isArray(properties)) {
                 throw new Error('bad properties ');
             }
             properties.forEach(function (field) {
@@ -2144,7 +2095,7 @@ module.exports = {
                 }
                 var value = object[field];
                 if (_.isArray(value)) {
-                    out[field] = value.map(function(obj){
+                    out[field] = value.map(function (obj) {
                         return Leap._jsonify(obj);
                     });
                 } else if (_.isNumber(value) || _.isString(value)) {
@@ -2161,7 +2112,7 @@ module.exports = {
 
     }
 }
-},{"./_header":1,"./circular_buffer":2,"./controller":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./ui":15,"./version.js":18,"gl-matrix":21}],11:[function(require,module,exports){
+},{"./_header":1,"./circular_buffer":2,"./controller":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./invalid":12,"./pointable":14,"./ui":16,"./version.js":19,"gl-matrix":22}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2303,7 +2254,83 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":21}],12:[function(require,module,exports){
+},{"gl-matrix":22}],12:[function(require,module,exports){
+module.exports = function(Pointable, Frame, Hand){
+    var _ = require('underscore')
+        , glMatrix = require("gl-matrix")
+        , mat3 = glMatrix.mat3
+        , vec3 = glMatrix.vec3;
+
+    /**
+    * An invalid Pointable object.
+    *
+    * You can use this Pointable instance in comparisons testing
+    * whether a given Pointable instance is valid or invalid. (You can also use the
+    * Pointable.valid property.)
+
+    * @static
+    * @type {Leap.Pointable}
+    * @name Invalid
+    * @memberof Leap.Pointable
+    */
+    Pointable.Invalid = {"id":-1,"handId":-1,"length":45,"direction":[1,0,0],"stabilizedTipPosition":[0,0,0],"tipPosition":[1,0,0],"tipVelocity":[0,0,0],"tool":false,"valid":false,"touchZone":"none"};
+
+    /**
+    * An invalid Hand object.
+    *
+    * You can use an invalid Hand object in comparisons testing
+    * whether a given Hand instance is valid or invalid. (You can also use the
+    * Hand valid property.)
+    *
+    * @static
+    * @type {Leap.Hand}
+    * @name Invalid
+    * @memberof Leap.Hand
+    */
+
+    Hand.Invalid = _.extend({"id":-1,"fingers":[],"pointables":[],"tools":[],"palmPosition":[0,0,0],"stabilizedPalmPosition":[0,0,0],"direction":[1,0,0],"palmNormal":[0,-1,0],"sphereRadius":100,"valid":true}, {
+        pointable: function() { return Pointable.Invalid },
+        finger: function() { return Pointable.Invalid },
+        toString: function() { return "invalid frame" },
+        dump: function() { return this.toString(); },
+        rotationAngle: function() { return 0.0; },
+        rotationMatrix: function() { return mat3.create(); },
+        rotationAxis: function() { return vec3.create(); },
+        scaleFactor: function() { return 1.0; },
+        translation: function() { return vec3.create(); }
+    });
+
+/**
+* An invalid Frame object.
+*
+* You can use this invalid Frame in comparisons testing
+* whether a given Frame instance is valid or invalid. (You can also check the
+* [Frame.valid]{@link Leap.Frame#valid} property.)
+*
+* @static
+* @type {Leap.Frame}
+* @name Invalid
+* @memberof Leap.Frame
+*/
+    Frame.Invalid = _.extend({"id":-1,"fingers":[],"valid":true,"pointables":[],"tools":[],"hands":[],"gestures":[]},
+    {
+        pointable: function() { return Pointable.Invalid },
+        finger: function() { return Pointable.Invalid },
+        hand: function() { return Hand.Invalid },
+        toString: function() { return "invalid frame" },
+        dump: function() { return this.toString() },
+        rotationAngle: function() { return 0.0; },
+        rotationMatrix: function() { return mat3.create(); },
+        rotationAxis: function() { return vec3.create(); },
+        scaleFactor: function() { return 1.0; },
+        translation: function() { return vec3.create(); }
+    });
+
+    Pointable.Invalid.valid =  false;
+    Hand.Invalid.valid = false;
+    Frame.Invalid.valid = false;
+}
+},{"gl-matrix":22,"underscore":23}],13:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2357,7 +2384,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2565,25 +2592,11 @@ Pointable.prototype.hand = function(){
   return this.frame.hand(this.handId);
 }
 
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @static
- * @type {Leap.Pointable}
- * @name Invalid
- * @memberof Leap.Pointable
- */
-Pointable.Invalid = { valid: false };
-
 Pointable.prototype.toJSON = function(){
     return Leap._jsonify(this,
     ['id', 'handId', 'length', 'tool', 'width', 'direction', 'valid', 'tipPosition', 'stabilizedTipPosition', 'touchZone', 'thouchDistance', 'timeVisible']);
 };
-},{"gl-matrix":21}],14:[function(require,module,exports){
+},{"gl-matrix":22}],15:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2625,12 +2638,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":7}],15:[function(require,module,exports){
+},{"./frame":7}],16:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":16,"./ui/region":17}],16:[function(require,module,exports){
+},{"./ui/cursor":17,"./ui/region":18}],17:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2641,7 +2654,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2729,14 +2742,14 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":19,"underscore":22}],18:[function(require,module,exports){
+},{"events":20,"underscore":23}],19:[function(require,module,exports){
 module.exports = {
   full: "0.4.1",
   major: 0,
   minor: 4,
   dot: 1
 }
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2932,7 +2945,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":20}],20:[function(require,module,exports){
+},{"__browserify_process":21}],21:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2986,7 +2999,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6059,7 +6072,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -7287,14 +7300,14 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var global=self;/// shim for browser packaging
 
 module.exports = function() {
   return global.WebSocket || global.MozWebSocket;
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7307,5 +7320,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":10}]},{},[24])
+},{"../lib/index":10}]},{},[25])
 ;
