@@ -175,14 +175,18 @@
 
     },
 
-    "required":   ["id", "fingers", "valid", "tools", "hands", "pointables"],
+    "required":   ["id", "fingers", "valid", "tools", "hands", "pointables", "timestamp"],
     "type":       "object",
     "properties": {
-        "id":      {
+        "id":        {
             "type":    "number",
             "default": -1
         },
-        "fingers": {
+        "timestamp": {
+            "type":    "number",
+            "default": 0
+        },
+        "fingers":   {
             "type":  "array",
             "items": {
                 "allOf": [

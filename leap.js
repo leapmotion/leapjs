@@ -2315,7 +2315,7 @@ module.exports = function(Pointable, Frame, Hand){
 * @name Invalid
 * @memberof Leap.Frame
 */
-    Frame.Invalid = _.extend({"id":-1,"fingers":[],"valid":false,"pointables":[],"tools":[],"hands":[],"gestures":[]},
+    Frame.Invalid = _.extend({"id":-1,"timestamp":0,"fingers":[],"valid":false,"pointables":[],"tools":[],"hands":[],"gestures":[]},
     {
         pointable: function() { return Pointable.Invalid },
         tool: function() { return Pointable.InvalidTool },
