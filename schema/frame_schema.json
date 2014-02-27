@@ -236,7 +236,7 @@
                         "properties": {
                             "tool": {
                                 "type":    "boolean",
-                                "default": false,
+                                "default": true,
                                 "enum":    [true]
                             }
                         }

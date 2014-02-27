@@ -1,1 +1,1 @@
-{"id":-1,"fingers":[],"pointables":[],"tools":[],"palmPosition":[0,0,0],"stabilizedPalmPosition":[0,0,0],"direction":[1,0,0],"palmNormal":[0,-1,0],"sphereRadius":100,"valid":true}
+{"id":-1,"fingers":[],"pointables":[],"tools":[],"palmPosition":[0,0,0],"stabilizedPalmPosition":[0,0,0],"direction":[0,0,-1],"palmNormal":[0,-1,0],"sphereRadius":100,"valid":false}

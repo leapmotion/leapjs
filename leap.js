@@ -2273,7 +2273,9 @@ module.exports = function(Pointable, Frame, Hand){
     * @name Invalid
     * @memberof Leap.Pointable
     */
-    Pointable.Invalid = {"id":-1,"handId":-1,"length":45,"direction":[1,0,0],"stabilizedTipPosition":[0,0,0],"tipPosition":[1,0,0],"tipVelocity":[0,0,0],"tool":false,"valid":false,"touchZone":"none"};
+    Pointable.Invalid = {"id":-1,"handId":-1,"length":45,"direction":[0,0,-1],"stabilizedTipPosition":[0,0,0],"tipPosition":[0,0,0],"tipVelocity":[0,0,0],"tool":false,"valid":false,"touchZone":"none"};
+    Pointable.InvalidTool = {"id":-1,"handId":-1,"length":45,"direction":[0,0,-1],"stabilizedTipPosition":[0,0,0],"tipPosition":[0,0,0],"tipVelocity":[0,0,0],"tool":true,"valid":false,"touchZone":"none"};
+    Pointable.InvalidFinger = {"id":-1,"handId":-1,"length":45,"direction":[0,0,-1],"stabilizedTipPosition":[0,0,0],"tipPosition":[0,0,0],"tipVelocity":[0,0,0],"tool":true,"valid":false,"touchZone":"none"};
 
     /**
     * An invalid Hand object.
@@ -2288,9 +2290,10 @@ module.exports = function(Pointable, Frame, Hand){
     * @memberof Leap.Hand
     */
 
-    Hand.Invalid = _.extend({"id":-1,"fingers":[],"pointables":[],"tools":[],"palmPosition":[0,0,0],"stabilizedPalmPosition":[0,0,0],"direction":[1,0,0],"palmNormal":[0,-1,0],"sphereRadius":100,"valid":true}, {
+    Hand.Invalid = _.extend({"id":-1,"fingers":[],"pointables":[],"tools":[],"palmPosition":[0,0,0],"stabilizedPalmPosition":[0,0,0],"direction":[0,0,-1],"palmNormal":[0,-1,0],"sphereRadius":100,"valid":false}, {
         pointable: function() { return Pointable.Invalid },
-        finger: function() { return Pointable.Invalid },
+        tool: function() { return Pointable.InvalidTool },
+        finger: function() { return Pointable.InvalidFinger },
         toString: function() { return "invalid frame" },
         dump: function() { return this.toString(); },
         rotationAngle: function() { return 0.0; },
@@ -2312,10 +2315,11 @@ module.exports = function(Pointable, Frame, Hand){
 * @name Invalid
 * @memberof Leap.Frame
 */
-    Frame.Invalid = _.extend({"id":-1,"fingers":[],"valid":true,"pointables":[],"tools":[],"hands":[],"gestures":[]},
+    Frame.Invalid = _.extend({"id":-1,"fingers":[],"valid":false,"pointables":[],"tools":[],"hands":[],"gestures":[]},
     {
         pointable: function() { return Pointable.Invalid },
-        finger: function() { return Pointable.Invalid },
+        tool: function() { return Pointable.InvalidTool },
+        finger: function() { return Pointable.InvalidFinger },
         hand: function() { return Hand.Invalid },
         toString: function() { return "invalid frame" },
         dump: function() { return this.toString() },
@@ -2326,9 +2330,6 @@ module.exports = function(Pointable, Frame, Hand){
         translation: function() { return vec3.create(); }
     });
 
-    Pointable.Invalid.valid =  false;
-    Hand.Invalid.valid = false;
-    Frame.Invalid.valid = false;
 }
 },{"gl-matrix":22,"underscore":23}],13:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {

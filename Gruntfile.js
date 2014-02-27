@@ -7,7 +7,7 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON("package.json"),
 
-        clean:['lib/invalid_objects/*'],
+        clean: ['lib/invalid_objects/*'],
 
         execute: {
             target: {
@@ -18,16 +18,18 @@ module.exports = function (grunt) {
         'template': {
             'invalid-defs': {
                 'options': {
-                    data: function(){
+                    data: function () {
                         return {
                             invalid_pointable: require('./lib/invalid_objects/pointable.json'),
-                            invalid_hand: require('./lib/invalid_objects/hand.json'),
-                            invalid_frame: require('./lib/invalid_objects/frame.json')
+                            invalid_finger:    require('./lib/invalid_objects/finger.json'),
+                            invalid_tool:      require('./lib/invalid_objects/tool.json'),
+                            invalid_hand:      require('./lib/invalid_objects/hand.json'),
+                            invalid_frame:     require('./lib/invalid_objects/frame.json')
                         };
                     }
                 },
-                'files': {
-                        'lib/invalid.js': ['build_tasks/templates/invalid_template.ejs']
+                'files':   {
+                    'lib/invalid.js': ['build_tasks/templates/invalid_template.ejs']
                 }
             }
         }
@@ -43,5 +45,5 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-template');
 
     // Default task(s).
-    grunt.registerTask("default", ["clean","execute", "template:invalid-defs"]);
+    grunt.registerTask("default", ["clean", "execute", "template:invalid-defs"]);
 };

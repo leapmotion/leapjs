@@ -17,6 +17,8 @@ module.exports = function(Pointable, Frame, Hand){
     * @memberof Leap.Pointable
     */
     Pointable.Invalid = <%= JSON.stringify(invalid_pointable) %>;
+    Pointable.InvalidTool = <%= JSON.stringify(invalid_tool) %>;
+    Pointable.InvalidFinger = <%= JSON.stringify(invalid_finger) %>;
 
     /**
     * An invalid Hand object.
@@ -33,7 +35,8 @@ module.exports = function(Pointable, Frame, Hand){
 
     Hand.Invalid = _.extend(<%= JSON.stringify(invalid_hand) %>, {
         pointable: function() { return Pointable.Invalid },
-        finger: function() { return Pointable.Invalid },
+        tool: function() { return Pointable.InvalidTool },
+        finger: function() { return Pointable.InvalidFinger },
         toString: function() { return "invalid frame" },
         dump: function() { return this.toString(); },
         rotationAngle: function() { return 0.0; },
@@ -58,7 +61,8 @@ module.exports = function(Pointable, Frame, Hand){
     Frame.Invalid = _.extend(<%= JSON.stringify(invalid_frame) %>,
     {
         pointable: function() { return Pointable.Invalid },
-        finger: function() { return Pointable.Invalid },
+        tool: function() { return Pointable.InvalidTool },
+        finger: function() { return Pointable.InvalidFinger },
         hand: function() { return Hand.Invalid },
         toString: function() { return "invalid frame" },
         dump: function() { return this.toString() },
@@ -69,7 +73,4 @@ module.exports = function(Pointable, Frame, Hand){
         translation: function() { return vec3.create(); }
     });
 
-    Pointable.Invalid.valid =  false;
-    Hand.Invalid.valid = false;
-    Frame.Invalid.valid = false;
 }

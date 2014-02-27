@@ -9,36 +9,54 @@ var handSchema = require('./../schema/hand_schema.json');
 var frameSchema = require('./../schema/frame_schema.json');
 
 var invalidPointableFactory = new ZSchema.Factory(pointableSchema, {})
-    .addHandler(/(tipPosition|direction)/,function () {
-        return [1, 0, 0]
-    }).addHandler(/(position|stabilizedTipPosition|tipVelocity)\/item/, 0);
+    .addHandler(/^(tipVelocity|tipPosition|stabilizedTipPosition)$/, function () {
+        return [0, 0, 0]
+    })
+    .addHandler(/^direction$/, function () {
+        return [0, 0, -1]
+    })
+    .addHandler('valid', false);
 
 var invalidPointable = invalidPointableFactory.create();
 fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/pointable.json'), JSON.stringify(invalidPointable));
 
+var invalidTool = invalidPointableFactory.create();
+invalidTool.tool = true;
+fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/tool.json'), JSON.stringify(invalidTool));
+
+var invalidFinger = invalidPointableFactory.create();
+invalidFinger.tool = true;
+fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/finger.json'), JSON.stringify(invalidTool));
+
+/**
+ * creating invalid hand
+ */
 var invalidHandFactory = new ZSchema.Factory(handSchema)
-    .addHandler(/(direction)/,function () {
-        return [1, 0, 0]
-    }).addHandler(/(palmPosition|stabilizedPalmPosition|tipVelocity)\/item/, 0)
+    .addHandler(/(direction)/, function () {
+        return [0, 0, -1]
+    })
+    .addHandler(/(palmPosition|stabilizedPalmPosition|tipVelocity)/, function(){
+        return [0, 0, 0];
+    })
     .addHandler(/(fingers|pointables|tools)/,function () {
         return [];
-    }).addHandler(/palmNormal/, function () {
+    })
+    .addHandler(/palmNormal/, function () {
         return [0, -1, 0];
-    });
+    })
+    .addHandler('valid', false);
 
 var invalidHand = invalidHandFactory.create();
 fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/hand.json'), JSON.stringify(invalidHand));
 
+/**
+ * Creating  invalid frame
+ */
 var invalidFrameFactory = new ZSchema.Factory(frameSchema)
-    .addHandler(/(direction)/,function () {
-        return [1, 0, 0]
-    }).addHandler(/(palmPosition|stabilizedPalmPosition|tipVelocity)\/item/, 0)
     .addHandler(/(fingers|pointables|tools|hands|gestures)/,function () {
         return [];
-    }).addHandler(/palmNormal/, function () {
-        return [0, -1, 0];
-    });
-
+    })
+    .addHandler('valid', false);
 
 /**
  * An invalid Frame object.
