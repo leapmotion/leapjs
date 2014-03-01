@@ -1,4 +1,4 @@
-if (typeof(window.requestAnimationFrame) !== 'function') {
+if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
     window.mozRequestAnimationFrame      ||

@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <title>Plugins - Leap</title>
+    <script src="../leap.js"></script>
+    <script>
+      Leap.Controller.plugin('test', function(){
+
+        // return an object with functionality
+        return {
+
+          // for hand, add methods
+          hand: {
+            favoriteColor: function(){
+              // debugger; // uncomment this to see plugin context: the hand.
+              return 'blue'
+            }
+          },
+
+          // for fingers/tools, run every frame
+          pointable: function(pointable){
+            // debugger; // uncomment this to see plugin context: the controller.
+            pointable.favoriteColor = 'yellow'
+          }
+
+        }
+
+      });
+
+      controller = new Leap.Controller()
+        .use('test')
+        .connect()
+        .on('frame', function(frame){
+          var hand, finger;
+           if ((hand = frame.hands[0]) && (finger = hand.fingers[0])){
+             var output = document.getElementById('output');
+             var string = 'hand: ' + hand.favoriteColor() + ', finger: ' + finger.favoriteColor;
+             console.log(string);
+             output.innerHTML = string;
+          }
+        });
+    </script>
+  </head>
+  <body>
+    <div id="output"></div>
+  </body>
+</html>

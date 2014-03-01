@@ -4,6 +4,7 @@ _ = require("underscore")
 Leap = require('../../lib')
 
 var common = require('./common');
+assertUtil = require('./../assertUtil')
 
 fakeHand = common.fakeHand;
 fakeFrame = common.fakeFrame;
@@ -11,3 +12,4 @@ fakeFinger = common.fakeFinger;
 fakeController = common.fakeController;
 fakeGesture = common.fakeGesture;
 createFrame = common.createFrame;
+fakePluginFactory = common.fakePluginFactory
