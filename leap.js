@@ -944,7 +944,7 @@ Frame.prototype.postprocessData = function(data){
     for (var pointableIdx = 0, pointableCount = data.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
         var pointableData = data.pointables[pointableIdx];
         var pointable = pointableData.dipPosition ? new Finger(pointableData) : new Pointable(pointableData);
-        pointable.this = this;
+        pointable.frame = this;
         this.addPointable(pointable);
     }
 };
