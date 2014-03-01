@@ -1,0 +1,136 @@
+<html>
+<body>
+
+
+<script src = "../leap.js" >          </script>
+<script src = "lib/three.min.js" >    </script>
+<script src = "lib/stats.min.js" >    </script>
+
+<script>
+
+  var container , camera, scene, renderer , stats;
+
+  var frame;
+  var sceneSize = 100;
+
+  var contoller;
+
+
+
+  init();
+  animate();
+
+  function init(){
+
+
+    controller = new Leap.Controller({ enableGestures:true });
+
+    scene = new THREE.Scene();
+    
+    camera = new THREE.PerspectiveCamera( 
+      50 ,
+      window.innerWidth / window.innerHeight,
+      sceneSize / 100 ,
+      sceneSize * 4
+    );
+
+    camera.position.z = sceneSize;
+
+    var mesh = new THREE.Mesh( 
+      new THREE.SphereGeometry( sceneSize/ 10 , 20 , 20 ) , 
+      new THREE.MeshNormalMaterial()
+    );
+
+    scene.add( mesh );
+
+    // Getting the container in the right location
+    container                   = document.createElement( 'div' );
+    container.style.width       = '100%';
+    container.style.height      = '100%';
+    container.style.position    = 'absolute';
+    container.style.top         = '0px';
+    container.style.left        = '0px';
+    container.style.background  = '#000';
+
+    document.body.appendChild( container );
+
+
+    // Getting the stats in the right position
+    stats                             = new Stats();
+    stats.domElement.style.position   = 'absolute';
+    stats.domElement.style.bottom     = '0px';
+    stats.domElement.style.right      = '0px';
+    stats.domElement.style.zIndex     = '999';
+
+    document.body.appendChild( stats.domElement );
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
+
+    // Making sure our renderer is always the right size
+    window.addEventListener( 'resize', onWindowResize , false );
+
+    controller.connect();
+
+  }
+
+
+  function animate(){
+
+    frame = controller.frame();
+    update();
+    stats.update();
+    renderer.render( scene , camera );
+    requestAnimationFrame( animate );
+
+  }
+
+
+  function leapToScene( position ){
+
+    var x = position[0] - frame.interactionBox.center[0];
+    var y = position[1] - frame.interactionBox.center[1];
+    var z = position[2] - frame.interactionBox.center[2];
+      
+    x /= frame.interactionBox.size[0];
+    y /= frame.interactionBox.size[1];
+    z /= frame.interactionBox.size[2];
+
+    x *= sceneSize;
+    y *= sceneSize;
+    z *= sceneSize;
+
+    // Moving everything back a bit to see more of the hands
+    z -= sceneSize;
+
+    return new THREE.Vector3( x , y , z );
+
+  }
+
+
+
+  function update(){
+
+
+  }
+
+
+  function onWindowResize(){
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+  }
+
+
+
+
+</script>
+
+
+</body>
+</html>
+

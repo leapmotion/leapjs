@@ -34,7 +34,7 @@ Some examples have been included in the <code>examples/</code> directory. To run
 
 1. Run `npm install`
 2. Run `make serve`
-3. Point your browser to [http://localhost:8080/examples](http://localhost:8080/examples)
+3. Point your browser to [http://localhost:8080/examples](http://localhost:8081/examples)
 
 Or in code:
 
