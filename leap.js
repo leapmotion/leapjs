@@ -314,7 +314,7 @@ var Controller = module.exports = function(opts) {
   }
   this.connection = new this.connectionType(opts);
   this.streamingCount = 0;
-  this.deviceList = new Array();
+  this.devices = {};
   this._pluginPipelineSteps = {};
   this._pluginExtendedMethods = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
@@ -487,7 +487,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('deviceEvent', function(evt) {
     var info = evt.state,
-        oldInfo = controller.deviceList[info.id];
+        oldInfo = controller.devices[info.id];
 
     //Grab a list of changed properties in the device info
     var changed = {};
@@ -499,7 +499,7 @@ Controller.prototype.setupConnectionEvents = function() {
     }
 
     //Update the device list
-    controller.deviceList[info.id] = info;
+    controller.devices[info.id] = info;
 
     //Fire events based on change list
     if(changed.attached) {
