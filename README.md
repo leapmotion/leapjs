@@ -32,7 +32,7 @@ Details about the protocol used to communicate with `leapd` are detailed here
 
 Some examples have been included in the <code>examples/</code> directory. To run them do the following:
 
-1. Run `npm install` &ast;
+1. Run `npm install` *
 2. Run `make serve`
 3. Point your browser to [http://localhost:8080/examples](http://localhost:8080/examples)
 
@@ -42,7 +42,7 @@ Or in code:
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/f4522a98d0918ac69a49119ac3249bdb "githalytics.com")](http://githalytics.com/leapmotion/leapjs)
 
-## &ast;Installation problems with Leap.js
+## *Installation problems with Leap.js
 
 You may encounter a problem with an error message including `SELF_SIGNED_CERT_IN_CHAIN`. 
 This is often a result of changes in OSX's security system; try reinstalling Node.js.
