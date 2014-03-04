@@ -18,6 +18,7 @@ describe('Hand', function(){
       it('should have type', function() { assert(hand.type) })
       it('should have grabStrength', function() { assert(hand.grabStrength) })
       it('should have pinchStrength', function() { assert(hand.pinchStrength) })
+      it('should have confidence', function() { assert(hand.confidence) })
     });
 
     describe("#finger", function() {
