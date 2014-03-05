@@ -37,7 +37,7 @@ var BaseConnection = module.exports = function(opts) {
     enableGestures: false,
     port: 6437,
     background: false,
-    requestProtocolVersion: 5
+    requestProtocolVersion: 6
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
@@ -1938,6 +1938,7 @@ var Hand = module.exports = function(data) {
    this.type = data.type;
    this.grabStrength = data.grabStrength;
    this.pinchStrength = data.pinchStrength;
+   this.confidence = data.confidence;
 }
 
 /**
@@ -2699,6 +2700,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
     case 3:
     case 4:
     case 5:
+    case 6:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });

@@ -107,7 +107,8 @@ var fakeHand = exports.fakeHand = function(opts) {
     stabilizedPalmPosition: [1,2,3],
     type: 'left',
     grabStrength: 0.5,
-    pinchStrength: 0.5
+    pinchStrength: 0.5,
+    confidence: 0.74094
   }
 }
 
