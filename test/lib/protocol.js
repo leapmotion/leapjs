@@ -107,6 +107,10 @@
       controller.on('deviceRemoved', function(e) {
         return log("deviceRemoved");
       });
+      controller.on('frame', function(frame) {
+        $scope.frameId = frame.id;
+        return $scope.safeApply();
+      });
       return controller.connect();
     };
     return window.onerror = function(message, url, linenumber) {

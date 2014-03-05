@@ -112,6 +112,10 @@ angular.
       controller.on 'deviceRemoved', (e) ->
         log("deviceRemoved")
 
+      controller.on 'frame', (frame) ->
+        $scope.frameId = frame.id
+        $scope.safeApply()
+
       controller.connect()
 
 
