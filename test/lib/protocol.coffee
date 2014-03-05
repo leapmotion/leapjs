@@ -30,7 +30,7 @@ angular.
         this.$apply(fn)
 
     log = (message, options = {})->
-      $scope.log.push {
+      $scope.log.unshift {
         message: message
         date: Date.now()
         class: options.class
