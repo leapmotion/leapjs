@@ -1,4 +1,4 @@
-BROWSERIFY_ARGS=--ignore=./node_connection template/entry.js
+BROWSERIFY_ARGS=--ignore=./connection/node template/entry.js
 
 build: compile compress
 
