@@ -355,15 +355,22 @@ Controller.prototype.inBackgroundPage = function(){
  * @returns the controller
  */
 Controller.prototype.connect = function() {
+  if ( this.connection.connect() ) this.runAnimationLoop();
+  return this;
+}
+
+Controller.prototype.runAnimationLoop = function(){
+  if (!this.inBrowser() || this.suppressAnimationLoop) return false;
+
   var controller = this;
-  if (this.connection.connect() && this.inBrowser() && !controller.suppressAnimationLoop) {
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastConnectionFrame);
+  var callback = function() {
+    controller.emit('animationFrame', controller.lastConnectionFrame);
+    if (controller.connection.focusedState){
       window.requestAnimationFrame(callback);
     }
-    window.requestAnimationFrame(callback);
   }
-  return this;
+  window.requestAnimationFrame(callback);
+  return true;
 }
 
 /*
@@ -467,7 +474,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('disconnect', function() { controller.emit('disconnect'); });
   this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
