@@ -434,10 +434,6 @@ Controller.prototype.processFrame = function(frame) {
   if (frame.gestures) {
     this.accumulatedGestures = this.accumulatedGestures.concat(frame.gestures);
   }
-  if (this.pipeline) {
-    frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
-  }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.emit('deviceFrame', frame);
@@ -457,6 +453,10 @@ Controller.prototype.processFinishedFrame = function(frame) {
     for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
       this.emit("gesture", frame.gestures[gestureIdx], frame);
     }
+  }
+  if (this.pipeline) {
+    frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
   }
   this.emit('frame', frame);
 }
