@@ -290,6 +290,7 @@ var Controller = module.exports = function(opts) {
     this.connectionType = opts.connectionType;
   }
   this.connection = new this.connectionType(opts);
+  this.plugins = {};
   this._pluginPipelineSteps = {};
   this._pluginExtendedMethods = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
@@ -545,6 +546,8 @@ Controller.plugins = function() {
  *  - The order of plugin execution inside the loop will match the order in which use is called by the application.
  *  - The plugin be run for both deviceFrames and animationFrames.
  *
+ *  If called a second time, the options will be merged with those of the already instantiated plugin.
+ *
  * @method use
  * @memberOf Leap.Controller.prototype
  * @param pluginName
@@ -561,6 +564,14 @@ Controller.prototype.use = function(pluginName, options) {
   }
 
   options || (options = {});
+
+  if (this.plugins[pluginName]){
+    _.extend(this.plugins[pluginName], options)
+    return this;
+  }
+
+  this.plugins[pluginName] = options;
+
   pluginInstance = pluginFactory.call(this, options);
 
   for (key in pluginInstance) {
@@ -610,6 +621,8 @@ Controller.prototype.stopUsing = function (pluginName) {
       extMethodHashes = this._pluginExtendedMethods[pluginName],
       i = 0, klass, extMethodHash;
 
+  if (!this.plugins[pluginName]) return;
+
   if (steps) {
     for (i = 0; i < steps.length; i++) {
       this.pipeline.removeStep(steps[i]);
@@ -626,6 +639,8 @@ Controller.prototype.stopUsing = function (pluginName) {
       }
     }
   }
+
+  delete this.plugins[pluginName]
 
   return this;
 }
@@ -2873,8 +2888,7 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
+            if (ev.source === window && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
