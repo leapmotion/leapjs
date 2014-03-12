@@ -318,22 +318,38 @@ Controller.prototype.inBrowser = function() {
 }
 
 Controller.prototype.useAnimationLoop = function() {
-  return this.inBrowser() && typeof(chrome) === "undefined";
+  return this.inBrowser() && !this.inBackgroundPage();
+}
+
+Controller.prototype.inBackgroundPage = function(){
+  // http://developer.chrome.com/extensions/extension#method-getBackgroundPage
+  return (typeof(chrome) !== "undefined") &&
+    chrome.extension &&
+    chrome.extension.getBackgroundPage &&
+    (chrome.extension.getBackgroundPage() === window)
 }
 
 /*
  * @returns the controller
  */
 Controller.prototype.connect = function() {
-  var controller = this;
-  if (this.connection.connect() && this.inBrowser() && !controller.suppressAnimationLoop) {
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastConnectionFrame);
-      window.requestAnimationFrame(callback);
-    }
-    window.requestAnimationFrame(callback);
-  }
+  if ( this.connection.connect() ) this.runAnimationLoop();
   return this;
+}
+
+Controller.prototype.runAnimationLoop = function(){
+  if (!this.inBrowser() || this.suppressAnimationLoop) return false;
+
+  var controller = this;
+  // explicitly named callback so that it shows up nicely in profiler
+  var leapAnimationFrame = function() {
+    controller.emit('animationFrame', controller.lastConnectionFrame);
+    if (controller.connection.focusedState){
+      window.requestAnimationFrame(leapAnimationFrame);
+    }
+  }
+  window.requestAnimationFrame(leapAnimationFrame);
+  return true;
 }
 
 /*
@@ -392,20 +408,17 @@ Controller.prototype.addStep = function(step) {
   this.pipeline.addStep(step);
 }
 
+// this is run on every deviceFrame
 Controller.prototype.processFrame = function(frame) {
   if (frame.gestures) {
     this.accumulatedGestures = this.accumulatedGestures.concat(frame.gestures);
-  }
-  if (this.pipeline) {
-    frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
   }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.emit('deviceFrame', frame);
 }
 
-// on a deviceFrame or animationFrame, this emits a 'frame'
+// on a this.deviceEventName (usually 'animationFrame' in browsers), this emits a 'frame'
 Controller.prototype.processFinishedFrame = function(frame) {
   this.lastFrame = frame;
   if (frame.valid) {
@@ -419,6 +432,10 @@ Controller.prototype.processFinishedFrame = function(frame) {
     for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
       this.emit("gesture", frame.gestures[gestureIdx], frame);
     }
+  }
+  if (this.pipeline) {
+    frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
   }
   this.emit('frame', frame);
 }
@@ -436,7 +453,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('disconnect', function() { controller.emit('disconnect'); });
   this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
