@@ -1,6 +1,6 @@
 describe('Pointable', function(){
   describe("properties", function() {
-    var data = fakeFrame({fingers: 5, hands:1})
+    var data = fakeFrame({tools: 5, hands:1})
     var frame = createFrame(data);
     var pointable = frame.hands[0].pointables[0];
 

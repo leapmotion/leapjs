@@ -54,13 +54,16 @@ var fakeFrame = exports.fakeFrame = function(opts) {
   handId = 0
   fingerId = 0
 
+  var fingers = opts.pointableData || _(opts.fingers || 0).times(function(n) { return fakeFinger(n) }),
+    tools = opts.pointableData || _(opts.tools || 0).times(function(n) { return fakeTool(n) });
+
   var frame = {
     id: opts.id || ++frameId,
     valid: true,
     timestamp: frameId,
-    pointables: opts.pointableData || _(opts.fingers || 0).times(function() { return fakeTool() }),
-    tools: [],
-    fingers: [],
+    fingers: fingers,
+    tools: tools,
+    pointables: fingers.concat(tools),
     hands: opts.handData || _(opts.hands || 0).times(function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
@@ -130,12 +133,12 @@ var fakeTool = exports.fakeTool = function() {
   }
 }
 
-var fakeFinger = exports.fakeFinger = function() {
-  var finger = fakeTool()
+var fakeFinger = exports.fakeFinger = function(type) {
+  var finger = fakeTool();
+  finger.type = type;
   finger.dipPosition = [13, 13, 13];
   finger.pipPosition = [12, 12, 12];
   finger.mcpPosition = [11, 11, 11];
   finger.extended = true;
-  finger.type = 7;
   return finger;
 }
