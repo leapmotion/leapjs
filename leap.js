@@ -263,7 +263,8 @@ var process=require("__browserify_process");var Frame = require('./frame')
 
 
 var Controller = module.exports = function(opts) {
-  var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node);
+  var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node),
+    controller = this;
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
@@ -273,9 +274,14 @@ var Controller = module.exports = function(opts) {
 
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    suppressAnimationLoop: false
+    suppressAnimationLoop: !this.useAnimationLoop()
   });
 
+  this.animationFrameRequested = false;
+  this.onAnimationFrame = function() {
+    controller.emit('animationFrame', controller.lastConnectionFrame);
+    controller.animationFrameRequested = false;
+  }
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
   this.frameEventName = opts.frameEventName;
   this.useAllPlugins = opts.useAllPlugins || false;
@@ -333,23 +339,8 @@ Controller.prototype.inBackgroundPage = function(){
  * @returns the controller
  */
 Controller.prototype.connect = function() {
-  if ( this.connection.connect() ) this.runAnimationLoop();
+  this.connection.connect();
   return this;
-}
-
-Controller.prototype.runAnimationLoop = function(){
-  if (!this.inBrowser() || this.suppressAnimationLoop) return false;
-
-  var controller = this;
-  // explicitly named callback so that it shows up nicely in profiler
-  var leapAnimationFrame = function() {
-    controller.emit('animationFrame', controller.lastConnectionFrame);
-    if (controller.connection.focusedState){
-      window.requestAnimationFrame(leapAnimationFrame);
-    }
-  }
-  window.requestAnimationFrame(leapAnimationFrame);
-  return true;
 }
 
 /*
@@ -415,6 +406,10 @@ Controller.prototype.processFrame = function(frame) {
   }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
+  if (!this.suppressAnimationLoop && !this.animationFrameRequested){
+    this.animationFrameRequested = true;
+    window.requestAnimationFrame(this.onAnimationFrame);
+  }
   this.emit('deviceFrame', frame);
 }
 
@@ -453,7 +448,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('disconnect', function() { controller.emit('disconnect'); });
   this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
+  this.connection.on('focus', function() { controller.emit('focus'); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
