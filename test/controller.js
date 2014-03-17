@@ -191,6 +191,47 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
     });
 
+    it('should list plugins being used', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory());
+
+      var scope = {color: 'blue'};
+      var plugins = fakeController()
+        .use('testPlugin', scope)
+        .plugins;
+
+      assert.equal(plugins.testPlugin, scope);
+      Leap.Controller._pluginFactories = {}
+    });
+
+    it('should merge options when re-using', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory());
+
+      var scope = {color: 'blue'};
+      var plugins = fakeController()
+        .use('testPlugin', scope)
+        .use('testPlugin', {color: 'red'})
+        .plugins;
+
+      assert.equal(plugins.testPlugin, scope);
+      assert.equal(scope.color, 'red');
+      Leap.Controller._pluginFactories = {}
+    });
+
+    it('should list plugins being used after stopping using a plugin', function(){
+      Leap.Controller._pluginFactories = {}
+      Leap.Controller.plugin('testPlugin', fakePluginFactory());
+
+      var plugins = fakeController()
+        .use('testPlugin')
+        .stopUsing('testPlugin')
+        .plugins;
+
+      assert.equal(plugins.testPlugin, undefined);
+      Leap.Controller._pluginFactories = {}
+    });
+
     describe('use', function () {
       it('should accept plugin factories directly', function () {
         var controller = fakeController()

@@ -150,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":14,"events":19,"underscore":22}],4:[function(require,module,exports){
+},{"../protocol":13,"events":19,"underscore":22}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -222,29 +222,6 @@ BrowserConnection.prototype.stopFocusLoop = function() {
 }
 
 },{"./base":3,"underscore":22}],5:[function(require,module,exports){
-var WebSocket = require('ws')
-  , BaseConnection = require('./base')
-  , _ = require('underscore');
-
-var NodeConnection = module.exports = function(opts) {
-  BaseConnection.call(this, opts);
-  var connection = this;
-  this.on('ready', function() { connection.reportFocus(true); });
-}
-
-_.extend(NodeConnection.prototype, BaseConnection.prototype);
-
-NodeConnection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket(this.getUrl());
-  socket.on('open', function() { connection.handleOpen(); });
-  socket.on('message', function(m) { connection.handleData(m); });
-  socket.on('close', function(code, reason) { connection.handleClose(code, reason); });
-  socket.on('error', function() { connection.startReconnection(); });
-  return socket;
-}
-
-},{"./base":3,"underscore":22,"ws":23}],6:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -315,6 +292,7 @@ var Controller = module.exports = function(opts) {
   this.connection = new this.connectionType(opts);
   this.streamingCount = 0;
   this.devices = {};
+  this.plugins = {};
   this._pluginPipelineSteps = {};
   this._pluginExtendedMethods = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
@@ -342,22 +320,38 @@ Controller.prototype.inBrowser = function() {
 }
 
 Controller.prototype.useAnimationLoop = function() {
-  return this.inBrowser() && typeof(chrome) === "undefined";
+  return this.inBrowser() && !this.inBackgroundPage();
+}
+
+Controller.prototype.inBackgroundPage = function(){
+  // http://developer.chrome.com/extensions/extension#method-getBackgroundPage
+  return (typeof(chrome) !== "undefined") &&
+    chrome.extension &&
+    chrome.extension.getBackgroundPage &&
+    (chrome.extension.getBackgroundPage() === window)
 }
 
 /*
  * @returns the controller
  */
 Controller.prototype.connect = function() {
-  var controller = this;
-  if (this.connection.connect() && this.inBrowser() && !controller.suppressAnimationLoop) {
-    var callback = function() {
-      controller.emit('animationFrame', controller.lastConnectionFrame);
-      window.requestAnimationFrame(callback);
-    }
-    window.requestAnimationFrame(callback);
-  }
+  if ( this.connection.connect() ) this.runAnimationLoop();
   return this;
+}
+
+Controller.prototype.runAnimationLoop = function(){
+  if (!this.inBrowser() || this.suppressAnimationLoop) return false;
+
+  var controller = this;
+  // explicitly named callback so that it shows up nicely in profiler
+  var leapAnimationFrame = function() {
+    controller.emit('animationFrame', controller.lastConnectionFrame);
+    if (controller.connection.focusedState){
+      window.requestAnimationFrame(leapAnimationFrame);
+    }
+  }
+  window.requestAnimationFrame(leapAnimationFrame);
+  return true;
 }
 
 /*
@@ -416,20 +410,17 @@ Controller.prototype.addStep = function(step) {
   this.pipeline.addStep(step);
 }
 
+// this is run on every deviceFrame
 Controller.prototype.processFrame = function(frame) {
   if (frame.gestures) {
     this.accumulatedGestures = this.accumulatedGestures.concat(frame.gestures);
-  }
-  if (this.pipeline) {
-    frame = this.pipeline.run(frame);
-    if (!frame) frame = Frame.Invalid;
   }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.emit('deviceFrame', frame);
 }
 
-// on a deviceFrame or animationFrame, this emits a 'frame'
+// on a this.deviceEventName (usually 'animationFrame' in browsers), this emits a 'frame'
 Controller.prototype.processFinishedFrame = function(frame) {
   this.lastFrame = frame;
   if (frame.valid) {
@@ -443,6 +434,10 @@ Controller.prototype.processFinishedFrame = function(frame) {
     for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
       this.emit("gesture", frame.gestures[gestureIdx], frame);
     }
+  }
+  if (this.pipeline) {
+    frame = this.pipeline.run(frame);
+    if (!frame) frame = Frame.Invalid;
   }
   this.emit('frame', frame);
 }
@@ -482,7 +477,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('disconnect', function() { controller.emit('disconnect'); });
   this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('focus', function() { controller.emit('focus') });
+  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('deviceEvent', function(evt) {
@@ -643,6 +638,8 @@ Controller.plugins = function() {
  *  - The order of plugin execution inside the loop will match the order in which use is called by the application.
  *  - The plugin be run for both deviceFrames and animationFrames.
  *
+ *  If called a second time, the options will be merged with those of the already instantiated plugin.
+ *
  * @method use
  * @memberOf Leap.Controller.prototype
  * @param pluginName
@@ -659,6 +656,14 @@ Controller.prototype.use = function(pluginName, options) {
   }
 
   options || (options = {});
+
+  if (this.plugins[pluginName]){
+    _.extend(this.plugins[pluginName], options)
+    return this;
+  }
+
+  this.plugins[pluginName] = options;
+
   pluginInstance = pluginFactory.call(this, options);
 
   for (key in pluginInstance) {
@@ -708,6 +713,8 @@ Controller.prototype.stopUsing = function (pluginName) {
       extMethodHashes = this._pluginExtendedMethods[pluginName],
       i = 0, klass, extMethodHash;
 
+  if (!this.plugins[pluginName]) return;
+
   if (steps) {
     for (i = 0; i < steps.length; i++) {
       this.pipeline.removeStep(steps[i]);
@@ -725,6 +732,8 @@ Controller.prototype.stopUsing = function (pluginName) {
     }
   }
 
+  delete this.plugins[pluginName]
+
   return this;
 }
 
@@ -737,7 +746,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":20,"events":19,"underscore":22}],7:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":18,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1203,7 +1212,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
+},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":21,"underscore":22}],7:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1687,7 +1696,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":19,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
+},{"events":19,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2114,7 +2123,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":13,"gl-matrix":21,"underscore":22}],10:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
 require("./_header")
 /**
  * Leap is the global namespace of the Leap API.
@@ -2184,7 +2193,7 @@ module.exports = {
   }
 }
 
-},{"./_header":1,"./circular_buffer":2,"./controller":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./ui":15,"./version.js":18,"gl-matrix":21}],11:[function(require,module,exports){
+},{"./_header":1,"./circular_buffer":2,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"./version.js":17,"gl-matrix":21}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2326,7 +2335,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":21}],12:[function(require,module,exports){
+},{"gl-matrix":21}],11:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2380,7 +2389,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2601,7 +2610,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":21}],14:[function(require,module,exports){
+},{"gl-matrix":21}],13:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2644,12 +2653,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":7}],15:[function(require,module,exports){
+},{"./frame":6}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":16,"./ui/region":17}],16:[function(require,module,exports){
+},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2660,7 +2669,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2748,13 +2757,15 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":19,"underscore":22}],18:[function(require,module,exports){
+},{"events":19,"underscore":22}],17:[function(require,module,exports){
 module.exports = {
   full: "0.5.0",
   major: 0,
   minor: 5,
   dot: 0
 }
+},{}],18:[function(require,module,exports){
+
 },{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
@@ -7307,13 +7318,6 @@ if(typeof(exports) !== 'undefined') {
 }).call(this);
 
 },{}],23:[function(require,module,exports){
-var global=self;/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-},{}],24:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7326,5 +7330,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":10}]},{},[24])
+},{"../lib/index":9}]},{},[23])
 ;
