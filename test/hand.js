@@ -19,12 +19,11 @@ describe('Hand', function(){
       it('should have grabStrength', function() { assert(hand.grabStrength) })
       it('should have pinchStrength', function() { assert(hand.pinchStrength) })
       it('should have confidence', function() { assert(hand.confidence) })
-      // getting some funny chai behavior on this test, necessitating strictEqual: https://github.com/chaijs/chai/issues/250
-      it('should have a thumb', function() { assert.strictEqual(hand.thumb.type, 0) })
-      it('should have a indexFinger', function() { assert(hand.indexFinger.type, 1) })
-      it('should have a middleFinger', function() { assert(hand.middleFinger.type, 2) })
-      it('should have a ringFinger', function() { assert(hand.ringFinger.type, 3) })
-      it('should have a pinky', function() { assert(hand.pinky.type, 4) })
+      it('should have a thumb', function() { assert.equal(hand.thumb.type, 0) })
+      it('should have a indexFinger', function() { assert.equal(hand.indexFinger.type, 1) })
+      it('should have a middleFinger', function() { assert.equal(hand.middleFinger.type, 2) })
+      it('should have a ringFinger', function() { assert.equal(hand.ringFinger.type, 3) })
+      it('should have a pinky', function() { assert.equal(hand.pinky.type, 4) })
     });
 
     describe("#finger", function() {
