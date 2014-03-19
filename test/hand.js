@@ -19,6 +19,11 @@ describe('Hand', function(){
       it('should have grabStrength', function() { assert(hand.grabStrength) })
       it('should have pinchStrength', function() { assert(hand.pinchStrength) })
       it('should have confidence', function() { assert(hand.confidence) })
+      it('should have a thumb', function() { assert.equal(hand.thumb.type, 0) })
+      it('should have a indexFinger', function() { assert.equal(hand.indexFinger.type, 1) })
+      it('should have a middleFinger', function() { assert.equal(hand.middleFinger.type, 2) })
+      it('should have a ringFinger', function() { assert.equal(hand.ringFinger.type, 3) })
+      it('should have a pinky', function() { assert.equal(hand.pinky.type, 4) })
     });
 
     describe("#finger", function() {

@@ -6,9 +6,9 @@
   "scripts": {
     "test": "make test-node test-integration"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "http://github.com/leapmotion/leapjs.git"
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/leapmotion/leapjs.git"
   },
   "license": "BSD-2-Clause",
   "dependencies": {
@@ -22,7 +22,7 @@
     "mocha-phantomjs": "3.0.0",
     "phantomjs": "1.9.0-6",
     "uglify-js": "2.3.6",
-    "chai": "1.6.1",
+    "chai": "~1.9.0",
     "nodemon": "0.7.8",
     "jsdoc": "3.2.0-dev",
     "http-server": "*"
