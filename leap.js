@@ -98,6 +98,7 @@ BaseConnection.prototype.disconnect = function() {
   this.socket.close();
   delete this.socket;
   delete this.protocol;
+  delete this.background; // This is not persisted when reconnecting to the web socket server
   if (this.connected) {
     this.connected = false;
     this.emit('disconnect');
@@ -274,15 +275,21 @@ var Controller = module.exports = function(opts) {
 
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    suppressAnimationLoop: !this.useAnimationLoop()
+    suppressAnimationLoop: !this.useAnimationLoop(),
+    loopWhileDisconnected: false
   });
 
   this.animationFrameRequested = false;
   this.onAnimationFrame = function() {
     controller.emit('animationFrame', controller.lastConnectionFrame);
-    controller.animationFrameRequested = false;
+    if (controller.loopWhileDisconnected && (controller.connection.focusedState || controller.connection.opts.background) ){
+      window.requestAnimationFrame(controller.onAnimationFrame);
+    }else{
+      controller.animationFrameRequested = false;
+    }
   }
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
+  this.loopWhileDisconnected = opts.loopWhileDisconnected;
   this.frameEventName = opts.frameEventName;
   this.useAllPlugins = opts.useAllPlugins || false;
   this.history = new CircularBuffer(200);
@@ -341,6 +348,13 @@ Controller.prototype.inBackgroundPage = function(){
 Controller.prototype.connect = function() {
   this.connection.connect();
   return this;
+}
+
+Controller.prototype.runAnimationLoop = function(){
+  if (!this.suppressAnimationLoop && !this.animationFrameRequested) {
+    this.animationFrameRequested = true;
+    window.requestAnimationFrame(this.onAnimationFrame);
+  }
 }
 
 /*
@@ -406,10 +420,7 @@ Controller.prototype.processFrame = function(frame) {
   }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
-  if (!this.suppressAnimationLoop && !this.animationFrameRequested){
-    this.animationFrameRequested = true;
-    window.requestAnimationFrame(this.onAnimationFrame);
-  }
+  this.runAnimationLoop();
   this.emit('deviceFrame', frame);
 }
 
@@ -448,7 +459,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('disconnect', function() { controller.emit('disconnect'); });
   this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('focus', function() { controller.emit('focus'); });
+  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
