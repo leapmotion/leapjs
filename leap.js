@@ -1,6 +1,6 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 /*!
- * LeapJS v0.4.2
+ * LeapJS v0.4.3
  * http://github.com/leapmotion/leapjs/
  *
  * Copyright 2013 LeapMotion, Inc. and other contributors
@@ -276,7 +276,8 @@ var Controller = module.exports = function(opts) {
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
     suppressAnimationLoop: !this.useAnimationLoop(),
-    loopWhileDisconnected: false
+    loopWhileDisconnected: false,
+    useAllPlugins: false
   });
 
   this.animationFrameRequested = false;
@@ -291,7 +292,7 @@ var Controller = module.exports = function(opts) {
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
   this.loopWhileDisconnected = opts.loopWhileDisconnected;
   this.frameEventName = opts.frameEventName;
-  this.useAllPlugins = opts.useAllPlugins || false;
+  this.useAllPlugins = opts.useAllPlugins;
   this.history = new CircularBuffer(200);
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
@@ -2689,10 +2690,10 @@ Region.prototype.mapToXY = function(position, width, height) {
 _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":19,"underscore":22}],17:[function(require,module,exports){
 module.exports = {
-  full: "0.4.1",
+  full: "0.4.3",
   major: 0,
   minor: 4,
-  dot: 1
+  dot: 3
 }
 },{}],18:[function(require,module,exports){
 
