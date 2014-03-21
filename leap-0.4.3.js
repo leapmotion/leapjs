@@ -359,6 +359,11 @@ Controller.prototype.connect = function() {
   return this;
 }
 
+
+Controller.prototype.connected = function() {
+  return !!this.connection.connected;
+}
+
 Controller.prototype.runAnimationLoop = function(){
   if (!this.suppressAnimationLoop && !this.animationFrameRequested) {
     this.animationFrameRequested = true;
