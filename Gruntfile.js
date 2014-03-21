@@ -86,12 +86,7 @@ module.exports = function(grunt){
     }
   });
 
-  grunt.loadNpmTasks('grunt-string-replace');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-banner');
-  grunt.loadNpmTasks('grunt-contrib-watch');
+  require('load-grunt-tasks')(grunt);
 
   grunt.registerTask('default', [
     'string-replace',

@@ -279,7 +279,6 @@ var Controller = module.exports = function(opts) {
     useAllPlugins: false
   });
 
-
   this.animationFrameRequested = false;
   this.onAnimationFrame = function() {
     controller.emit('animationFrame', controller.lastConnectionFrame);
