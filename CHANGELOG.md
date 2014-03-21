@@ -10,6 +10,7 @@
   - mcp, pip, dip, and tip positions (all array vec3) - joint positions of the finger (see source/docs4)
   - extended (boolean) - True for a straight finger, false if the finger is curled
   - Moved to own class
+ - Add convenience method controller.connected()
 
 ## 0.4.3
  - Added a new controller option `loopWhileDisconnected` which defaults to true (legacy behavior) and can be set

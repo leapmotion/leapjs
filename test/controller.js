@@ -29,6 +29,15 @@ describe('Controller', function(){
       })
       controller.connect()
     })
+
+    it('should respond to connected', function(){
+      var controller = fakeController()
+      assert.equal(controller.connected(), false);
+      controller.connect()
+      controller.on('ready', function() {
+        assert.equal(controller.connected(), true);
+      });
+    });
   });
 
   describe('#disconnect', function() {
