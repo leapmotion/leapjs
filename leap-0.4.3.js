@@ -1,13 +1,12 @@
-;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
-/*!
- * LeapJS v0.4.3
- * http://github.com/leapmotion/leapjs/
- *
- * Copyright 2013 LeapMotion, Inc. and other contributors
- * Released under the BSD-2-Clause license
- * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt
+/*!                                                              
+ * LeapJS v0.4.3                                                  
+ * http://github.com/leapmotion/leapjs/                                        
+ *                                                                             
+ * Copyright 2013 LeapMotion, Inc. and other contributors                      
+ * Released under the BSD-2-Clause license                                     
+ * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 
  */
-},{}],2:[function(require,module,exports){
+;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -26,7 +25,7 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 var chooseProtocol = require('../protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -151,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":13,"events":19,"underscore":22}],4:[function(require,module,exports){
+},{"../protocol":13,"events":18,"underscore":21}],3:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -222,7 +221,30 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":3,"underscore":22}],5:[function(require,module,exports){
+},{"./base":2,"underscore":21}],4:[function(require,module,exports){
+var WebSocket = require('ws')
+  , BaseConnection = require('./base')
+  , _ = require('underscore');
+
+var NodeConnection = module.exports = function(opts) {
+  BaseConnection.call(this, opts);
+  var connection = this;
+  this.on('ready', function() { connection.reportFocus(true); });
+}
+
+_.extend(NodeConnection.prototype, BaseConnection.prototype);
+
+NodeConnection.prototype.setupSocket = function() {
+  var connection = this;
+  var socket = new WebSocket(this.getUrl());
+  socket.on('open', function() { connection.handleOpen(); });
+  socket.on('message', function(m) { connection.handleData(m); });
+  socket.on('close', function(code, reason) { connection.handleClose(code, reason); });
+  socket.on('error', function() { connection.startReconnection(); });
+  return socket;
+}
+
+},{"./base":2,"underscore":21,"ws":22}],5:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -678,7 +700,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":18,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],6:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":19,"events":18,"underscore":21}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1144,7 +1166,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":21,"underscore":22}],7:[function(require,module,exports){
+},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1628,7 +1650,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":19,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
+},{"events":18,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2055,8 +2077,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":12,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
-require("./_header")
+},{"./pointable":12,"gl-matrix":20,"underscore":21}],9:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2125,7 +2146,7 @@ module.exports = {
   }
 }
 
-},{"./_header":1,"./circular_buffer":2,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"./version.js":17,"gl-matrix":21}],10:[function(require,module,exports){
+},{"./circular_buffer":1,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"./version.js":17,"gl-matrix":20}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2267,7 +2288,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":21}],11:[function(require,module,exports){
+},{"gl-matrix":20}],11:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2542,7 +2563,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":21}],13:[function(require,module,exports){
+},{"gl-matrix":20}],13:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2688,16 +2709,15 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":19,"underscore":22}],17:[function(require,module,exports){
+},{"events":18,"underscore":21}],17:[function(require,module,exports){
+// This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: "0.4.3",
+  full: '0.4.3',
   major: 0,
   minor: 4,
   dot: 3
 }
 },{}],18:[function(require,module,exports){
-
-},{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2893,7 +2913,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":20}],20:[function(require,module,exports){
+},{"__browserify_process":19}],19:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2947,7 +2967,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6020,7 +6040,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -7248,6 +7268,13 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
+},{}],22:[function(require,module,exports){
+var global=self;/// shim for browser packaging
+
+module.exports = function() {
+  return global.WebSocket || global.MozWebSocket;
+}
+
 },{}],23:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
@@ -7262,4 +7289,4 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 Leap = require("../lib/index");
 
 },{"../lib/index":9}]},{},[23])
-;
+;;
