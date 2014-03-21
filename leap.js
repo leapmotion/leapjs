@@ -1,6 +1,6 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 /*!
- * LeapJS v0.4.2
+ * LeapJS v0.4.3
  * http://github.com/leapmotion/leapjs/
  *
  * Copyright 2013 LeapMotion, Inc. and other contributors
@@ -98,6 +98,7 @@ BaseConnection.prototype.disconnect = function() {
   this.socket.close();
   delete this.socket;
   delete this.protocol;
+  delete this.background; // This is not persisted when reconnecting to the web socket server
   if (this.connected) {
     this.connected = false;
     this.emit('disconnect');
@@ -263,7 +264,8 @@ var process=require("__browserify_process");var Frame = require('./frame')
 
 
 var Controller = module.exports = function(opts) {
-  var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node);
+  var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node),
+    controller = this;
 
   opts = _.defaults(opts || {}, {
     inNode: inNode
@@ -273,12 +275,24 @@ var Controller = module.exports = function(opts) {
 
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
-    suppressAnimationLoop: false
+    suppressAnimationLoop: !this.useAnimationLoop(),
+    loopWhileDisconnected: false,
+    useAllPlugins: false
   });
 
+  this.animationFrameRequested = false;
+  this.onAnimationFrame = function() {
+    controller.emit('animationFrame', controller.lastConnectionFrame);
+    if (controller.loopWhileDisconnected && (controller.connection.focusedState || controller.connection.opts.background) ){
+      window.requestAnimationFrame(controller.onAnimationFrame);
+    }else{
+      controller.animationFrameRequested = false;
+    }
+  }
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
+  this.loopWhileDisconnected = opts.loopWhileDisconnected;
   this.frameEventName = opts.frameEventName;
-  this.useAllPlugins = opts.useAllPlugins || false;
+  this.useAllPlugins = opts.useAllPlugins;
   this.history = new CircularBuffer(200);
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
@@ -333,23 +347,15 @@ Controller.prototype.inBackgroundPage = function(){
  * @returns the controller
  */
 Controller.prototype.connect = function() {
-  if ( this.connection.connect() ) this.runAnimationLoop();
+  this.connection.connect();
   return this;
 }
 
 Controller.prototype.runAnimationLoop = function(){
-  if (!this.inBrowser() || this.suppressAnimationLoop) return false;
-
-  var controller = this;
-  // explicitly named callback so that it shows up nicely in profiler
-  var leapAnimationFrame = function() {
-    controller.emit('animationFrame', controller.lastConnectionFrame);
-    if (controller.connection.focusedState){
-      window.requestAnimationFrame(leapAnimationFrame);
-    }
+  if (!this.suppressAnimationLoop && !this.animationFrameRequested) {
+    this.animationFrameRequested = true;
+    window.requestAnimationFrame(this.onAnimationFrame);
   }
-  window.requestAnimationFrame(leapAnimationFrame);
-  return true;
 }
 
 /*
@@ -415,6 +421,7 @@ Controller.prototype.processFrame = function(frame) {
   }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
+  this.runAnimationLoop();
   this.emit('deviceFrame', frame);
 }
 
@@ -2869,10 +2876,10 @@ Region.prototype.mapToXY = function(position, width, height) {
 _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":20,"underscore":23}],18:[function(require,module,exports){
 module.exports = {
-  full: "0.4.1",
+  full: "0.4.3",
   major: 0,
   minor: 4,
-  dot: 1
+  dot: 3
 }
 },{}],19:[function(require,module,exports){
 
