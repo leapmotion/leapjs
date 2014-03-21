@@ -150,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":13,"events":18,"underscore":21}],3:[function(require,module,exports){
+},{"../protocol":12,"events":18,"underscore":21}],3:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -222,29 +222,6 @@ BrowserConnection.prototype.stopFocusLoop = function() {
 }
 
 },{"./base":2,"underscore":21}],4:[function(require,module,exports){
-var WebSocket = require('ws')
-  , BaseConnection = require('./base')
-  , _ = require('underscore');
-
-var NodeConnection = module.exports = function(opts) {
-  BaseConnection.call(this, opts);
-  var connection = this;
-  this.on('ready', function() { connection.reportFocus(true); });
-}
-
-_.extend(NodeConnection.prototype, BaseConnection.prototype);
-
-NodeConnection.prototype.setupSocket = function() {
-  var connection = this;
-  var socket = new WebSocket(this.getUrl());
-  socket.on('open', function() { connection.handleOpen(); });
-  socket.on('message', function(m) { connection.handleData(m); });
-  socket.on('close', function(code, reason) { connection.handleClose(code, reason); });
-  socket.on('error', function() { connection.startReconnection(); });
-  return socket;
-}
-
-},{"./base":2,"underscore":21,"ws":22}],5:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -301,6 +278,7 @@ var Controller = module.exports = function(opts) {
     loopWhileDisconnected: false,
     useAllPlugins: false
   });
+
 
   this.animationFrameRequested = false;
   this.onAnimationFrame = function() {
@@ -700,7 +678,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":4,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":19,"events":18,"underscore":21}],6:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":17,"./frame":5,"./gesture":6,"./hand":7,"./pipeline":10,"./pointable":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1166,7 +1144,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
+},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":20,"underscore":21}],6:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1650,7 +1628,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":18,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
+},{"events":18,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2077,7 +2055,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":12,"gl-matrix":20,"underscore":21}],9:[function(require,module,exports){
+},{"./pointable":11,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2146,7 +2124,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":1,"./controller":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./ui":14,"./version.js":17,"gl-matrix":20}],10:[function(require,module,exports){
+},{"./circular_buffer":1,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"./ui":13,"./version.js":16,"gl-matrix":20}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2288,7 +2266,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":20}],11:[function(require,module,exports){
+},{"gl-matrix":20}],10:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2342,7 +2320,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2563,7 +2541,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":20}],13:[function(require,module,exports){
+},{"gl-matrix":20}],12:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2605,12 +2583,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":6}],14:[function(require,module,exports){
+},{"./frame":5}],13:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
+},{"./ui/cursor":14,"./ui/region":15}],14:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2621,7 +2599,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2709,7 +2687,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":18,"underscore":21}],17:[function(require,module,exports){
+},{"events":18,"underscore":21}],16:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '0.4.3',
@@ -2717,6 +2695,8 @@ module.exports = {
   minor: 4,
   dot: 3
 }
+},{}],17:[function(require,module,exports){
+
 },{}],18:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
@@ -7269,13 +7249,6 @@ if(typeof(exports) !== 'undefined') {
 }).call(this);
 
 },{}],22:[function(require,module,exports){
-var global=self;/// shim for browser packaging
-
-module.exports = function() {
-  return global.WebSocket || global.MozWebSocket;
-}
-
-},{}],23:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7288,5 +7261,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":9}]},{},[23])
+},{"../lib/index":8}]},{},[22])
 ;;

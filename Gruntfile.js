@@ -59,7 +59,9 @@ module.exports = function(grunt){
     },
     browserify: {
       build: {
-        ignore: 'lib/connection/node.js',
+        options: {
+          ignore: ['lib/connection/node.js']
+        },
         src: 'template/entry.js',
         dest: filename + '.js'
       }
