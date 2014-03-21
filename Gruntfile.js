@@ -77,6 +77,10 @@ module.exports = function(grunt){
         },
         src: [filename + '.js', filename + '.min.js']
       }
+    },
+    watch: {
+      files: 'lib/*',
+      tasks: ['default']
     }
   });
 
@@ -85,6 +89,7 @@ module.exports = function(grunt){
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-banner');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('default', [
     'string-replace',
