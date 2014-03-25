@@ -28,7 +28,7 @@
     "http-server": "*",
     "grunt": "~0.4.4",
     "grunt-browserify": "~2.0.1",
-    "grunt-contrib-uglify": "~0.4.0",
+    "grunt-contrib-uglify": "0.3.3",
     "grunt-banner": "~0.2.2",
     "grunt-string-replace": "~0.2.7",
     "grunt-contrib-clean": "~0.5.0",
