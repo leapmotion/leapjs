@@ -69,7 +69,7 @@
       log("connected " + $scope.script + ", protocol v" + $scope.protocol, {
         "class": 'italic'
       });
-      controller = new Leap.Controller();
+      window.controller = controller = new Leap.Controller();
       controller.connection.opts.requestProtocolVersion = $scope.protocol;
       controller.on('connect', function() {
         return log('connect');
