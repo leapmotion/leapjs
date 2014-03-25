@@ -6,9 +6,9 @@
   "scripts": {
     "test": "make test-node test-integration"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "http://github.com/leapmotion/leapjs.git"
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/leapmotion/leapjs.git"
   },
   "license": "BSD-2-Clause",
   "dependencies": {
@@ -25,6 +25,15 @@
     "chai": "1.6.1",
     "nodemon": "0.7.8",
     "jsdoc": "3.2.0-dev",
-    "http-server": "*"
+    "http-server": "*",
+    "grunt": "~0.4.4",
+    "grunt-browserify": "~2.0.1",
+    "grunt-contrib-uglify": "0.3.3",
+    "grunt-banner": "~0.2.2",
+    "grunt-string-replace": "~0.2.7",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "load-grunt-tasks": "~0.3.0",
+    "grunt-exec": "~0.4.5"
   }
 }
