@@ -83,6 +83,11 @@ module.exports = function(grunt){
     watch: {
       files: 'lib/*',
       tasks: ['default']
+    },
+    exec: {
+      'test-browser': './node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html',
+      'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot',
+      'test-integration': 'node integration_test/reconnection.js && node integration_test/protocol_versions.js'
     }
   });
 
@@ -94,5 +99,12 @@ module.exports = function(grunt){
     'browserify',
     'uglify',
     'usebanner'
+  ]);
+
+  grunt.registerTask('test', [
+    'default',
+    'exec:test-browser',
+    'exec:test-node',
+    'exec:test-integration'
   ]);
 }
