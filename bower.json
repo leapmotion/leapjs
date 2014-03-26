@@ -1,9 +1,9 @@
 {
   "name": "leapjs",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "homepage": "https://github.com/leapmotion/leapjs",
   "description": "JavaScript client for the Leap Motion Controller",
-  "main": "leap.js",
+  "main": "leap-0.4.3.js",
   "keywords": [
     "leap",
     "leapmotion"
