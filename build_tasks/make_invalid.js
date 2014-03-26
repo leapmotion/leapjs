@@ -25,8 +25,8 @@ invalidTool.tool = true;
 fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/tool.json'), JSON.stringify(invalidTool));
 
 var invalidFinger = invalidPointableFactory.create();
-invalidFinger.tool = true;
-fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/finger.json'), JSON.stringify(invalidTool));
+invalidFinger.tool = false;
+fs.writeFileSync(path.resolve(__dirname, '../lib/invalid_objects/finger.json'), JSON.stringify(invalidFinger));
 
 /**
  * creating invalid hand

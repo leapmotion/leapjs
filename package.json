@@ -1,10 +1,6 @@
 {
   "name": "leapjs",
-<<<<<<< HEAD
-  "version": "0.4.2",
-=======
   "version": "0.4.3",
->>>>>>> refs/heads/master
   "description": "JavaScript client for the Leap Motion Controller",
   "main": "lib",
   "scripts": {
@@ -33,13 +29,8 @@
     "nodemon": "0.7.8",
     "jsdoc": "3.2.0-dev",
     "http-server": "*",
-<<<<<<< HEAD
-    "grunt": "~0.4.2",
     "grunt-execute": "~0.1.5",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-template": "~0.2.3"
-=======
-    "grunt": "~0.4.4",
+    "grunt-template": "~0.2.3",
     "grunt-browserify": "~2.0.1",
     "grunt-contrib-uglify": "0.3.3",
     "grunt-banner": "~0.2.2",
@@ -48,6 +39,5 @@
     "grunt-contrib-watch": "~0.6.1",
     "load-grunt-tasks": "~0.3.0",
     "grunt-exec": "~0.4.5"
->>>>>>> refs/heads/master
   }
 }

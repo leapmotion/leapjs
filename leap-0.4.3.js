@@ -150,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":12,"events":18,"underscore":21}],3:[function(require,module,exports){
+},{"../protocol":13,"events":19,"underscore":22}],3:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -221,7 +221,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":2,"underscore":21}],4:[function(require,module,exports){
+},{"./base":2,"underscore":22}],4:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -677,7 +677,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":17,"./frame":5,"./gesture":6,"./hand":7,"./pipeline":10,"./pointable":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":18,"./frame":5,"./gesture":6,"./hand":7,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],5:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -862,6 +862,8 @@ Frame.prototype.tool = function(id) {
   var pointable = this.pointable(id);
   return pointable.tool ? pointable : Pointable.Invalid;
 }
+
+Frame.prototype.name ='frame';
 
 /**
  * The Pointable object with the specified ID in this frame.
@@ -1110,40 +1112,13 @@ Frame.prototype.dump = function() {
   out += "<br/><br/>Raw JSON:<br/>";
   out += JSON.stringify(this.data);
   return out;
-}
-
-/**
- * An invalid Frame object.
- *
- * You can use this invalid Frame in comparisons testing
- * whether a given Frame instance is valid or invalid. (You can also check the
- * [Frame.valid]{@link Leap.Frame#valid} property.)
- *
- * @static
- * @type {Leap.Frame}
- * @name Invalid
- * @memberof Leap.Frame
- */
-Frame.Invalid = {
-  valid: false,
-  hands: [],
-  fingers: [],
-  tools: [],
-  gestures: [],
-  pointables: [],
-  pointable: function() { return Pointable.Invalid },
-  finger: function() { return Pointable.Invalid },
-  hand: function() { return Hand.Invalid },
-  toString: function() { return "invalid frame" },
-  dump: function() { return this.toString() },
-  rotationAngle: function() { return 0.0; },
-  rotationMatrix: function() { return mat3.create(); },
-  rotationAxis: function() { return vec3.create(); },
-  scaleFactor: function() { return 1.0; },
-  translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":20,"underscore":21}],6:[function(require,module,exports){
+Frame.prototype.toJSON = function(){
+    return Leap._jsonify(this, ['id', 'timestamp', 'pointables', 'tools', 'fingers', 'hands', 'valid'])
+
+}
+},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":12,"gl-matrix":21,"underscore":22}],6:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1627,7 +1602,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":18,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
+},{"events":19,"gl-matrix":21,"underscore":22}],7:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -1798,6 +1773,13 @@ var Hand = module.exports = function(data) {
    */
    this.stabilizedPalmPosition = data.stabilizedPalmPosition;
 }
+
+Hand.prototype.name = 'hand';
+
+Hand.prototype.toJSON = function(){
+    return Leap._jsonify(this,
+    ['id', 'palmPosition', 'palmVelocity', 'palmNormal', 'sphereCenter', 'stabilizedPalmPosition', 'direction', 'sphereRadius', 'valid', 'pointables', 'fingers', 'tools']);
+};
 
 /**
  * The finger with the specified ID attached to this hand.
@@ -2026,45 +2008,24 @@ Hand.prototype.roll = function() {
   return Math.atan2(this.palmNormal[0], -this.palmNormal[1]);
 }
 
-/**
- * An invalid Hand object.
- *
- * You can use an invalid Hand object in comparisons testing
- * whether a given Hand instance is valid or invalid. (You can also use the
- * Hand valid property.)
- *
- * @static
- * @type {Leap.Hand}
- * @name Invalid
- * @memberof Leap.Hand
- */
-Hand.Invalid = {
-  valid: false,
-  fingers: [],
-  tools: [],
-  pointables: [],
-  pointable: function() { return Pointable.Invalid },
-  finger: function() { return Pointable.Invalid },
-  toString: function() { return "invalid frame" },
-  dump: function() { return this.toString(); },
-  rotationAngle: function() { return 0.0; },
-  rotationMatrix: function() { return mat3.create(); },
-  rotationAxis: function() { return vec3.create(); },
-  scaleFactor: function() { return 1.0; },
-  translation: function() { return vec3.create(); }
-};
-
-},{"./pointable":11,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
  */
+
+var Hand = require("./hand"),
+  Pointable = require("./pointable"),
+  Frame = require("./frame");
+
+  require ('./invalid')(Pointable, Frame, Hand);
+
 module.exports = {
   Controller: require("./controller"),
-  Frame: require("./frame"),
+  Frame: Frame,
   Gesture: require("./gesture"),
-  Hand: require("./hand"),
-  Pointable: require("./pointable"),
+  Hand: Hand,
+  Pointable: Pointable,
   InteractionBox: require("./interaction_box"),
   CircularBuffer: require("./circular_buffer"),
   UI: require("./ui"),
@@ -2104,7 +2065,7 @@ module.exports = {
    *    })
    * ```
    */
-  loop: function(opts, callback) {
+  loop: function (opts, callback) {
     if (callback === undefined) {
       callback = opts;
       opts = {};
@@ -2118,12 +2079,50 @@ module.exports = {
   /*
    * Convenience method for Leap.Controller.plugin
    */
-  plugin: function(name, options){
+  plugin: function (name, options) {
     this.Controller.plugin(name, options)
+  },
+  _jsonify: function (object, properties) {
+    var out = {};
+
+    if (_.isArray(object)) {
+      out = _.map(object, Leap._jsonify);
+    } else if (!_.isObject(object)) {
+      out = object;
+    } else if (object.toJSON && !properties) {
+      out = object.toJSON();
+    } else {
+      if (!properties) {
+        properties = _.keys(object);
+      }
+      if (!_.isArray(properties)) {
+        throw new Error('bad properties ');
+      }
+      properties.forEach(function (field) {
+        if (!object.hasOwnProperty(field)) {
+          return;
+        }
+        var value = object[field];
+        if (_.isArray(value)) {
+          out[field] = value.map(function (obj) {
+            return Leap._jsonify(obj);
+          });
+        } else if (_.isNumber(value) || _.isString(value)) {
+          out[field] = value;
+        } else if (_.isObject(value)) {
+          out[field] = value.toJSON ? value.toJSON() : Leap._jsonify(value);
+        } else {
+          out[field] = value;
+        }
+      }, this);
+    }
+
+    return out;
+
   }
 }
 
-},{"./circular_buffer":1,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"./ui":13,"./version.js":16,"gl-matrix":20}],9:[function(require,module,exports){
+},{"./circular_buffer":1,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./invalid":10,"./pointable":12,"./ui":14,"./version.js":17,"gl-matrix":21}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2265,7 +2264,84 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":20}],10:[function(require,module,exports){
+},{"gl-matrix":21}],10:[function(require,module,exports){
+module.exports = function(Pointable, Frame, Hand){
+  var _ = require('underscore')
+    , glMatrix = require("gl-matrix")
+    , mat3 = glMatrix.mat3
+    , vec3 = glMatrix.vec3;
+
+  /**
+  * An invalid Pointable object.
+  *
+  * You can use this Pointable instance in comparisons testing
+  * whether a given Pointable instance is valid or invalid. (You can also use the
+  * Pointable.valid property.)
+
+  * @static
+  * @type {Leap.Pointable}
+  * @name Invalid
+  * @memberof Leap.Pointable
+  */
+  Pointable.Invalid = {"id":-1,"handId":-1,"length":45,"direction":[0,0,-1],"stabilizedTipPosition":[0,0,0],"tipPosition":[0,0,0],"tipVelocity":[0,0,0],"tool":false,"valid":false,"touchZone":"none"};
+  Pointable.InvalidTool = {"id":-1,"handId":-1,"length":45,"direction":[0,0,-1],"stabilizedTipPosition":[0,0,0],"tipPosition":[0,0,0],"tipVelocity":[0,0,0],"tool":true,"valid":false,"touchZone":"none"};
+  Pointable.InvalidFinger = {"id":-1,"handId":-1,"length":45,"direction":[0,0,-1],"stabilizedTipPosition":[0,0,0],"tipPosition":[0,0,0],"tipVelocity":[0,0,0],"tool":false,"valid":false,"touchZone":"none"};
+
+  /**
+  * An invalid Hand object.
+  *
+  * You can use an invalid Hand object in comparisons testing
+  * whether a given Hand instance is valid or invalid. (You can also use the
+  * Hand valid property.)
+  *
+  * @static
+  * @type {Leap.Hand}
+  * @name Invalid
+  * @memberof Leap.Hand
+  */
+
+  Hand.Invalid = _.extend({"id":-1,"fingers":[],"pointables":[],"tools":[],"palmPosition":[0,0,0],"stabilizedPalmPosition":[0,0,0],"direction":[0,0,-1],"palmNormal":[0,-1,0],"sphereRadius":100,"valid":false}, {
+    pointable: function() { return Pointable.Invalid },
+    tool: function() { return Pointable.InvalidTool },
+    finger: function() { return Pointable.InvalidFinger },
+    toString: function() { return "invalid hand" },
+    dump: function() { return this.toString(); },
+    rotationAngle: function() { return 0.0; },
+    rotationMatrix: function() { return mat3.create(); },
+    rotationAxis: function() { return vec3.create(); },
+    scaleFactor: function() { return 1.0; },
+    translation: function() { return vec3.create(); }
+  });
+
+/**
+* An invalid Frame object.
+*
+* You can use this invalid Frame in comparisons testing
+* whether a given Frame instance is valid or invalid. (You can also check the
+* [Frame.valid]{@link Leap.Frame#valid} property.)
+*
+* @static
+* @type {Leap.Frame}
+* @name Invalid
+* @memberof Leap.Frame
+*/
+  Frame.Invalid = _.extend({"id":-1,"timestamp":0,"fingers":[],"valid":false,"pointables":[],"tools":[],"hands":[],"gestures":[]},
+  {
+    pointable: function() { return Pointable.Invalid },
+    tool: function() { return Pointable.InvalidTool },
+    finger: function() { return Pointable.InvalidFinger },
+    hand: function() { return Hand.Invalid },
+    toString: function() { return "invalid frame" },
+    dump: function() { return this.toString() },
+    rotationAngle: function() { return 0.0; },
+    rotationMatrix: function() { return mat3.create(); },
+    rotationAxis: function() { return vec3.create(); },
+    scaleFactor: function() { return 1.0; },
+    translation: function() { return vec3.create(); }
+  });
+
+}
+},{"gl-matrix":21,"underscore":22}],11:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2319,7 +2395,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2503,6 +2579,7 @@ var Pointable = module.exports = function(data) {
   this.timeVisible = data.timeVisible;
 }
 
+Pointable.prototype.name = 'pointable';
 /**
  * A string containing a brief, human readable description of the Pointable
  * object.
@@ -2526,21 +2603,11 @@ Pointable.prototype.hand = function(){
   return this.frame.hand(this.handId);
 }
 
-/**
- * An invalid Pointable object.
- *
- * You can use this Pointable instance in comparisons testing
- * whether a given Pointable instance is valid or invalid. (You can also use the
- * Pointable.valid property.)
-
- * @static
- * @type {Leap.Pointable}
- * @name Invalid
- * @memberof Leap.Pointable
- */
-Pointable.Invalid = { valid: false };
-
-},{"gl-matrix":20}],12:[function(require,module,exports){
+Pointable.prototype.toJSON = function(){
+    return Leap._jsonify(this,
+    ['id', 'handId', 'length', 'tool', 'width', 'direction', 'valid', 'tipPosition', 'stabilizedTipPosition', 'touchZone', 'thouchDistance', 'timeVisible']);
+};
+},{"gl-matrix":21}],13:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2582,12 +2649,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":5}],13:[function(require,module,exports){
+},{"./frame":5}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":14,"./ui/region":15}],14:[function(require,module,exports){
+},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2598,7 +2665,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2686,7 +2753,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":18,"underscore":21}],16:[function(require,module,exports){
+},{"events":19,"underscore":22}],17:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '0.4.3',
@@ -2694,9 +2761,9 @@ module.exports = {
   minor: 4,
   dot: 3
 }
-},{}],17:[function(require,module,exports){
-
 },{}],18:[function(require,module,exports){
+
+},{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2892,7 +2959,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":19}],19:[function(require,module,exports){
+},{"__browserify_process":20}],20:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2911,7 +2978,8 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
@@ -2946,7 +3014,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6019,7 +6087,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -7247,7 +7315,7 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7260,5 +7328,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":8}]},{},[22])
+},{"../lib/index":8}]},{},[23])
 ;;
