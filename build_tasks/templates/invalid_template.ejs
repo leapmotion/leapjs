@@ -1,0 +1,76 @@
+module.exports = function(Pointable, Frame, Hand){
+  var _ = require('underscore')
+    , glMatrix = require("gl-matrix")
+    , mat3 = glMatrix.mat3
+    , vec3 = glMatrix.vec3;
+
+  /**
+  * An invalid Pointable object.
+  *
+  * You can use this Pointable instance in comparisons testing
+  * whether a given Pointable instance is valid or invalid. (You can also use the
+  * Pointable.valid property.)
+
+  * @static
+  * @type {Leap.Pointable}
+  * @name Invalid
+  * @memberof Leap.Pointable
+  */
+  Pointable.Invalid = <%= JSON.stringify(invalid_pointable) %>;
+  Pointable.InvalidTool = <%= JSON.stringify(invalid_tool) %>;
+  Pointable.InvalidFinger = <%= JSON.stringify(invalid_finger) %>;
+
+  /**
+  * An invalid Hand object.
+  *
+  * You can use an invalid Hand object in comparisons testing
+  * whether a given Hand instance is valid or invalid. (You can also use the
+  * Hand valid property.)
+  *
+  * @static
+  * @type {Leap.Hand}
+  * @name Invalid
+  * @memberof Leap.Hand
+  */
+
+  Hand.Invalid = _.extend(<%= JSON.stringify(invalid_hand) %>, {
+    pointable: function() { return Pointable.Invalid },
+    tool: function() { return Pointable.InvalidTool },
+    finger: function() { return Pointable.InvalidFinger },
+    toString: function() { return "invalid hand" },
+    dump: function() { return this.toString(); },
+    rotationAngle: function() { return 0.0; },
+    rotationMatrix: function() { return mat3.create(); },
+    rotationAxis: function() { return vec3.create(); },
+    scaleFactor: function() { return 1.0; },
+    translation: function() { return vec3.create(); }
+  });
+
+/**
+* An invalid Frame object.
+*
+* You can use this invalid Frame in comparisons testing
+* whether a given Frame instance is valid or invalid. (You can also check the
+* [Frame.valid]{@link Leap.Frame#valid} property.)
+*
+* @static
+* @type {Leap.Frame}
+* @name Invalid
+* @memberof Leap.Frame
+*/
+  Frame.Invalid = _.extend(<%= JSON.stringify(invalid_frame) %>,
+  {
+    pointable: function() { return Pointable.Invalid },
+    tool: function() { return Pointable.InvalidTool },
+    finger: function() { return Pointable.InvalidFinger },
+    hand: function() { return Hand.Invalid },
+    toString: function() { return "invalid frame" },
+    dump: function() { return this.toString() },
+    rotationAngle: function() { return 0.0; },
+    rotationMatrix: function() { return mat3.create(); },
+    rotationAxis: function() { return vec3.create(); },
+    scaleFactor: function() { return 1.0; },
+    translation: function() { return vec3.create(); }
+  });
+
+}

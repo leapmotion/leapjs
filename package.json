@@ -14,19 +14,23 @@
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
-    "gl-matrix": "2.0.0"
+    "bluebird": "~1.0.5",
+    "request": "~2.34.0",
+    "gl-matrix": "2.0.0",
+    "random-seed": "~0.1.0"
   },
   "devDependencies": {
     "browserify": "2.25.0",
     "mocha": "1.7.4",
     "mocha-phantomjs": "3.0.0",
     "phantomjs": "1.9.0-6",
-    "uglify-js": "2.3.6",
+    "uglify-js": "2.4.12",
     "chai": "1.6.1",
     "nodemon": "0.7.8",
     "jsdoc": "3.2.0-dev",
     "http-server": "*",
-    "grunt": "~0.4.4",
+    "grunt-execute": "~0.1.5",
+    "grunt-template": "~0.2.3",
     "grunt-browserify": "~2.0.1",
     "grunt-contrib-uglify": "0.3.3",
     "grunt-banner": "~0.2.2",

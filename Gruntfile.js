@@ -1,17 +1,13 @@
-module.exports = function(grunt){
-  var filename = "leap-<%= pkg.version %>"
-  var banner = "/*!                                                              \
-\n * LeapJS v<%= pkg.version %>                                                  \
-\n * http://github.com/leapmotion/leapjs/                                        \
-\n *                                                                             \
-\n * Copyright 2013 LeapMotion, Inc. and other contributors                      \
-\n * Released under the BSD-2-Clause license                                     \
-\n * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 \
-\n */"
+/*global module*/
 
+module.exports = function (grunt) {
+  "use strict";
+  var filename = "leap-<%= pkg.version %>"
+  var banner = "/*!                                                              \n * LeapJS v<%= pkg.version %>                                                  \n * http://github.com/leapmotion/leapjs/                                        \n *                                                                             \n * Copyright 2013 LeapMotion, Inc. and other contributors                      \n * Released under the BSD-2-Clause license                                     \n * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 \n */"
+
+  // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
-    // This updates the version.js to match pkg.version
     'string-replace': {
       build: {
         files: {
@@ -20,7 +16,7 @@ module.exports = function(grunt){
           'examples/': 'examples/*',
           'test/': 'test/helpers/browser.html'
         },
-        options:{
+        options: {
           replacements: [
             // version.js
             {
@@ -53,11 +49,16 @@ module.exports = function(grunt){
         }
       }
     },
+
     clean: {
       build: {
         src: ['./leap-*.js']
+      },
+      invalid: {
+        src: ['lib/invalid_objects/*']
       }
     },
+
     browserify: {
       build: {
         options: {
@@ -67,12 +68,14 @@ module.exports = function(grunt){
         dest: filename + '.js'
       }
     },
+
     uglify: {
       build: {
-        src: filename  + '.js',
+        src: filename + '.js',
         dest: filename + '.min.js'
       }
     },
+
     usebanner: {
       build: {
         options: {
@@ -81,22 +84,52 @@ module.exports = function(grunt){
         src: [filename + '.js', filename + '.min.js']
       }
     },
+
     watch: {
       files: 'lib/*',
       tasks: ['default']
     },
+
     exec: {
       'test-browser': './node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html',
       'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot',
       'test-integration': 'node integration_test/reconnection.js && node integration_test/protocol_versions.js'
+    },
+
+    execute: {
+      target: {
+        src: ['build_tasks/make_invalid.js']
+      }
+    },
+
+    'template': {
+      'invalid-defs': {
+        'options': {
+          data: function () {
+            return {
+              invalid_pointable: require('./lib/invalid_objects/pointable.json'),
+              invalid_finger: require('./lib/invalid_objects/finger.json'),
+              invalid_tool: require('./lib/invalid_objects/tool.json'),
+              invalid_hand: require('./lib/invalid_objects/hand.json'),
+              invalid_frame: require('./lib/invalid_objects/frame.json')
+            };
+          }
+        },
+        'files': {
+          'lib/invalid.js': ['build_tasks/templates/invalid_template.ejs']
+        }
+      }
     }
   });
 
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('default', [
-    'string-replace',
-    'clean',
+  grunt.registerTask("default", [
+    "string-replace",
+    "clean:invalid",
+    "execute",
+    "template:invalid-defs",
+    "clean:build",
     'browserify',
     'uglify',
     'usebanner'
@@ -108,4 +141,5 @@ module.exports = function(grunt){
     'exec:test-node',
     'exec:test-integration'
   ]);
-}
+
+};
