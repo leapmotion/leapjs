@@ -17,7 +17,8 @@ module.exports = function(grunt){
         files: {
           'lib/': 'lib/version.js',
           './': 'bower.json',
-          'examples/': 'examples/*'
+          'examples/': 'examples/*',
+          'test/': 'test/helpers/browser.html'
         },
         options:{
           replacements: [
