@@ -25,7 +25,7 @@
         console.log("ready");
       });
       controller.on('connect', function() {
-        console.log("connect");
+        console.log("connected with protocol v" + controller.connection.opts.requestProtocolVersion);
       });
       controller.on('disconnect', function() {
         console.log("disconnect");
@@ -54,6 +54,13 @@
       });
       controller.on('streamingStopped', function(deviceInfo) {
         console.log("streamingStopped", deviceInfo);
+      });
+
+      controller.on('deviceConnected', function() {
+        console.log("deviceConnected");
+      });
+      controller.on('deviceDisconnected', function() {
+        console.log("deviceDisconnected");
       });
 
     </script>

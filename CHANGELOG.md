@@ -3,7 +3,6 @@
 ## 0.5.0
  - Support protocol 5: multiple devices.
  - New events streamingStarted and streamingStopped
- - deviceConnected and deviceDisconnected are now deprecated, in favor of the above streaming events
  - deviceStreaming and deviceStopped events
  - Device events now include device info with the following fields:
     - attached [boolean]

@@ -487,6 +487,9 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  // deviceEvents are not emitted in 1.1.x or before
+  // (todo: hopefully) deviceConnect is not emitted post 2.0
+  this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
   this.connection.on('deviceEvent', function(evt) {
     var info = evt.state,
         oldInfo = controller.devices[info.id];
@@ -532,12 +535,6 @@ Controller.prototype.setupConnectionEvents = function() {
       controller.emit('deviceDisconnected');
     }
 
-  });
-  
-  this.on('newListener', function(event,listener) {
-    if( event == 'deviceConnected' || event == 'deviceDisconnected' ) {
-      console.warn(event + " events are depricated.  Consider using 'streamingStarted/Stopped' or 'deviceStreaming/deviceStopped' instead");
-    }
   });
 }
 
