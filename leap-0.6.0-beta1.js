@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v0.4.3                                                  
+ * LeapJS v0.6.0-beta1                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
@@ -150,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":14,"events":20,"underscore":23}],4:[function(require,module,exports){
+},{"../protocol":13,"events":19,"underscore":22}],3:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -221,11 +221,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-<<<<<<< HEAD:leap.js
-},{"./base":3,"underscore":23}],5:[function(require,module,exports){
-=======
-},{"./base":2,"underscore":21}],4:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./base":2,"underscore":22}],4:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -686,8 +682,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-<<<<<<< HEAD:leap.js
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":19,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":21,"events":20,"underscore":23}],6:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":18,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],5:[function(require,module,exports){
 var Pointable = require('./pointable')
   , _ = require('underscore');
 
@@ -814,10 +809,7 @@ Finger.prototype.toString = function() {
 
 Finger.Invalid = { valid: false };
 
-},{"./pointable":13,"underscore":23}],7:[function(require,module,exports){
-=======
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":17,"./frame":5,"./gesture":6,"./hand":7,"./pipeline":10,"./pointable":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./pointable":12,"underscore":22}],6:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1319,11 +1311,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-<<<<<<< HEAD:leap.js
-},{"./finger":6,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"gl-matrix":22,"underscore":23}],8:[function(require,module,exports){
-=======
-},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":20,"underscore":21}],6:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./finger":5,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":21,"underscore":22}],7:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1808,11 +1796,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-<<<<<<< HEAD:leap.js
-},{"events":20,"gl-matrix":22,"underscore":23}],9:[function(require,module,exports){
-=======
-},{"events":18,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"events":19,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2252,12 +2236,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-<<<<<<< HEAD:leap.js
-},{"./pointable":13,"gl-matrix":22,"underscore":23}],10:[function(require,module,exports){
-require("./_header")
-=======
-},{"./pointable":11,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./pointable":12,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2327,11 +2306,7 @@ module.exports = {
   }
 }
 
-<<<<<<< HEAD:leap.js
-},{"./_header":1,"./circular_buffer":2,"./controller":5,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./protocol":14,"./ui":15,"./version.js":18,"gl-matrix":22}],11:[function(require,module,exports){
-=======
-},{"./circular_buffer":1,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"./ui":13,"./version.js":16,"gl-matrix":20}],9:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./circular_buffer":1,"./controller":4,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./protocol":13,"./ui":14,"./version.js":17,"gl-matrix":21}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2473,11 +2448,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-<<<<<<< HEAD:leap.js
-},{"gl-matrix":22}],12:[function(require,module,exports){
-=======
-},{"gl-matrix":20}],10:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"gl-matrix":21}],11:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2531,11 +2502,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-<<<<<<< HEAD:leap.js
-},{}],13:[function(require,module,exports){
-=======
-},{}],11:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2752,11 +2719,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-<<<<<<< HEAD:leap.js
-},{"gl-matrix":22}],14:[function(require,module,exports){
-=======
-},{"gl-matrix":20}],12:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"gl-matrix":21}],13:[function(require,module,exports){
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -2810,20 +2773,12 @@ var JSONProtocol = exports.JSONProtocol = function(version) {
   return protocol;
 };
 
-<<<<<<< HEAD:leap.js
-},{"./finger":6,"./frame":7,"./hand":9,"./pointable":13}],15:[function(require,module,exports){
-=======
-},{"./frame":5}],13:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./finger":5,"./frame":6,"./hand":8,"./pointable":12}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-<<<<<<< HEAD:leap.js
-},{"./ui/cursor":16,"./ui/region":17}],16:[function(require,module,exports){
-=======
-},{"./ui/cursor":14,"./ui/region":15}],14:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2834,11 +2789,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-<<<<<<< HEAD:leap.js
-},{}],17:[function(require,module,exports){
-=======
-},{}],15:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{}],16:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2926,27 +2877,17 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-<<<<<<< HEAD:leap.js
-},{"events":20,"underscore":23}],18:[function(require,module,exports){
-=======
-},{"events":18,"underscore":21}],16:[function(require,module,exports){
+},{"events":19,"underscore":22}],17:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
->>>>>>> legacy/master:leap-0.4.3.js
 module.exports = {
-  full: '0.4.3',
+  full: '0.6.0-beta1',
   major: 0,
-  minor: 4,
-  dot: 3
+  minor: 6,
+  dot: 0
 }
-<<<<<<< HEAD:leap.js
-},{}],19:[function(require,module,exports){
-
-},{}],20:[function(require,module,exports){
-=======
-},{}],17:[function(require,module,exports){
-
 },{}],18:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+
+},{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -3142,11 +3083,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-<<<<<<< HEAD:leap.js
-},{"__browserify_process":21}],21:[function(require,module,exports){
-=======
-},{"__browserify_process":19}],19:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{"__browserify_process":20}],20:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -3200,11 +3137,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-<<<<<<< HEAD:leap.js
-},{}],22:[function(require,module,exports){
-=======
-},{}],20:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{}],21:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6277,11 +6210,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-<<<<<<< HEAD:leap.js
-},{}],23:[function(require,module,exports){
-=======
-},{}],21:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{}],22:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -7509,11 +7438,7 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-<<<<<<< HEAD:leap.js
-},{}],24:[function(require,module,exports){
-=======
-},{}],22:[function(require,module,exports){
->>>>>>> legacy/master:leap-0.4.3.js
+},{}],23:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7526,10 +7451,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-<<<<<<< HEAD:leap.js
-},{"../lib/index":10}]},{},[24])
-;
-=======
-},{"../lib/index":8}]},{},[22])
+},{"../lib/index":9}]},{},[23])
 ;;
->>>>>>> legacy/master:leap-0.4.3.js
