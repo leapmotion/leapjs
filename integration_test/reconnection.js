@@ -21,7 +21,7 @@ var testServer = function(cb) {
 var counter = function() {
   console.log("re-connecting");
   counter.count++;
-  if (counter.count >= 10) {
+  if (counter.count >= 6) {
     console.log("test looks good");
     process.exit(0);
   } else {
