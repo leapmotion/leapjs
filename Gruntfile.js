@@ -36,12 +36,12 @@ module.exports = function(grunt){
               replacement: "$1<%= pkg.version.split('.')[1] %>"
             },
             {
-              pattern: /(dot:\s)\d/,
-              replacement: "$1<%= pkg.version.split('.')[2] %>"
+              pattern: /(dot:\s)\d.*/,
+              replacement: "$1<%= pkg.version.split('.')[2][0] %>"
             },
             // bower.json
             {
-              pattern: /"version": "\d.\d.\d"/,
+              pattern: /"version": ".*"/,
               replacement: '"version": "<%= pkg.version %>"'
             },
             // examples
