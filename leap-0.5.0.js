@@ -352,6 +352,11 @@ Controller.prototype.connect = function() {
   return this;
 }
 
+
+Controller.prototype.streaming = function() {
+  return this.streamingCount > 0;
+}
+
 Controller.prototype.runAnimationLoop = function(){
   if (!this.suppressAnimationLoop && !this.animationFrameRequested) {
     this.animationFrameRequested = true;

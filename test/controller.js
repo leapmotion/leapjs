@@ -29,6 +29,20 @@ describe('Controller', function(){
       })
       controller.connect()
     })
+
+    it('should respond to streaming', function () {
+      var controller = fakeController()
+      assert.equal(controller.streaming(), false);
+      controller.connect()
+      controller.on('streamingStarted', function () {
+        assert.equal(controller.streaming(), true);
+        controller.disconnect()
+      });
+      controller.on('streamingStopped', function () {
+        assert.equal(controller.streaming(), false);
+      });
+    });
+
   });
 
   describe('#disconnect', function() {
