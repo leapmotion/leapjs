@@ -150,7 +150,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":12,"events":18,"underscore":21}],3:[function(require,module,exports){
+},{"../protocol":13,"events":19,"underscore":22}],3:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -221,7 +221,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":2,"underscore":21}],4:[function(require,module,exports){
+},{"./base":2,"underscore":22}],4:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -229,7 +229,8 @@ var process=require("__browserify_process");var Frame = require('./frame')
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
   , gestureListener = require('./gesture').gestureListener
-  , _ = require('underscore');
+  , _ = require('underscore')
+  , Indicator = require('./indicator');
 
 /**
  * Constructs a Controller object.
@@ -465,6 +466,18 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
 }
 
+/*
+ * Creates (if necessary) and returns a Leap connection status indicator element.
+ * See indicator.js for details
+ */
+Controller.prototype.indicator = function(options){
+  if (!this._indicator){
+    options || (options = {})
+    options.controller = this;
+    this._indicator = new Indicator(options)
+  }
+  return this._indicator;
+}
 
 Controller._pluginFactories = {};
 
@@ -677,7 +690,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":17,"./frame":5,"./gesture":6,"./hand":7,"./pipeline":10,"./pointable":11,"__browserify_process":19,"events":18,"underscore":21}],5:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":18,"./frame":5,"./gesture":6,"./hand":7,"./indicator":9,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],5:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1143,7 +1156,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"gl-matrix":20,"underscore":21}],6:[function(require,module,exports){
+},{"./gesture":6,"./hand":7,"./interaction_box":10,"./pointable":12,"gl-matrix":21,"underscore":22}],6:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1627,7 +1640,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":18,"gl-matrix":20,"underscore":21}],7:[function(require,module,exports){
+},{"events":19,"gl-matrix":21,"underscore":22}],7:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2054,7 +2067,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":11,"gl-matrix":20,"underscore":21}],8:[function(require,module,exports){
+},{"./pointable":12,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2123,7 +2136,146 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":1,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":9,"./pointable":11,"./ui":13,"./version.js":16,"gl-matrix":20}],9:[function(require,module,exports){
+},{"./circular_buffer":1,"./controller":4,"./frame":5,"./gesture":6,"./hand":7,"./interaction_box":10,"./pointable":12,"./ui":14,"./version.js":17,"gl-matrix":21}],9:[function(require,module,exports){
+/* A singleton class which show or hides a Leap indicator on the page
+ * Node support not available
+ * Accepts options:
+ *  - position: [string] one of 'TR', 'TL', 'BR', 'BL' - which corner the indicator should be positioned to, if any.
+ *  - fadeOut [number] default of 5000 - this is how long the indicator lasts after the device is streaming
+ *  - onFade: [function] a callback after the indicator fade.
+ */
+var Indicator = module.exports = function(options) {
+  var indicator = this;
+  this.options = options;
+  if (options.fadeOut === undefined) options.fadeOut = 6000;
+  
+  this.element = document.createElement('div');
+  this.element.style.width = "100px";
+  this.element.style.height = "60px";
+  this.element.style.transition = "opacity 2s, background-color 1s";
+  this.element.style.border = "2px solid black";
+  this.element.style.borderRadius = "10px";
+  this.element.onmouseover = function(){ indicator.mouseover() };
+  this.element.onmouseout =  function(){ indicator.mouseout()  };
+
+  this.link = document.createElement('a');
+  this.element.appendChild(this.link);
+  this.link.innerHTML = 'Powered By Leapmotion';
+  this.link.href = 'http://www.leapmotion.com';
+  this.link.style.opacity = "0";
+  this.link.style.transition = "opacity 1s";
+  this.link.style.webkitTransition = "opacity 1s";
+  options.lit = false;
+
+  // available post 0.5.0
+  if (false && options.controller.streaming()){
+    this.lightUp();
+  }else{
+    // ready -> streamingStarted in 0.5.0
+    options.controller.on('frame', function(frame){if (frame.valid && !indicator.options.lit) indicator.lightUp()});
+  }
+
+  // deviceDisconnected -> streamingStopped in 0.5.0
+  options.controller.on('deviceDisconnected', function(){indicator.dim()});
+  options.controller.on('deviceConnected',    function(){indicator.lightUp()});
+
+  if (document.body){
+    document.body.appendChild(this.element);
+  }else{
+    // webkit/firefox:
+    if ( document.addEventListener ) {
+      document.addEventListener('DOMContentLoaded', function(){
+        console.log('loaded', arguments);
+        document.body.appendChild(indicator.element);
+      });
+    // ie
+    } else {
+      var checkLoad = function () {
+        document.readyState !== "complete" ? setTimeout(checkLoad, 50) : document.body.appendChild(indicator.element);
+      };
+
+      checkLoad();
+    }
+  }
+  return this;
+}
+
+
+Indicator.prototype.show = function(position){
+  switch(position) {
+  case 'TR':
+    this.element.style.position = "absolute";
+    this.element.style.top = "0px";
+    this.element.style.right = "0px";
+    break;
+  case 'TL':
+    this.element.style.position = "absolute";
+    this.element.style.top = "0px";
+    this.element.style.left = "0px";
+    break;
+  case 'BR':
+    this.element.style.position = "absolute";
+    this.element.style.bottom = "0px";
+    this.element.style.right = "0px";
+    break;
+  case 'BL':
+    this.element.style.position = "absolute";
+    this.element.style.bottom = "0px";
+    this.element.style.left = "0px";
+    break;
+  }
+  this.element.style.display = 'block';
+  return this;
+}
+
+Indicator.prototype.hide = function(){
+  if (!this.element) return Indicator;
+  this.element.style.display = 'none';
+  return this;
+}
+
+Indicator.prototype.fadeOut = function(){
+  console.log('fadeout');
+  if (!this.element) return Indicator;
+  this.element.style.opacity = 0;
+  if (this.options.onFade) this.options.onFade(this);
+  return this;
+}
+
+Indicator.prototype.lightUp = function(){
+  this.setFadeTimer();
+//  this.element.className += 'active'
+  this.options.lit = true;
+  this.element.style.backgroundColor = 'green';
+  return this;
+}
+
+Indicator.prototype.dim = function(){
+  console.log('dim');
+  this.options.lit = false;
+  this.element.style.backgroundColor = 'initial';
+//  this.element.className.replace(/active/g, '');
+  return this;
+}
+
+Indicator.prototype.mouseover = function(){
+  clearTimeout(this.options.fadeTimer);
+  this.link.style.opacity = "1";
+}
+
+Indicator.prototype.mouseout = function(){
+  this.link.style.opacity = "0";
+  this.setFadeTimer();
+}
+
+Indicator.prototype.setFadeTimer = function(){
+  if (this.options.fadeOut > 0) {
+    var indicator = this;
+    clearTimeout(this.options.fadeTimer);
+    this.options.fadeTimer = setTimeout(function(){indicator.fadeOut()}, this.options.fadeOut);
+  }
+}
+},{}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2265,7 +2417,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":20}],10:[function(require,module,exports){
+},{"gl-matrix":21}],11:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2319,7 +2471,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2540,7 +2692,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":20}],12:[function(require,module,exports){
+},{"gl-matrix":21}],13:[function(require,module,exports){
 var Frame = require('./frame')
 
 var Event = function(data) {
@@ -2582,12 +2734,12 @@ var JSONProtocol = function(version, cb) {
   return protocol;
 };
 
-},{"./frame":5}],13:[function(require,module,exports){
+},{"./frame":5}],14:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":14,"./ui/region":15}],14:[function(require,module,exports){
+},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2598,7 +2750,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -2686,7 +2838,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":18,"underscore":21}],16:[function(require,module,exports){
+},{"events":19,"underscore":22}],17:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '0.4.3',
@@ -2694,9 +2846,9 @@ module.exports = {
   minor: 4,
   dot: 3
 }
-},{}],17:[function(require,module,exports){
-
 },{}],18:[function(require,module,exports){
+
+},{}],19:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2892,7 +3044,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":19}],19:[function(require,module,exports){
+},{"__browserify_process":20}],20:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2946,7 +3098,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -6019,7 +6171,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })();
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -7247,7 +7399,7 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -7260,5 +7412,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":8}]},{},[22])
+},{"../lib/index":8}]},{},[23])
 ;;
