@@ -87,7 +87,8 @@ module.exports = function(grunt){
     },
     exec: {
       'test-browser': './node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html',
-      'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot',
+      // -i -g stands for inverse grep.  Tests tagged browser-only will be excluded.
+      'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot -i -g browser-only',
       'test-integration': 'node integration_test/reconnection.js && node integration_test/protocol_versions.js'
     }
   });
@@ -102,10 +103,14 @@ module.exports = function(grunt){
     'usebanner'
   ]);
 
-  grunt.registerTask('test', [
-    'default',
+  grunt.registerTask('test-only', [
     'exec:test-browser',
     'exec:test-node',
     'exec:test-integration'
+  ]);
+
+  grunt.registerTask('test', [
+    'default',
+    'test-only'
   ]);
 }
