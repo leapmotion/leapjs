@@ -2548,7 +2548,7 @@ var Event = function(data) {
   this.state = data.state;
 };
 
-var chooseProtocol = exports.chooseProtocol = function(header) {
+exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
     case 1:
@@ -2558,6 +2558,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
+      protocol.serviceVersion = header.serviceVersion
       protocol.sendBackground = function(connection, state) {
         connection.send(protocol.encode({background: state}));
       }
