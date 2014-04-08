@@ -89,10 +89,19 @@ BaseConnection.prototype.handleClose = function(code, reason) {
 
 BaseConnection.prototype.startReconnection = function() {
   var connection = this;
-  this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 1000);
+  if(!this.reconnectionTimer){
+    (this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 1000));
+  }
 }
 
-BaseConnection.prototype.disconnect = function() {
+BaseConnection.prototype.stopReconnection = function() {
+  this.reconnectionTimer = clearInterval(this.reconnectionTimer);
+}
+
+// By default, disconnect will prevent auto-reconnection.
+// Pass in true to allow the reconnection loop not be interrupted continue
+BaseConnection.prototype.disconnect = function(allowReconnect) {
+  if (!allowReconnect) this.stopReconnection();
   if (!this.socket) return;
   this.socket.close();
   delete this.socket;
@@ -107,9 +116,9 @@ BaseConnection.prototype.disconnect = function() {
 
 BaseConnection.prototype.reconnect = function() {
   if (this.connected) {
-    clearInterval(this.reconnectionTimer);
+    this.stopReconnection();
   } else {
-    this.disconnect();
+    this.disconnect(true);
     this.connect();
   }
 }
@@ -348,6 +357,11 @@ Controller.prototype.inBackgroundPage = function(){
 Controller.prototype.connect = function() {
   this.connection.connect();
   return this;
+}
+
+
+Controller.prototype.connected = function() {
+  return !!this.connection.connected;
 }
 
 Controller.prototype.runAnimationLoop = function(){

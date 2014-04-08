@@ -1,5 +1,8 @@
 # Changelog
 
+## master
+ - Add convenience method controller.connected()
+
 ## 0.4.3
  - Added a new controller option `loopWhileDisconnected` which defaults to true (legacy behavior) and can be set
    to false.  This is an optimization which allows the loop to be turned off when the leap is not connected.
