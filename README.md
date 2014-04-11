@@ -10,7 +10,7 @@ Leap.loop(function(frame){
 });
 ```
 
-Learn more in the [Tutorials](https://developer.leapmotion.com/leapjs/tutorials/welcome), [Developer Guide](https://developer.leapmotion.com/leapjs/api-guide), or [API Reference](https://developer.leapmotion.com/documentation/javascript/api/Leap_Classes.html).
+Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapjs/getting-started), and the [API Reference](https://developer.leapmotion.com/documentation/javascript/api/Leap_Classes.html).
 
 ## Installation
 
