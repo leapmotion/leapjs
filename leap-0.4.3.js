@@ -2123,7 +2123,6 @@ module.exports = {
       callback = opts;
       opts = {};
     }
-    (typeof opts.useAllPlugins == 'undefined') && (opts.useAllPlugins = true)
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
     return this.loopController;
