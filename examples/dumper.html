@@ -4,22 +4,26 @@
     <script src="../leap-0.6.0-beta1.js"></script>
     <script>
       console.log("LeapJS v" + Leap.version.full);
-      var pausedFrame = null;
-      var latestFrame = null;
+      var state = 'play';
       window.onkeypress = function(e) {
         if (e.charCode == 32) { //spacebar
-          if (pausedFrame == null) {
-            pausedFrame = latestFrame;
-          } else {
-            pausedFrame = null;
+          if (state == 'play') {
+            state = 'pausing';
+          }else{
+            state = 'play';
           }
         }
       };
       var controller = new Leap.Controller({enableGestures: true});
       controller.loop(function(frame) {
-        latestFrame = frame;
-        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") +
-                "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
+        if (state == 'paused') return;
+        if (state == 'pausing') {
+          document.getElementById('out').innerHTML = "<p><b>PAUSED</b></p><div>"+ frame.dump() + "</div>";
+          state = 'paused';
+        }else{
+          document.getElementById('out').innerHTML = "<p>spacebar to pause</p><div>"+ frame.dump() + "</div>";
+        }
+
       });
       controller.on('ready', function() {
         console.log("ready");
