@@ -107,6 +107,7 @@ BaseConnection.prototype.disconnect = function(allowReconnect) {
   delete this.socket;
   delete this.protocol;
   delete this.background; // This is not persisted when reconnecting to the web socket server
+  delete this.focusedState;
   if (this.connected) {
     this.connected = false;
     this.emit('disconnect');
@@ -149,6 +150,7 @@ BaseConnection.prototype.send = function(data) {
 
 BaseConnection.prototype.reportFocus = function(state) {
   if (this.focusedState === state) return;
+  console.log('report focus', state);
   this.focusedState = state;
   this.emit(this.focusedState ? 'focus' : 'blur');
   if (this.protocol && this.protocol.sendFocused) {
