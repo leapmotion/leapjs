@@ -1,15 +1,21 @@
 # Changelog
 
 ## 0.5.0
- - Support protocol 5: multiple devices.
- - New events streamingStarted and streamingStopped
- - deviceStreaming and deviceStopped events
- - Device events now include device info with the following fields:
+ - [feature] Support protocol v5: multiple devices when connected to clients with Leap Service version 1.2.0 or above.
+ - [feature] Added streamingStarted, streamingStopped, deviceStreaming, and deviceStopped events
+ - [feature] Device events now include device info with the following fields:
     - attached [boolean]
     - streaming [boolean]
     - id [string]
     - type [string], on of: "peripheral", "keyboard", "laptop", "unknown", or "unrecognized".
- - Add convenience methods `controller.connected()` and `controller.streaming()`
+ - [feature] Add convenience methods `controller.connected()` and `controller.streaming()`
+ - [bugfix] Focus state is now cleared after disconnection
+ - [behavior change] Leap.loop no longer uses all plugins by default.
+ - [feature] serviceVersion will now be available when connected to Leap Service v1.2.1 or above
+ - [bugfix] Fix issue where any call to disconnect would automatically reconnect
+ - [bugfix] Send focus state more quickly when connecting
+ - [bugfix] Fix issue where focus changes while disconnected would cause focus not to be updated upon reconnection
+
 
 ## 0.4.3
  - Added a new controller option `loopWhileDisconnected` which defaults to true (legacy behavior) and can be set
