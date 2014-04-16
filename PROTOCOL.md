@@ -37,7 +37,8 @@ described in a specific documentation sheet.
   * Version 1: accessed by '/' or '/v1.json'
   * Version 2: accessed by '/v2.json
   * Version 3: accessed by '/v3.json'
-  * Version 4: accessed by '/v4.json' -- the current (as of November 2013) latest protocol.
+  * Version 4: accessed by '/v4.json'
+  * Version 5: accessed by '/v5.json' -- the current (as of January 2014) latest protocol. adds 'deviceEvent's
 
 When you send this first message, you get back a single JSON object echoing
 the version that the leapd will be using in its communications with your
@@ -96,18 +97,19 @@ the surface, each client has the following possible states:
 
 ## Hardware State Events
 
-In any of these scenarios, if the hardware is disconnected, a
-"deviceDisconnect" event is sent to them to inform them that there is not a
-current connection to the physical hardware. (but that by implication they ARE
-still connected to leapd).
+In any of these scenarios, the device (or in future devices) also has state,
+and when any of it changes the client will recieve a 'deviceEvent' message.
+When a client is connected, it will recieve a single deviceEvent for each
+device which is currently attached to the computer, regardless of if it
+is currently being used.
 
 If hardware is then plugged in, they will receive another message letting them
-know that the hardware is connected.
+know that a new device is attached.
 
 State events about connected/disconnected hardware are not repeated. They are
 only sent once to each client for each state change; that is, when the Leap
-hardware is plugged in/detected or when the hardware is unplugged/loses
-connection.
+hardware is plugged in/detected/begins tracking or when the hardware is 
+unplugged/loses connection/stops tracking.
 
 # Client messages to the leapd
 
@@ -196,14 +198,33 @@ no direct response -- but you may see a change in your frame stream.
 ## events
 
 Events inform the client about changes to the state of the connection, etc. There is currently only one event:
-deviceConnect.
+deviceEvent.
 
-### deviceConnect
+### deviceEvent
 
-state is either true (you can expect frames) or false (the hardware is not communicating with the
-daemon, so no frames can be communicated.
+state is actually a json hash containing information about the device that triggered the deviceEvent.
+The onus is on the client to determine which fields have changed, though it is garunteed that at least one
+will have.
 
-``` {event: {type: "deviceConnect", state: true}}
+```
+{
+	event: {
+		type: "deviceEvent",
+		state: {
+			attached: true,
+			id: 0,
+			streaming: true,
+			type: "peripheral"
+		}
+	}
+}
+```
+ Property  | Description
+ --------  | -----------
+ attached  | The physical connection of the device.  This is only ever false once, when disconnecting.
+ id        | A leapd-session unique serially assigned identifier for the device.  These are not garunteed to be the same between sessions, but they will uniquely identify a particular device, even between disconnect events for as long as leapd is active.
+ streaming | True if the device is currently contributing frame data.
+ type      | The type of the device.  Currently values will be one of "peripheral", "laptop", or "keyboard".
 
 ## frames
 

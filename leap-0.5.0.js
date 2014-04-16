@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v0.4.3                                                  
+ * LeapJS v0.5.0                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
@@ -36,7 +36,7 @@ var BaseConnection = module.exports = function(opts) {
     enableGestures: false,
     port: 6437,
     background: false,
-    requestProtocolVersion: 4
+    requestProtocolVersion: 5
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
@@ -150,7 +150,6 @@ BaseConnection.prototype.send = function(data) {
 
 BaseConnection.prototype.reportFocus = function(state) {
   if (this.focusedState === state) return;
-  console.log('report focus', state);
   this.focusedState = state;
   this.emit(this.focusedState ? 'focus' : 'blur');
   if (this.protocol && this.protocol.sendFocused) {
@@ -314,6 +313,8 @@ var Controller = module.exports = function(opts) {
     this.connectionType = opts.connectionType;
   }
   this.connection = new this.connectionType(opts);
+  this.streamingCount = 0;
+  this.devices = {};
   this.plugins = {};
   this._pluginPipelineSteps = {};
   this._pluginExtendedMethods = {};
@@ -361,6 +362,9 @@ Controller.prototype.connect = function() {
   return this;
 }
 
+Controller.prototype.streaming = function() {
+  return this.streamingCount > 0;
+}
 
 Controller.prototype.connected = function() {
   return !!this.connection.connected;
@@ -396,7 +400,7 @@ Controller.prototype.disconnect = function() {
  * @returns {Leap.Frame} The specified frame; or, if no history
  * parameter is specified, the newest frame. If a frame is not available at
  * the specified history position, an invalid Frame is returned.
- */
+ **/
 Controller.prototype.frame = function(num) {
   return this.history.get(num) || Frame.Invalid;
 }
@@ -462,23 +466,120 @@ Controller.prototype.processFinishedFrame = function(frame) {
   this.emit('frame', frame);
 }
 
+/**
+  Controller events.  The old 'deviceConnected' and 'deviceDisconnected' have been depricated -
+  use 'deviceStreaming' and 'deviceStopped' instead, except in the case of an unexpected disconnect.
+
+  There are 4 pairs of device events recently added/changed:
+  -deviceAttached/deviceRemoved - called when a device's physical connection to the computer changes
+  -deviceStreaming/deviceStopped - called when a device is paused or resumed.
+  -streamingStarted/streamingStopped - called when there is/is no longer at least 1 streaming device.
+									  Always comes after deviceStreaming.
+  
+  The first of all of the above event pairs is triggered as appropriate upon connection.  All of
+  these events receives an argument with the most recent info about the device that triggered it.
+  These events will always be fired in the order they are listed here, with reverse ordering for the
+  matching shutdown call. (ie, deviceStreaming always comes after deviceAttached, and deviceStopped 
+  will come before deviceRemoved).
+  
+  -deviceConnected/deviceDisconnected - These are considered deprecated and will be removed in
+  the next revision.  In contrast to the other events and in keeping with it's original behavior,
+  it will only be fired when a device begins streaming AFTER a connection has been established.
+  It is not paired, and receives no device info.  Nearly identical functionality to
+  streamingStarted/Stopped if you need to port.
+*/
 Controller.prototype.setupConnectionEvents = function() {
   var controller = this;
   this.connection.on('frame', function(frame) {
     controller.processFrame(frame);
   });
+  // either deviceFrame or animationFrame:
   this.on(this.frameEventName, function(frame) {
     controller.processFinishedFrame(frame);
   });
 
   // Delegate connection events
   this.connection.on('disconnect', function() { controller.emit('disconnect'); });
-  this.connection.on('ready', function() { controller.emit('ready'); });
   this.connection.on('connect', function() { controller.emit('connect'); });
   this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
-  this.connection.on('deviceConnect', function(evt) { controller.emit(evt.state ? 'deviceConnected' : 'deviceDisconnected'); });
+
+  // deviceEvents are not emitted in 1.1.x or before
+  // deviceConnect is not emitted post 2.0
+  this.connection.on('ready', function() {
+    controller.emit('ready');
+    if (controller.connection.opts.requestProtocolVersion < 5){
+      // here we backfill the 0.5.0 deviceEvents as best possible
+      controller.streamingCount = 1
+      controller.emit('deviceAttached');
+      controller.emit('deviceStreaming');
+      controller.emit('streamingStarted');
+    }
+  });
+  this.connection.on('deviceConnect', function(evt) {
+    if (evt.state){
+      controller.emit('deviceConnected');
+
+      controller.emit('deviceAttached');
+      controller.emit('deviceStreaming');
+      controller.emit('streamingStarted');
+    }else{
+      controller.streamingCount = 0
+      controller.emit('deviceDisconnected');
+
+      controller.emit('deviceRemoved');
+      controller.emit('deviceStopped');
+      controller.emit('streamingStopped');
+    }
+  });
+
+  this.connection.on('deviceEvent', function(evt) {
+    var info = evt.state,
+        oldInfo = controller.devices[info.id];
+
+    //Grab a list of changed properties in the device info
+    var changed = {};
+    for(var property in info) {
+      //If a property i doesn't exist the cache, or has changed...
+      if( !oldInfo || !oldInfo.hasOwnProperty(property) || oldInfo[property] != info[property] ) {
+        changed[property] = true;
+      }
+    }
+
+    //Update the device list
+    controller.devices[info.id] = info;
+
+    //Fire events based on change list
+    if(changed.attached) {
+      controller.emit(info.attached ? 'deviceAttached' : 'deviceRemoved', info);
+    }
+
+    if(!changed.streaming) return;
+
+    if(info.streaming) {
+      controller.streamingCount++;
+      controller.emit('deviceStreaming', info);
+      if( controller.streamingCount == 1 ) {
+        controller.emit('streamingStarted', info);
+      }
+      //if attached & streaming both change to true at the same time, that device was streaming
+      //already when we connected.
+      if(!changed.attached) {
+        controller.emit('deviceConnected');
+      }
+    }
+    //Since when devices are attached all fields have changed, don't send events for streaming being false.
+    else if(!(changed.attached && info.attached)) {
+      controller.streamingCount--;
+      controller.emit('deviceStopped', info);
+      if(controller.streamingCount == 0){
+        controller.emit('streamingStopped', info);
+      }
+      controller.emit('deviceDisconnected');
+    }
+
+  });
 }
 
 
@@ -2570,6 +2671,7 @@ exports.chooseProtocol = function(header) {
     case 2:
     case 3:
     case 4:
+    case 5:
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
@@ -2705,10 +2807,10 @@ _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":18,"underscore":21}],16:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '0.4.3',
+  full: "0.5.0",
   major: 0,
-  minor: 4,
-  dot: 3
+  minor: 5,
+  dot: 0
 }
 },{}],17:[function(require,module,exports){
 

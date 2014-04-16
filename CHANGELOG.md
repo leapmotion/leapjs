@@ -1,7 +1,15 @@
 # Changelog
 
-## master
- - Add convenience method controller.connected()
+## 0.5.0
+ - Support protocol 5: multiple devices.
+ - New events streamingStarted and streamingStopped
+ - deviceStreaming and deviceStopped events
+ - Device events now include device info with the following fields:
+    - attached [boolean]
+    - streaming [boolean]
+    - id [string]
+    - type [string], on of: "peripheral", "keyboard", "laptop", "unknown", or "unrecognized".
+ - Add convenience methods `controller.connected()` and `controller.streaming()`
 
 ## 0.4.3
  - Added a new controller option `loopWhileDisconnected` which defaults to true (legacy behavior) and can be set
