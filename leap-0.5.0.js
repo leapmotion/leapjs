@@ -89,15 +89,25 @@ BaseConnection.prototype.handleClose = function(code, reason) {
 
 BaseConnection.prototype.startReconnection = function() {
   var connection = this;
-  this.reconnectionTimer = setInterval(function() { connection.reconnect(); }, 1000);
+  if(!this.reconnectionTimer){
+    (this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 1000));
+  }
 }
 
-BaseConnection.prototype.disconnect = function() {
+BaseConnection.prototype.stopReconnection = function() {
+  this.reconnectionTimer = clearInterval(this.reconnectionTimer);
+}
+
+// By default, disconnect will prevent auto-reconnection.
+// Pass in true to allow the reconnection loop not be interrupted continue
+BaseConnection.prototype.disconnect = function(allowReconnect) {
+  if (!allowReconnect) this.stopReconnection();
   if (!this.socket) return;
   this.socket.close();
   delete this.socket;
   delete this.protocol;
   delete this.background; // This is not persisted when reconnecting to the web socket server
+  delete this.focusedState;
   if (this.connected) {
     this.connected = false;
     this.emit('disconnect');
@@ -107,9 +117,9 @@ BaseConnection.prototype.disconnect = function() {
 
 BaseConnection.prototype.reconnect = function() {
   if (this.connected) {
-    clearInterval(this.reconnectionTimer);
+    this.stopReconnection();
   } else {
-    this.disconnect();
+    this.disconnect(true);
     this.connect();
   }
 }
@@ -352,9 +362,12 @@ Controller.prototype.connect = function() {
   return this;
 }
 
-
 Controller.prototype.streaming = function() {
   return this.streamingCount > 0;
+}
+
+Controller.prototype.connected = function() {
+  return !!this.connection.connected;
 }
 
 Controller.prototype.runAnimationLoop = function(){
@@ -2213,7 +2226,6 @@ module.exports = {
       callback = opts;
       opts = {};
     }
-    (typeof opts.useAllPlugins == 'undefined') && (opts.useAllPlugins = true)
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
     return this.loopController;
@@ -2652,7 +2664,7 @@ var Event = function(data) {
   this.state = data.state;
 };
 
-var chooseProtocol = exports.chooseProtocol = function(header) {
+exports.chooseProtocol = function(header) {
   var protocol;
   switch(header.version) {
     case 1:
@@ -2663,6 +2675,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
       protocol = JSONProtocol(header.version, function(data) {
         return data.event ? new Event(data.event) : new Frame(data);
       });
+      protocol.serviceVersion = header.serviceVersion
       protocol.sendBackground = function(connection, state) {
         connection.send(protocol.encode({background: state}));
       }

@@ -9,6 +9,7 @@
     - streaming [boolean]
     - id [string]
     - type [string], on of: "peripheral", "keyboard", "laptop", "unknown", or "unrecognized".
+ - Add convenience methods `controller.connected()` and `controller.streaming()`
 
 ## 0.4.3
  - Added a new controller option `loopWhileDisconnected` which defaults to true (legacy behavior) and can be set
