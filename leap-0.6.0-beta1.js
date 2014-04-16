@@ -949,7 +949,7 @@ var Frame = module.exports = function(data) {
       this.gestures.push(createGesture(data.gestures[gestureIdx]));
     }
   }
-    this.postprocessData(data);
+  this.postprocessData(data);
 };
 
 Frame.prototype.postprocessData = function(data){
@@ -963,6 +963,9 @@ Frame.prototype.postprocessData = function(data){
     this.hands.push(hand);
     this.handsMap[hand.id] = hand;
   }
+
+  data.pointables = _.sortBy(data.pointables, function(pointable) { return pointable.id });
+
   for (var pointableIdx = 0, pointableCount = data.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
     var pointableData = data.pointables[pointableIdx];
     var pointable = pointableData.dipPosition ? new Finger(pointableData) : new Pointable(pointableData);

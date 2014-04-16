@@ -30,6 +30,15 @@ describe('Hand', function(){
       it('should return a finger by id', function() {
         assert.equal(1, hand.finger(1).id)
       })
+
+
+      it('should return fingers ordered by id', function(){
+        var hand = fakeActualFrame().hands[0];
+        for (var i = 1; i < hand.fingers.length; i++){
+          assert(hand.fingers[i].id > hand.fingers[i-1].id,
+              "Fingers to be in sequential order. Got '" + hand.fingers[i].id + ', ' + hand.fingers[i-1].id + "'");
+        }
+      });
     })
 
     describe("#rotationAngle", function() {
