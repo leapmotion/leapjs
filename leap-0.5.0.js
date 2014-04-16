@@ -504,11 +504,11 @@ Controller.prototype.setupConnectionEvents = function() {
   var backfillStreamingStartedEventsHandler = function(frame){
     if (controller.connection.opts.requestProtocolVersion < 5 && controller.streamingCount == 0){
       controller.streamingCount = 1;
-      controller.devices = [{
+      controller.devices['device1'] = {
         attached: true,
         streaming: true,
         type: 'unknown'
-      }];
+      };
       controller.emit('deviceAttached');
       controller.emit('deviceStreaming');
       controller.emit('streamingStarted');
@@ -517,14 +517,19 @@ Controller.prototype.setupConnectionEvents = function() {
   }
 
   var backfillStreamingStoppedEvents = function(frame){
-    if (controller.connection.opts.requestProtocolVersion < 5 && controller.streamingCount > 0) {
-      controller.streamingCount = 0;
-      controller.devices = [];
-      controller.emit('deviceDisconnected');
+    if (controller.streamingCount > 0) {
+      for (var deviceId in controller.devices){
+        controller.emit('deviceStopped', controller.devices[deviceId]);
+        controller.emit('deviceRemoved', controller.devices[deviceId]);
+      }
+      // only emit streamingStopped once, with the last device
+      controller.emit('streamingStopped', controller.devices[deviceId]);
 
-      controller.emit('deviceRemoved');
-      controller.emit('deviceStopped');
-      controller.emit('streamingStopped');
+      controller.streamingCount = 0;
+
+      for (var deviceId in controller.devices){
+        delete controller.devices[deviceId];
+      }
     }
   }
   // Delegate connection events
@@ -557,6 +562,7 @@ Controller.prototype.setupConnectionEvents = function() {
   });
 
   this.connection.on('deviceEvent', function(evt) {
+    console.log('device event');
     var info = evt.state,
         oldInfo = controller.devices[info.id];
 
