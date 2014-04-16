@@ -90,7 +90,7 @@ BaseConnection.prototype.handleClose = function(code, reason) {
 BaseConnection.prototype.startReconnection = function() {
   var connection = this;
   if(!this.reconnectionTimer){
-    (this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 1000));
+    (this.reconnectionTimer = setInterval(function() { connection.reconnect() }, 500));
   }
 }
 
@@ -221,6 +221,9 @@ BrowserConnection.prototype.startFocusLoop = function() {
     var isVisible = propertyName === undefined ? true : document[propertyName] === false;
     connection.reportFocus(isVisible && connection.windowVisible);
   }
+
+  // save 100ms when resuming focus
+  updateFocusState();
 
   this.focusDetectorTimer = setInterval(updateFocusState, 100);
 }
