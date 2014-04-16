@@ -498,39 +498,61 @@ Controller.prototype.setupConnectionEvents = function() {
     controller.processFinishedFrame(frame);
   });
 
-  // Delegate connection events
-  this.connection.on('disconnect', function() { controller.emit('disconnect'); });
-  this.connection.on('connect', function() { controller.emit('connect'); });
-  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
-  this.connection.on('blur', function() { controller.emit('blur') });
-  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
 
-  // deviceEvents are not emitted in 1.1.x or before
-  // deviceConnect is not emitted post 2.0
-  this.connection.on('ready', function() {
-    controller.emit('ready');
-    if (controller.connection.opts.requestProtocolVersion < 5){
-      // here we backfill the 0.5.0 deviceEvents as best possible
-      controller.streamingCount = 1
+  // here we backfill the 0.5.0 deviceEvents as best possible
+  // backfill begin streaming events
+  var backfillStreamingStartedEventsHandler = function(frame){
+    if (controller.connection.opts.requestProtocolVersion < 5 && controller.streamingCount == 0){
+      controller.streamingCount = 1;
+      controller.devices = [{
+        attached: true,
+        streaming: true,
+        type: 'unknown'
+      }];
       controller.emit('deviceAttached');
       controller.emit('deviceStreaming');
       controller.emit('streamingStarted');
+      controller.connection.removeListener('frame', backfillStreamingStartedEventsHandler)
     }
-  });
-  this.connection.on('deviceConnect', function(evt) {
-    if (evt.state){
-      controller.emit('deviceConnected');
+  }
 
-      controller.emit('deviceAttached');
-      controller.emit('deviceStreaming');
-      controller.emit('streamingStarted');
-    }else{
-      controller.streamingCount = 0
+  var backfillStreamingStoppedEvents = function(frame){
+    if (controller.connection.opts.requestProtocolVersion < 5 && controller.streamingCount > 0) {
+      controller.streamingCount = 0;
+      controller.devices = [];
       controller.emit('deviceDisconnected');
 
       controller.emit('deviceRemoved');
       controller.emit('deviceStopped');
       controller.emit('streamingStopped');
+    }
+  }
+  // Delegate connection events
+  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
+  this.connection.on('blur', function() { controller.emit('blur') });
+  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  this.connection.on('ready', function() { controller.emit('ready'); });
+
+  this.connection.on('connect', function() {
+    controller.emit('connect');
+    controller.connection.removeListener('frame', backfillStreamingStartedEventsHandler)
+    controller.connection.on('frame', backfillStreamingStartedEventsHandler);
+  });
+
+  this.connection.on('disconnect', function() {
+    controller.emit('disconnect');
+    backfillStreamingStoppedEvents();
+  });
+
+  // this does not fire when the controller is manually disconnected
+  this.connection.on('deviceConnect', function(evt) {
+    if (evt.state){
+      controller.emit('deviceConnected');
+      controller.connection.removeListener('frame', backfillStreamingStartedEventsHandler)
+      controller.connection.on('frame', backfillStreamingStartedEventsHandler);
+    }else{
+      controller.emit('deviceDisconnected');
+      backfillStreamingStoppedEvents();
     }
   });
 
