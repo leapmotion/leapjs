@@ -149,7 +149,7 @@ BaseConnection.prototype.send = function(data) {
 }
 
 BaseConnection.prototype.reportFocus = function(state) {
-  if (this.focusedState === state) return;
+  if (!this.connected || this.focusedState === state) return;
   this.focusedState = state;
   this.emit(this.focusedState ? 'focus' : 'blur');
   if (this.protocol && this.protocol.sendFocused) {
@@ -562,7 +562,6 @@ Controller.prototype.setupConnectionEvents = function() {
   });
 
   this.connection.on('deviceEvent', function(evt) {
-    console.log('device event');
     var info = evt.state,
         oldInfo = controller.devices[info.id];
 
