@@ -2742,9 +2742,7 @@ var chooseProtocol = exports.chooseProtocol = function(header) {
     case 4:
     case 5:
     case 6:
-      protocol = JSONProtocol(header.version, function(data) {
-        return data.event ? new Event(data.event) : new Frame(data);
-      });
+      protocol = JSONProtocol(header.version);
       protocol.sendBackground = function(connection, state) {
         connection.send(protocol.encode({background: state}));
       }
