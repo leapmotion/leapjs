@@ -16,6 +16,8 @@ Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapj
 
 **Browser:** Download the latest `leap.js` [from our CDN](https://developer.leapmotion.com/leapjs/welcome).
 
+**Bower:**: `bower install leapjs`
+
 **Node**:  `npm install leapjs`
 
 ## Examples
