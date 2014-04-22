@@ -81,9 +81,15 @@ module.exports = function(grunt){
         src: [filename + '.js', filename + '.min.js']
       }
     },
+    // run with `grunt watch` or `grunt test watch`
     watch: {
       files: 'lib/*',
-      tasks: ['default']
+      tasks: ['default'],
+      test: {
+        files: ['lib/*', 'test/*'],
+        tasks: ['test']
+      }
+
     },
     exec: {
       'test-browser': './node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html',

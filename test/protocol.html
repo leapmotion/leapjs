@@ -1,0 +1,40 @@
+<html>
+<head>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.js"></script>
+  <script type="text/javascript" src="lib/protocol.js"></script>
+  <style type="text/css">
+    li.italic{
+      font-style: italic;
+    }
+  </style>
+</head>
+<body ng-app="ProtocolTest" data-ng-controller="ProtocolController">
+
+
+<div id="leapjs-scripts"></div>
+
+<form ng-submit="saveCustomScriptURL()">
+  <input type="number" ng-model="protocol">
+
+  <select ng-model="script" ng-show="!showCustomScriptInput">
+    <option data-ng-repeat="script in scripts">{{script}}</option>
+    <option>other</option>
+  </select>
+
+  <span ng-show="showCustomScriptInput">
+    <input ng-model="customScriptURL">
+    <input type="submit">
+  </span>
+</form>
+
+<h3>{{script}} v{{protocol}}</h3>
+frame: {{frameId}}
+
+<ul>
+  <li data-ng-repeat="entry in log" ng-class="entry.class">
+    {{entry.date | date:'medium'}} - {{entry.message}}
+  </li>
+</ul>
+
+</body>
+</html>

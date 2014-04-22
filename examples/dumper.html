@@ -25,11 +25,12 @@
         }
 
       });
+
       controller.on('ready', function() {
         console.log("ready");
       });
       controller.on('connect', function() {
-        console.log("connect");
+        console.log("connected with protocol v" + controller.connection.opts.requestProtocolVersion + " to service version: " + controller.connection.opts.serviceVersion);
       });
       controller.on('disconnect', function() {
         console.log("disconnect");
@@ -40,15 +41,38 @@
       controller.on('blur', function() {
         console.log("blur");
       });
+
+      controller.on('deviceAttached', function(deviceInfo) {
+        console.log("deviceAttached", deviceInfo);
+      });
+      controller.on('deviceRemoved', function(deviceInfo) {
+        console.log("deviceRemoved", deviceInfo);
+      });
+      controller.on('deviceStreaming', function(deviceInfo) {
+        console.log("deviceStreaming", deviceInfo);
+      });
+      controller.on('deviceStopped', function(deviceInfo) {
+        console.log("deviceStopped", deviceInfo);
+      });
+      controller.on('streamingStarted', function(deviceInfo) {
+        console.log("streamingStarted", deviceInfo);
+      });
+      controller.on('streamingStopped', function(deviceInfo) {
+        console.log("streamingStopped", deviceInfo);
+      });
+
       controller.on('deviceConnected', function() {
         console.log("deviceConnected");
       });
       controller.on('deviceDisconnected', function() {
         console.log("deviceDisconnected");
       });
+
     </script>
   </head>
   <body>
+  <button onclick="controller.disconnect();">Disconnect</button>
+  <button onclick="controller.connect();">Connect</button>
     <div id="out"></div>
     <div id="log"></div>
   </body>

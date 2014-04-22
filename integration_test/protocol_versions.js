@@ -1,6 +1,7 @@
 var WebSocketServer = require('ws').Server,
     Leap = require('../lib');
 
+
 setTimeout(function() {console.log('Failure, timing out.'); process.exit(1);}, 30000);
 
 downgradeProtocol = function(){
@@ -20,7 +21,7 @@ downgradeProtocol = function(){
       if (!passed){
         passed = true;
         // no testing framework here, we manually advance to the next case
-        console.log('passed downgradeProtocol');
+        console.log('PASSED downgradeProtocol');
         saveGoodProtocol();
       }
     } else if (ws.upgradeReq.url == expected[0]) {
@@ -28,7 +29,7 @@ downgradeProtocol = function(){
       // for some reason, the response gets eaten without this.
       setTimeout(function(){ws.close(1001);}, 100)
     } else {
-      console.log("failed downgradeProtocol, expected: "+JSON.stringify(expected[0])+" , got ws.upgradeReq.url:"+ws.upgradeReq.url);
+      console.log("FAILED downgradeProtocol, expected: "+JSON.stringify(expected[0])+" , got ws.upgradeReq.url:"+ws.upgradeReq.url);
       process.exit(1);
     }
   });
@@ -47,11 +48,11 @@ saveGoodProtocol = function(){
 
     if (origUrl){
       if (origUrl === ws.upgradeReq.url){
-        console.log('passed saveGoodProtocol');
+        console.log('PASSED saveGoodProtocol');
         wss.close();
         process.exit(0);
       }else{
-        console.log('failed saveGoodProtocol');
+        console.log('FAILED saveGoodProtocol');
         wss.close();
         process.exit(1);
       }
@@ -61,4 +62,36 @@ saveGoodProtocol = function(){
   });
 }
 
-downgradeProtocol();
+
+disconnectAfterConnect = function () {
+  var controller = new Leap.Controller({port: 9496})
+  controller.on('ready', function(){
+    console.log('ready - disconnecting');
+    controller.disconnect();
+    setTimeout(function(){
+      console.log('PASSED disconnectAfterConnect');
+      downgradeProtocol()
+    }, 2000);
+  });
+  controller.connect();
+
+  var timesConnected = 0;
+
+  var wss = new WebSocketServer({port: 9496})
+
+
+  wss.on('connection', function (ws) {
+    timesConnected++;
+    console.log("connected to socket with "+ws.upgradeReq.url)
+
+    if (timesConnected > 1) {
+      console.log('FAILED disconnectAfterConnect');
+      wss.close();
+      process.exit(1);
+    }
+
+    ws.send('{"version": 4}');
+  });
+}
+
+disconnectAfterConnect();
