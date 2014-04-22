@@ -8,6 +8,7 @@ assertUtil = require('./../assertUtil')
 
 fakeHand = common.fakeHand;
 fakeFrame = common.fakeFrame;
+fakeActualFrame = common.fakeActualFrame;
 fakeFinger = common.fakeFinger;
 fakeController = common.fakeController;
 fakeGesture = common.fakeGesture;
