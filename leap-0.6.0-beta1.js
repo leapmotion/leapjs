@@ -322,6 +322,7 @@ var Controller = module.exports = function(opts) {
   this._pluginPipelineSteps = {};
   this._pluginExtendedMethods = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
+  this.setupFrameEvents(opts);
   this.setupConnectionEvents();
 }
 
@@ -479,6 +480,15 @@ Controller.prototype.processFinishedFrame = function(frame) {
 Controller.prototype.emitHandEvents = function(frame){
   for (var i = 0; i < frame.hands.length; i++){
     this.emit('hand', frame.hands[i]);
+  }
+}
+
+Controller.prototype.setupFrameEvents = function(opts){
+  if (opts.frame){
+    this.on('frame', opts.frame);
+  }
+  if (opts.hand){
+    this.on('hand', opts.hand);
   }
 }
 

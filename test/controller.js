@@ -95,9 +95,30 @@ describe('Controller', function(){
       var handCount = 0;
       controller.on('hand', function(hand){
         handCount++;
+        console.assert(hand.fingers, hand, "is invalid");
         if (handCount == 2){
-          console.assert(hand.fingers, hand, "is invalid");
           done();
+        }
+      });
+      controller.processFrame(fakeFrame({hands: 2}));
+    });
+
+    it('should allow frame and hand event binding as options', function(done){
+      this.timeout(500);
+      var frameCount = 0;
+      var handCount = 0;
+
+      var controller = fakeController({
+        frame: function(frame){
+          frameCount++;
+          console.assert(frame.hands, frame, "is invalid");
+        },
+        hand: function(hand){
+          handCount++;
+          console.assert(hand.fingers, hand, "is invalid");
+          if (handCount == 2 && frameCount == 1){
+            done();
+          }
         }
       });
       controller.processFrame(fakeFrame({hands: 2}));
