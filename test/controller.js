@@ -123,6 +123,14 @@ describe('Controller', function(){
       });
       controller.processFrame(fakeFrame({hands: 2}));
     });
+
+    it('should work with leap.loop', function(done){
+      this.timeout(500);
+      Leap.loop({
+        hand: function(){done()}
+      });
+      Leap.loopController.processFrame(fakeFrame({hands: 1}));
+    });
   });
 
   describe('device events', function() {
