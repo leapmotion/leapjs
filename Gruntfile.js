@@ -110,8 +110,8 @@ module.exports = function(grunt){
 
   grunt.registerTask('test', [
     'default',
-    'exec:test-browser',
     'exec:test-node',
+    'exec:test-browser',
     'exec:test-integration'
   ]);
 }
