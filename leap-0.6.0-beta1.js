@@ -467,6 +467,19 @@ Controller.prototype.processFinishedFrame = function(frame) {
     if (!frame) frame = Frame.Invalid;
   }
   this.emit('frame', frame);
+  this.emitHandEvents(frame);
+}
+
+/**
+ * The controller will emit 'hand' events for every hand on each frame.  The hand in question will be passed
+ * to the event callback.
+ *
+ * @param frame
+ */
+Controller.prototype.emitHandEvents = function(frame){
+  for (var i = 0; i < frame.hands.length; i++){
+    this.emit('hand', frame.hands[i]);
+  }
 }
 
 /**

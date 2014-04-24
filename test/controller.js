@@ -87,6 +87,23 @@ describe('Controller', function(){
     });
   });
 
+  describe('frame events', function(){
+    it('should fire hand events for frames', function(done){
+      this.timeout(500);
+
+      var controller = fakeController();
+      var handCount = 0;
+      controller.on('hand', function(hand){
+        handCount++;
+        if (handCount == 2){
+          console.assert(hand.fingers, hand, "is invalid");
+          done();
+        }
+      });
+      controller.processFrame(fakeFrame({hands: 2}));
+    });
+  });
+
   describe('device events', function() {
     it('should fire deviceAttached/Removed ', function(done) {
 	    var controller = fakeController({version: 5});
