@@ -410,25 +410,8 @@ Controller.prototype.frame = function(num) {
 }
 
 Controller.prototype.loop = function(callback) {
-  switch (callback.length) {
-    case 1:
-      this.on(this.frameEventName, callback);
-      break;
-    case 2:
-      var controller = this;
-      var scheduler = null;
-      var immediateRunnerCallback = function(frame) {
-        callback(frame, function() {
-          if (controller.lastFrame != frame) {
-            immediateRunnerCallback(controller.lastFrame);
-          } else {
-            controller.once(controller.frameEventName, immediateRunnerCallback);
-          }
-        });
-      }
-      this.once(this.frameEventName, immediateRunnerCallback);
-      break;
-  }
+  this.on(this.frameEventName, callback);
+
   return this.connect();
 }
 
@@ -2469,12 +2452,12 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (callback === undefined) {
+    if (callback === undefined && (!opts.frame && !opts.hand)) {
       callback = opts;
       opts = {};
     }
     if (!this.loopController) this.loopController = new this.Controller(opts);
-    this.loopController.loop(callback);
+    if (callback) this.loopController.loop(callback);
     return this.loopController;
   },
 
