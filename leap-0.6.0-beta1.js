@@ -410,7 +410,7 @@ Controller.prototype.frame = function(num) {
 }
 
 Controller.prototype.loop = function(callback) {
-  this.on(this.frameEventName, callback);
+  if (callback) this.on(this.frameEventName, callback);
 
   return this.connect();
 }
@@ -2457,7 +2457,7 @@ module.exports = {
       opts = {};
     }
     if (!this.loopController) this.loopController = new this.Controller(opts);
-    if (callback) this.loopController.loop(callback);
+    this.loopController.loop(callback);
     return this.loopController;
   },
 
