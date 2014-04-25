@@ -12,7 +12,7 @@ Leap.loop(function(frame){
 
 Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapjs/getting-started), and the [API Reference](https://developer.leapmotion.com/documentation/javascript/api/Leap_Classes.html).
 
-## Installation
+### Installation
 
 **Browser**: Download the latest `leap.js` [from our CDN](https://developer.leapmotion.com/leapjs/welcome).
 
@@ -20,13 +20,13 @@ Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapj
 
 **Node**:  `npm install leapjs`
 
-## Examples
+### Examples
 
 Visit [developer.leapmotion.com/downloads/skeletal-beta/gallery](https://developer.leapmotion.com/downloads/skeletal-beta/gallery) for the latest examples.
 
 Some more basic examples have also been included in the [examples/](https://github.com/leapmotion/leapjs-skeleton/tree/master/examples) directory.
 
-## Plugins
+### Plugins
 
 [Plugins](http://developer.leapmotion.com/leapjs/plugins) are used to modularly extend Leap Webapps with external libraries.
 Here we use the `screenPosition` plugin to get the position of the hand as an on-screen cursor.
@@ -55,7 +55,7 @@ Also visit the wiki for [how to make plugins](https://github.com/leapmotion/leap
 
 
 
-## Contributing
+### Contributing
 
 Add your name, email, and github account to the CONTRIBUTORS.txt list, thereby agreeing to the terms and conditions of the Contributor License Agreement.
 
