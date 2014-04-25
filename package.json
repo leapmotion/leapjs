@@ -1,6 +1,6 @@
 {
   "name": "leapjs",
-  "version": "0.6.0-beta1",
+  "version": "0.6.0-beta2",
   "description": "JavaScript client for the Leap Motion Controller",
   "main": "lib",
   "scripts": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
-    "gl-matrix": "2.0.0"
+    "gl-matrix": "2.2.1"
   },
   "devDependencies": {
     "browserify": "2.25.0",
