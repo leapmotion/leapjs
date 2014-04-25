@@ -44,7 +44,7 @@ Leap.loop({
 
 ### Misc
 
-LeapJS includes the vector math library [GL-Matrix](http://glmatrix.net/) for your use and convenience.  For example, we can easily compute a dot product:
+LeapJS includes the vector math library [GL-Matrix](http://glmatrix.net/) for your use and convenience.  For example, we can easily compute a dot product.  See [the example](https://github.com/leapmotion/leapjs-skeleton/tree/master/examples/math.html) and [the gl matrix docs](http://glmatrix.net/docs/2.2.0/) for more info.
 
 ```javascript
 var dot = Leap.vec3.dot(hand.direction, hand.indexFinger.direction);
