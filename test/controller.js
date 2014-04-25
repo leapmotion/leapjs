@@ -386,17 +386,28 @@ describe('Controller', function(){
           testFn: function(){
             return 'pointable';
           }
+        },
+        finger: {
+          testFnFinger: function(){
+            return 'finger';
+          }
         }
       }));
       var controller = fakeController()
       controller.use('testPlugin')
       // our test doubles are not actual instances of the class, so we test the prototype
-      assert.equal(Leap.Frame.prototype.testFn(), 'frame')
-      assert.equal(Leap.Hand.prototype.testFn(), 'hand')
-      assert.equal(Leap.Pointable.prototype.testFn(), 'pointable')
-      assert.equal(Leap.Frame.Invalid.testFn(), 'frame')
-      assert.equal(Leap.Hand.Invalid.testFn(), 'hand')
-      assert.equal(Leap.Pointable.Invalid.testFn(), 'pointable')
+      assert.equal(Leap.Frame.prototype.testFn(), 'frame');
+      assert.equal(Leap.Frame.Invalid.testFn(), 'frame');
+
+      assert.equal(Leap.Hand.prototype.testFn(), 'hand');
+      assert.equal(Leap.Hand.Invalid.testFn(), 'hand');
+
+      assert.equal(Leap.Pointable.prototype.testFn(), 'pointable');
+      assert.equal(Leap.Pointable.Invalid.testFn(), 'pointable');
+
+      assert.equal(Leap.Finger.prototype.testFnFinger(), 'finger');
+      assert.equal(Leap.Finger.Invalid.testFnFinger(), 'finger');
+
       Leap.Controller._pluginFactories = {}
     });
 
@@ -434,6 +445,11 @@ describe('Controller', function(){
           testFn: function(){
             return 'pointable';
           }
+        },
+        finger: {
+          testFnFinger: function(){
+            return 'pointable';
+          }
         }
       }));
       var controller = fakeController();
@@ -441,11 +457,16 @@ describe('Controller', function(){
       controller.stopUsing('testPlugin');
       // our test doubles are not actual instances of the class, so we test the prototype
       assert.equal(Leap.Frame.prototype.testFn, undefined);
-      assert.equal(Leap.Hand.prototype.testFn, undefined);
-      assert.equal(Leap.Pointable.prototype.testFn, undefined);
       assert.equal(Leap.Frame.Invalid.testFn, undefined);
+
+      assert.equal(Leap.Hand.prototype.testFn, undefined);
       assert.equal(Leap.Hand.Invalid.testFn, undefined);
+
+      assert.equal(Leap.Pointable.prototype.testFn, undefined);
       assert.equal(Leap.Pointable.Invalid.testFn, undefined);
+
+      assert.equal(Leap.Finger.prototype.testFnFinger, undefined);
+      assert.equal(Leap.Finger.Invalid.testFnFinger, undefined);
       Leap.Controller._pluginFactories = {}
     });
 

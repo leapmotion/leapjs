@@ -238,6 +238,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
+  , Finger = require('./finger')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
@@ -782,7 +783,12 @@ Controller.prototype.use = function(pluginName, options) {
           klass = Hand
           break;
         case 'pointable':
-          klass = Pointable
+          klass = Pointable;
+          _.extend(Finger.prototype, functionOrHash);
+          _.extend(Finger.Invalid,   functionOrHash);
+          break;
+        case 'finger':
+          klass = Finger;
           break;
         default:
           throw pluginName + ' specifies invalid object type "' + key + '" for prototypical extension'
@@ -843,7 +849,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":18,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],5:[function(require,module,exports){
+},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":18,"./finger":5,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],5:[function(require,module,exports){
 var Pointable = require('./pointable')
   , _ = require('underscore');
 
@@ -2411,6 +2417,7 @@ module.exports = {
   Gesture: require("./gesture"),
   Hand: require("./hand"),
   Pointable: require("./pointable"),
+  Finger: require("./finger"),
   InteractionBox: require("./interaction_box"),
   CircularBuffer: require("./circular_buffer"),
   UI: require("./ui"),
@@ -2469,7 +2476,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":1,"./controller":4,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./protocol":13,"./ui":14,"./version.js":17,"gl-matrix":21}],10:[function(require,module,exports){
+},{"./circular_buffer":1,"./controller":4,"./finger":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./protocol":13,"./ui":14,"./version.js":17,"gl-matrix":21}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
