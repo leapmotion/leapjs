@@ -322,6 +322,7 @@ var Controller = module.exports = function(opts) {
   this._pluginPipelineSteps = {};
   this._pluginExtendedMethods = {};
   if (opts.useAllPlugins) this.useRegisteredPlugins();
+  this.setupFrameEvents(opts);
   this.setupConnectionEvents();
 }
 
@@ -409,25 +410,8 @@ Controller.prototype.frame = function(num) {
 }
 
 Controller.prototype.loop = function(callback) {
-  switch (callback.length) {
-    case 1:
-      this.on(this.frameEventName, callback);
-      break;
-    case 2:
-      var controller = this;
-      var scheduler = null;
-      var immediateRunnerCallback = function(frame) {
-        callback(frame, function() {
-          if (controller.lastFrame != frame) {
-            immediateRunnerCallback(controller.lastFrame);
-          } else {
-            controller.once(controller.frameEventName, immediateRunnerCallback);
-          }
-        });
-      }
-      this.once(this.frameEventName, immediateRunnerCallback);
-      break;
-  }
+  this.on(this.frameEventName, callback);
+
   return this.connect();
 }
 
@@ -467,6 +451,28 @@ Controller.prototype.processFinishedFrame = function(frame) {
     if (!frame) frame = Frame.Invalid;
   }
   this.emit('frame', frame);
+  this.emitHandEvents(frame);
+}
+
+/**
+ * The controller will emit 'hand' events for every hand on each frame.  The hand in question will be passed
+ * to the event callback.
+ *
+ * @param frame
+ */
+Controller.prototype.emitHandEvents = function(frame){
+  for (var i = 0; i < frame.hands.length; i++){
+    this.emit('hand', frame.hands[i]);
+  }
+}
+
+Controller.prototype.setupFrameEvents = function(opts){
+  if (opts.frame){
+    this.on('frame', opts.frame);
+  }
+  if (opts.hand){
+    this.on('hand', opts.hand);
+  }
 }
 
 /**
@@ -2446,12 +2452,12 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (callback === undefined) {
+    if (callback === undefined && (!opts.frame && !opts.hand)) {
       callback = opts;
       opts = {};
     }
     if (!this.loopController) this.loopController = new this.Controller(opts);
-    this.loopController.loop(callback);
+    if (callback) this.loopController.loop(callback);
     return this.loopController;
   },
 

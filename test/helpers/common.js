@@ -111,7 +111,8 @@ var fakeHand = exports.fakeHand = function(opts) {
     type: 'left',
     grabStrength: 0.5,
     pinchStrength: 0.5,
-    confidence: 0.74094
+    confidence: 0.74094,
+    fingers: _(opts.hands || 5).times(function() { return fakeFinger() })
   }
 }
 
