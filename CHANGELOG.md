@@ -1,6 +1,13 @@
 # Changelog
 
-## Skeleton
+## 0.6.0-beta2
+ - Added convenience `hand` event for controllers.  Add `hand` and `frame` as callback options for Leap.loop.
+ - Merge in LeapJS 0.5.0 - device events (see below)
+ - Fingers on hands will now always be ordered correctly.
+ - Upgrade gl-matrix to 2.2.1
+
+
+## 0.6.0-beta1
  - Hand:
   - type ('left' or 'right'),
   - grabStrength (number 0-1) - 1 being fully closed
