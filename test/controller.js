@@ -127,7 +127,21 @@ describe('Controller', function(){
     it('should work with leap.loop', function(done){
       this.timeout(500);
       Leap.loop({
-        hand: function(){done()}
+        hand: function(){
+          done();
+          Leap.loopController = null;
+        }
+      });
+      Leap.loopController.processFrame(fakeFrame({hands: 1}));
+    });
+
+    it('should work with leap.loop and options', function(done){
+      this.timeout(500);
+      Leap.loop({background: true}, {
+        hand: function(){
+          done();
+          Leap.loopController = null;
+        }
       });
       Leap.loopController.processFrame(fakeFrame({hands: 1}));
     });
