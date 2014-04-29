@@ -717,7 +717,7 @@ Controller._pluginFactories = {};
  */
 Controller.plugin = function(pluginName, factory) {
   if (this._pluginFactories[pluginName]) {
-    throw "Plugin \"" + pluginName + "\" already registered";
+    console.warn("Plugin \"" + pluginName + "\" already registered");
   }
   return this._pluginFactories[pluginName] = factory;
 };
