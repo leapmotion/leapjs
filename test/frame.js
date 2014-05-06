@@ -104,8 +104,8 @@ describe('Frame', function(){
     describe('End to End', function(){
         var frame = fakeActualFrame();
 
-        it('should have ten pointables', function(){
-            assert.equal(frame.pointables.length, 5, 'ten pointables found');
+        it('should have five pointables', function(){
+            assert.equal(frame.pointables.length, 5, 'five pointables found');
         });
 
         it('should make a valid frame', function(){
