@@ -7,6 +7,80 @@
  * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 
  */
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
+var Pointable = require('./pointable'),
+  vec3 = require("gl-matrix").vec3
+  , _ = require('underscore');
+
+
+var Bone = module.exports = function(data) {
+  /**
+  * An integer code for the name of this bone.
+  *
+  * * 0 -- metacarpal
+  * * 1 -- proximal
+  * * 2 -- intermediate
+  * * 3 -- distal
+  *
+  * @member type
+  * @type {number}
+  * @memberof Leap.Bone.prototype
+  */
+  this.type = data.type;
+
+  /**
+   * The position of the previous, or base joint of the bone closer to the wrist.
+   * @type {vector3}
+   */
+  this.prevJoint = data.prevJoint;
+
+  /**
+   * The position of the next joint, or the end of the bone closer to the finger tip.
+   * @type {vector3}
+   */
+  this.nextJoint = data.nextJoint;
+
+  /**
+   * The estimated width of the tool in millimeters.
+   *
+   * The reported width is the average width of the visible portion of the
+   * tool from the hand to the tip. If the width isn't known,
+   * then a value of 0 is returned.
+   *
+   * Pointable objects representing fingers do not have a width property.
+   *
+   * @member width
+   * @type {number}
+   * @memberof Leap.Pointable.prototype
+   */
+  this.width = data.width;
+
+  var displacement = new Array(3);
+  vec3.sub(displacement, data.nextJoint, data.prevJoint);
+
+  this.length = vec3.length(displacement);
+
+
+  /**
+   *
+   * These fully-specify the orientation of the bone.
+   * Three vec3s: direction, normal, and cross.
+   * Normalized.
+   *
+   */
+  this.bases = data.bases;
+};
+
+Bone.prototype.center = function(){
+  var center = vec3.create();
+  vec3.lerp(center, this.prevJoint, this.nextJoint, 0.5);
+  return center;
+};
+
+Bone.prototype.direction = function(){
+  return this.bases[0];
+};
+
+},{"./pointable":13,"gl-matrix":22,"underscore":23}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -25,7 +99,7 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var chooseProtocol = require('../protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -160,7 +234,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":13,"events":19,"underscore":22}],3:[function(require,module,exports){
+},{"../protocol":14,"events":20,"underscore":23}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -234,7 +308,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":2,"underscore":22}],4:[function(require,module,exports){
+},{"./base":3,"underscore":23}],5:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -856,8 +930,9 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":1,"./connection/browser":3,"./connection/node":18,"./finger":5,"./frame":6,"./gesture":7,"./hand":8,"./pipeline":11,"./pointable":12,"__browserify_process":20,"events":19,"underscore":22}],5:[function(require,module,exports){
-var Pointable = require('./pointable')
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":19,"./finger":6,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":21,"events":20,"underscore":23}],6:[function(require,module,exports){
+var Pointable = require('./pointable'),
+  Bone = require('./bone')
   , _ = require('underscore');
 
 /**
@@ -934,6 +1009,14 @@ var Finger = module.exports = function(data) {
   this.mcpPosition = data.mcpPosition;
 
   /**
+   * The position of the Carpometacarpal joint
+   *
+   * This is at the distal end of the wrist, and has no common name.
+   *
+   */
+  this.carpPosition = data.carpPosition;
+
+  /**
   * Whether or not this finger is in an extended posture.
   *
   * A finger is considered extended if it is extended straight from the hand as if
@@ -968,7 +1051,55 @@ var Finger = module.exports = function(data) {
   * @type {array[]}
   * @memberof Leap.Finger.prototype
   */
-  this.positions = [this.mcpPosition, this.pipPosition, this.dipPosition, this.tipPosition];
+  this.positions = [this.carpPosition, this.mcpPosition, this.pipPosition, this.dipPosition, this.tipPosition];
+
+  /**
+  * Four bones per finger, from wrist outwards:
+  * metacarpal, proximal, intermediate, and distal.
+  *
+  * See http://en.wikipedia.org/wiki/Interphalangeal_articulations_of_hand
+  */
+  this.metacarpal = new Bone({
+    type: 0,
+    width: this.width,
+    prevJoint: this.carpPosition,
+    nextJoint: this.mcpPosition,
+    bases: data.bases[0]
+  });
+
+  this.proximal = new Bone({
+    type: 1,
+    width: this.width,
+    prevJoint: this.mcpPosition,
+    nextJoint: this.pipPosition,
+    bases: data.bases[1]
+  });
+
+  this.intermediate = new Bone({
+    type: 2,
+    width: this.width,
+    prevJoint: this.pipPosition,
+    nextJoint: this.dipPosition,
+    bases: data.bases[2]
+  });
+
+  /**
+   * Note that the `distal.nextJoint` position is slightly different from the `finger.tipPosition`.
+   * The former is at the very end of the bone, where the latter is the center of a sphere positioned at
+   * the tip of the finger.  The btipPosition "bone tip position" is a few mm closer to the wrist than
+   * the tipPosition.
+   * @type {Bone}
+   */
+  this.distal = new Bone({
+    type: 3,
+    width: this.width,
+    prevJoint: this.dipPosition,
+    nextJoint: data.btipPosition,
+    bases: data.bases[3]
+  });
+
+  this.bones = [this.metacarpal, this.proximal, this.intermediate, this.distal];
+
 };
 
 _.extend(Finger.prototype, Pointable.prototype);
@@ -983,7 +1114,7 @@ Finger.prototype.toString = function() {
 
 Finger.Invalid = { valid: false };
 
-},{"./pointable":12,"underscore":22}],6:[function(require,module,exports){
+},{"./bone":1,"./pointable":13,"underscore":23}],7:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1488,7 +1619,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./finger":5,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"gl-matrix":21,"underscore":22}],7:[function(require,module,exports){
+},{"./finger":6,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"gl-matrix":22,"underscore":23}],8:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -1973,7 +2104,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":19,"gl-matrix":21,"underscore":22}],8:[function(require,module,exports){
+},{"events":20,"gl-matrix":22,"underscore":23}],9:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2413,7 +2544,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":12,"gl-matrix":21,"underscore":22}],9:[function(require,module,exports){
+},{"./pointable":13,"gl-matrix":22,"underscore":23}],10:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2483,7 +2614,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":1,"./controller":4,"./finger":5,"./frame":6,"./gesture":7,"./hand":8,"./interaction_box":10,"./pointable":12,"./protocol":13,"./ui":14,"./version.js":17,"gl-matrix":21}],10:[function(require,module,exports){
+},{"./circular_buffer":2,"./controller":5,"./finger":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./protocol":14,"./ui":15,"./version.js":18,"gl-matrix":22}],11:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2625,7 +2756,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":21}],11:[function(require,module,exports){
+},{"gl-matrix":22}],12:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2679,7 +2810,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2896,7 +3027,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":21}],13:[function(require,module,exports){
+},{"gl-matrix":22}],14:[function(require,module,exports){
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -2950,12 +3081,12 @@ var JSONProtocol = exports.JSONProtocol = function(header) {
   return protocol;
 };
 
-},{"./finger":5,"./frame":6,"./hand":8,"./pointable":12}],14:[function(require,module,exports){
+},{"./finger":6,"./frame":7,"./hand":9,"./pointable":13}],15:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":15,"./ui/region":16}],15:[function(require,module,exports){
+},{"./ui/cursor":16,"./ui/region":17}],16:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -2966,7 +3097,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -3054,7 +3185,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":19,"underscore":22}],17:[function(require,module,exports){
+},{"events":20,"underscore":23}],18:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '0.6.0-beta2',
@@ -3062,9 +3193,9 @@ module.exports = {
   minor: 6,
   dot: 0
 }
-},{}],18:[function(require,module,exports){
-
 },{}],19:[function(require,module,exports){
+
+},{}],20:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -3260,7 +3391,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":20}],20:[function(require,module,exports){
+},{"__browserify_process":21}],21:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -3314,7 +3445,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -7564,7 +7695,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })(this);
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -8792,7 +8923,7 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -8805,5 +8936,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":9}]},{},[23])
+},{"../lib/index":10}]},{},[24])
 ;;
