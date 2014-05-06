@@ -1,9 +1,3 @@
-// to test: existence of properties
-// center in center?
-// direction == normalized sub?
-// mirroring
-//
-
 describe('Bone', function(){
   describe("properties", function() {
     var frame = fakeActualFrame();
