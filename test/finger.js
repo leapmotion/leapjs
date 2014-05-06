@@ -12,7 +12,7 @@ describe('Finger', function(){
     it('should have width', function() { assert.property(pointable, 'width') })
     it('should be valid', function() { assert(pointable.valid) })
     it('should be a valid', function() { assert(pointable.finger) })
-    it('should have an array of 4 positions', function() { assert.equal(5, pointable.positions.length) })
+    it('should have an array of 5 positions', function() { assert.equal(5, pointable.positions.length) })
     it('should have direction', function() { assert.property(pointable, 'direction') })
     it('should have stabilizedTipPosition', function() { assert.property(pointable, 'stabilizedTipPosition') })
     it('should have tipPosition', function() { assert.property(pointable, 'tipPosition') })
