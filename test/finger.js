@@ -1,8 +1,5 @@
 describe('Finger', function(){
   describe("properties", function() {
-//    var data = fakeFrame({pointableData: [fakeFinger()]});
-//    var frame = createFrame(data);
-//    var pointable = frame.pointables[0];
 
     var frame = fakeActualFrame();
     var pointable = frame.hands[0].fingers[0];
