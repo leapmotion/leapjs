@@ -15,7 +15,9 @@ var Pointable = require('./pointable'),
   , _ = require('underscore');
 
 
-var Bone = module.exports = function(data) {
+var Bone = module.exports = function(finger, data) {
+  this.finger = finger;
+
   this._center = null, this._matrix = null;
 
   /**
@@ -1121,7 +1123,7 @@ var Finger = module.exports = function(data) {
   *
   * See http://en.wikipedia.org/wiki/Interphalangeal_articulations_of_hand
   */
-  this.metacarpal = new Bone({
+  this.metacarpal   = new Bone(this, {
     type: 0,
     width: this.width,
     prevJoint: this.carpPosition,
@@ -1129,7 +1131,7 @@ var Finger = module.exports = function(data) {
     basis: data.bases[0]
   });
 
-  this.proximal = new Bone({
+  this.proximal     = new Bone(this, {
     type: 1,
     width: this.width,
     prevJoint: this.mcpPosition,
@@ -1137,7 +1139,7 @@ var Finger = module.exports = function(data) {
     basis: data.bases[1]
   });
 
-  this.intermediate = new Bone({
+  this.intermediate = new Bone(this, {
     type: 2,
     width: this.width,
     prevJoint: this.pipPosition,
@@ -1152,7 +1154,7 @@ var Finger = module.exports = function(data) {
    * the tipPosition.
    * @type {Bone}
    */
-  this.distal = new Bone({
+  this.distal       = new Bone(this, {
     type: 3,
     width: this.width,
     prevJoint: this.dipPosition,

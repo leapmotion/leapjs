@@ -10,6 +10,7 @@ describe('Bone', function(){
     it('should have width', function()     { assert.property(bone, 'width')      });
     it('should have direction', function() { assert.property(bone, 'direction')  });
     it('should have matrix', function()    { assert(bone.matrix().length == 16)  });
+    it('should have finger', function()    { assert.property(bone, 'finger')     });
 
     it('center() should return a vec3', function(){ assert(bone.center().length == 3) });
 
