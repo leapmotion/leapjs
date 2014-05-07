@@ -1117,7 +1117,7 @@ var Finger = module.exports = function(data) {
   */
   this.positions = [this.carpPosition, this.mcpPosition, this.pipPosition, this.dipPosition, this.tipPosition];
 
-  if (data.bases && false){
+  if (data.bases){
     this.addBones(data);
   } else {
     console.warn("You are running an old version of the Leap Service, finger bones are not be available.  Please " +
@@ -3485,7 +3485,8 @@ process.nextTick = (function () {
     if (canPost) {
         var queue = [];
         window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
                 ev.stopPropagation();
                 if (queue.length > 0) {
                     var fn = queue.shift();
@@ -9012,4 +9013,4 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 Leap = require("../lib/index");
 
 },{"../lib/index":10}]},{},[24])
-;;
+;
