@@ -14,6 +14,7 @@
           }
         }
       };
+      var haveLoggedFrame = false;
       var controller = new Leap.Controller({enableGestures: true});
       controller.loop(function(frame) {
         if (state == 'paused') return;
@@ -22,6 +23,11 @@
           state = 'paused';
         }else{
           document.getElementById('out').innerHTML = "<p>spacebar to pause</p><div>"+ frame.dump() + "</div>";
+        }
+
+        if (haveLoggedFrame == false && frame.hands[0]){
+          console.log(frame);
+          haveLoggedFrame = true;
         }
 
       });
@@ -73,7 +79,8 @@
   <body>
   <button onclick="controller.disconnect();">Disconnect</button>
   <button onclick="controller.connect();">Connect</button>
+  <pre>
     <div id="out"></div>
-    <div id="log"></div>
+  </pre>
   </body>
 </html>
