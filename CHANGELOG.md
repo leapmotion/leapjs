@@ -1,6 +1,13 @@
 # Changelog
 
 ## 0.6.0-beta2
+ - Bones API: finger.metacarpal, proximal, intermediate, distal, each with .prevJoin and .nextJoint
+ - Fix issue where hand options could not be used with loop + loop options
+ - console.warn plugin duplication, rather than throwing an error.
+ - Allow prototypical extension of Fingers in plugins
+
+
+## 0.6.0-beta2
  - Added convenience `hand` event for controllers.  Add `hand` and `frame` as callback options for Leap.loop.
  - Merge in LeapJS 0.5.0 - device events (see below)
  - Fingers on hands will now always be ordered correctly.
