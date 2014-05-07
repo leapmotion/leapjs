@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Dumper - Leap</title>
+  <title>Bone Hands - Leap</title>
   <script src="../leap-0.6.0-beta2.js"></script>
   <script src="lib/leap-plugins-0.1.5-pre.js"></script>
   <script src="lib/three.js"></script>
@@ -9,7 +9,7 @@
 <body>
 
 <p>
-  Move Hand over Leap to see bones and bone bases.
+  Move Hand over Leap to see bones and bone basis.
 </p>
 <p>
   Notice - Mirror symmetry in cross vectors
@@ -22,22 +22,26 @@
 
 <script>
   var arrowLength = 15; // mm
-  var baseBoneRotation = (new THREE.Quaternion).setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0));
+  var baseBoneRotation = (new THREE.Quaternion).setFromEuler(
+      new THREE.Euler(Math.PI / 2, 0, 0)
+  );
 
   Leap.loop({background: true}, {hand: function (hand) {
 
     hand.fingers.forEach(function (finger) {
 
       finger.data('boneMeshes').forEach(function(mesh, i){
+        var bone = finger.bones[i];
 
-        mesh.position.fromArray(finger.bones[i].center());
+        mesh.position.fromArray(bone.center());
 
-        var bases = finger.bones[i].bases;
-        mesh.setRotationFromMatrix({elements: bases[0].concat([0]).concat(bases[1]).concat([0]).concat(bases[2]).concat([0])     });
+
+        mesh.setRotationFromMatrix(
+            (new THREE.Matrix4).fromArray( bone.matrix() )
+        );
 
         mesh.quaternion.multiply(baseBoneRotation);
 
-        console.assert(!isNaN(mesh.quaternion.x));
       });
 
       finger.data('arrowHelpers').forEach(function(arrow, i){
@@ -45,11 +49,12 @@
         var bone = finger.bones[Math.floor(i / 3)];
 
         arrow.position.fromArray(bone.prevJoint);
-        var bases = bone.bases;
+
+        var basis = bone.basis;
         arrow.setDirection({
-          x: bases[i % 3][0],
-          y: bases[i % 3][1],
-          z: bases[i % 3][2]
+          x: basis[i % 3][0],
+          y: basis[i % 3][1],
+          z: basis[i % 3][2]
         });
 
 
@@ -84,12 +89,13 @@
         boneMeshes.push(mesh);
 
 
-        // create bases vectors, three per bone
+        // create basis vectors, three per bone
 
         var arrowHelper = new THREE.ArrowHelper(
-            (new THREE.Vector3).fromArray(bone.bases[0]), // direction
+            (new THREE.Vector3).fromArray(bone.basis[0]), // direction
             (new THREE.Vector3).fromArray(bone.prevJoint) // origin
         );
+
         arrowHelper.setLength( arrowLength );
         arrowHelper.setColor( 0xff0000 );
         scene.add( arrowHelper );
@@ -97,9 +103,10 @@
 
 
         arrowHelper = new THREE.ArrowHelper(
-            (new THREE.Vector3).fromArray(bone.bases[1]),
+            (new THREE.Vector3).fromArray(bone.basis[1]),
             (new THREE.Vector3).fromArray(bone.prevJoint)
         );
+
         arrowHelper.setLength( arrowLength );
         arrowHelper.setColor( 0x00ff00 );
         scene.add( arrowHelper );
@@ -107,9 +114,10 @@
 
 
         arrowHelper = new THREE.ArrowHelper(
-            (new THREE.Vector3).fromArray(bone.bases[2]),
+            (new THREE.Vector3).fromArray(bone.basis[2]),
             (new THREE.Vector3).fromArray(bone.prevJoint)
         );
+
         arrowHelper.setLength( arrowLength );
         arrowHelper.setColor( 0x0000ff );
         scene.add( arrowHelper );

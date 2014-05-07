@@ -8,11 +8,16 @@
  */
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 var Pointable = require('./pointable'),
-  vec3 = require("gl-matrix").vec3
+  glMatrix = require("gl-matrix")
+  , vec3 = glMatrix.vec3
+  , mat3 = glMatrix.mat3
+  , mat4 = glMatrix.mat4
   , _ = require('underscore');
 
 
 var Bone = module.exports = function(data) {
+  this._center = null, this._matrix = null;
+
   /**
   * An integer code for the name of this bone.
   *
@@ -64,20 +69,77 @@ var Bone = module.exports = function(data) {
    *
    * These fully-specify the orientation of the bone.
    * Three vec3s: direction, normal, and cross.
+   * The coordinates are chrial - left-handed for bones on the left hand, right-handed for the right hand.
    * Normalized.
    *
    */
-  this.bases = data.bases;
+  this.basis = data.basis;
 };
 
+Bone.prototype.left = function(){
+
+  if (this._left) return this._left;
+
+  this._left =  mat3.determinant(this.basis[0].concat(this.basis[1]).concat(this.basis[2])) < 0;
+
+  return this._left;
+
+};
+
+
+/**
+ * The Affine transformation matrix describing the orientation of the bone, in global Leap-space.
+ * It contains a 3x3 rotation matrix (in the "top left"), and center coordinates in the fourth column.
+ */
+Bone.prototype.matrix = function(){
+
+  if (this._matrix) return this._matrix;
+
+  var b = this.basis,
+      t = this._matrix = mat4.create();
+
+  // open transform mat4 from rotation mat3
+  t[0] = b[0][0], t[1] = b[0][1], t[2]  = b[0][2];
+  t[4] = b[1][0], t[5] = b[1][1], t[6]  = b[1][2];
+  t[8] = b[2][0], t[9] = b[2][1], t[10] = b[2][2];
+
+  t[3] = this.center()[0];
+  t[7] = this.center()[1];
+  t[11] = this.center()[2];
+
+  if ( this.left() ) {
+    // flip the basis to be right-handed
+    t[0] *= -1;
+    t[1] *= -1;
+    t[2] *= -1;
+  }
+
+  return this._matrix;
+};
+
+
+Bone.prototype.lerp = function(out, t){
+
+  vec3.lerp(out, this.prevJoint, this.nextJoint, t);
+
+};
+
+
 Bone.prototype.center = function(){
+
+  if (this._center) return this._center;
+
   var center = vec3.create();
-  vec3.lerp(center, this.prevJoint, this.nextJoint, 0.5);
+  this.lerp(center, 0.5);
+  this._center = center;
   return center;
+
 };
 
 Bone.prototype.direction = function(){
-  return this.bases[0];
+
+ return this.basis[0];
+
 };
 
 },{"./pointable":13,"gl-matrix":22,"underscore":23}],2:[function(require,module,exports){
@@ -1064,7 +1126,7 @@ var Finger = module.exports = function(data) {
     width: this.width,
     prevJoint: this.carpPosition,
     nextJoint: this.mcpPosition,
-    bases: data.bases[0]
+    basis: data.bases[0]
   });
 
   this.proximal = new Bone({
@@ -1072,7 +1134,7 @@ var Finger = module.exports = function(data) {
     width: this.width,
     prevJoint: this.mcpPosition,
     nextJoint: this.pipPosition,
-    bases: data.bases[1]
+    basis: data.bases[1]
   });
 
   this.intermediate = new Bone({
@@ -1080,7 +1142,7 @@ var Finger = module.exports = function(data) {
     width: this.width,
     prevJoint: this.pipPosition,
     nextJoint: this.dipPosition,
-    bases: data.bases[2]
+    basis: data.bases[2]
   });
 
   /**
@@ -1095,7 +1157,7 @@ var Finger = module.exports = function(data) {
     width: this.width,
     prevJoint: this.dipPosition,
     nextJoint: data.btipPosition,
-    bases: data.bases[3]
+    basis: data.bases[3]
   });
 
   this.bones = [this.metacarpal, this.proximal, this.intermediate, this.distal];
