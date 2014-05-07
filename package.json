@@ -10,7 +10,7 @@
     "type": "git",
     "url": "http://github.com/leapmotion/leapjs.git"
   },
-  "license": "BSD-2-Clause",
+  "license": "Apache-2.0",
   "dependencies": {
     "ws": "0.4.25",
     "underscore": "1.4.4",
