@@ -66,6 +66,9 @@
     renderer.render(scene, camera);
 
   }})
+    // these two LeapJS plugins, handHold and handEntry are available from leapjs-plugins, included above.
+    // handHold provides hand.data
+    // handEntry provides handFound/handLost events.
   .use('handHold')
   .use('handEntry')
   .on('handFound', function(hand){
