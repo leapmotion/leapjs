@@ -191,8 +191,8 @@
     window.scene.add(pointLight);
 
     window.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-    window.camera.position.fromArray([0, 0, 300]);
-    window.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    window.camera.position.fromArray([0, 100, 500]);
+    window.camera.lookAt(new THREE.Vector3(0, 160, 0));
 
     window.addEventListener('resize', function () {
 
