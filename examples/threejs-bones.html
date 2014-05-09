@@ -30,6 +30,7 @@
 
     hand.fingers.forEach(function (finger) {
 
+      // This is the meat of the example - Positioning the cylinders on every frame:
       finger.data('boneMeshes').forEach(function(mesh, i){
         var bone = finger.bones[i];
 
