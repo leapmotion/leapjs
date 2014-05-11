@@ -84,7 +84,7 @@ module.exports = function(grunt){
     // run with `grunt watch` or `grunt test watch`
     watch: {
       files: 'lib/**/*',
-      tasks: ['default']
+      tasks: ['default'],
       test: {
         files: ['lib/*', 'test/*'],
         tasks: ['test']

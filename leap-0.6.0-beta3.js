@@ -170,7 +170,7 @@ Bone.prototype.direction = function(){
 
 };
 
-},{"./pointable":13,"gl-matrix":22,"underscore":23}],2:[function(require,module,exports){
+},{"./pointable":14,"gl-matrix":23,"underscore":24}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -200,7 +200,7 @@ var BaseConnection = module.exports = function(opts) {
     enableGestures: false,
     port: 6437,
     background: false,
-    requestProtocolVersion: 6
+    requestProtocolVersion: BaseConnection.defaultProtocolVersion
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
@@ -209,7 +209,10 @@ var BaseConnection = module.exports = function(opts) {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
   });
-}
+};
+
+// The latest available:
+BaseConnection.defaultProtocolVersion = 6;
 
 BaseConnection.prototype.getUrl = function() {
   return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
@@ -324,9 +327,10 @@ BaseConnection.prototype.reportFocus = function(state) {
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
 
 
-},{"../protocol":14,"events":20,"underscore":23}],4:[function(require,module,exports){
+},{"../protocol":15,"events":21,"underscore":24}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
+
 
 var BrowserConnection = module.exports = function(opts) {
   BaseConnection.call(this, opts);
@@ -336,6 +340,8 @@ var BrowserConnection = module.exports = function(opts) {
 }
 
 _.extend(BrowserConnection.prototype, BaseConnection.prototype);
+
+BrowserConnection.__proto__ = BaseConnection;
 
 BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
@@ -398,7 +404,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":3,"underscore":23}],5:[function(require,module,exports){
+},{"./base":3,"underscore":24}],5:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -407,6 +413,7 @@ var process=require("__browserify_process");var Frame = require('./frame')
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
   , gestureListener = require('./gesture').gestureListener
+  , Dialog = require('./dialog')
   , _ = require('underscore');
 
 /**
@@ -720,7 +727,15 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
-  this.connection.on('ready', function() { controller.emit('ready'); });
+  this.connection.on('ready', function() {
+
+    if (!controller.inNode){
+      // show dialog only to web users
+      controller.checkOutOfDate();
+    }
+
+    controller.emit('ready');
+  });
 
   this.connection.on('connect', function() {
     controller.emit('connect');
@@ -801,7 +816,94 @@ Controller.prototype.setupConnectionEvents = function() {
     }
   });
 
-}
+};
+
+// Shows a DOM dialog box with links to developer.leapmotion.com to upgrade
+// This will work whether or not the Leap is plugged in,
+// As long as it is called after a call to .connect() and the 'ready' event has fired.
+Controller.prototype.warnOutOfDate = function(){
+  var controller = this;
+
+  console.assert(controller.connection && controller.connection.protocol);
+
+  var serviceVersion = controller.connection.protocol.serviceVersion;
+  var protocolVersion = controller.connection.protocol.version;
+
+  console.warn("Your Protocol Version is v" + protocolVersion +
+    ", this app was designed for v" + this.connectionType.defaultProtocolVersion);
+
+  var dialog,
+
+    onclick = function(event){
+
+
+       if (event.target.id != 'leapjs-decline-upgrade'){
+
+         var popup = window.open("http://developer.leapmotion.com?returnTo=" +
+           encodeURIComponent(window.location.href) + "&sV=" +
+           encodeURIComponent(serviceVersion) + "&pV=" +
+           encodeURIComponent(protocolVersion),
+           '_blank',
+           'height=800,width=1000,location=1,menubar=1,resizable=1,status=1,toolbar=1,scrollbars=1'
+         );
+
+         if (window.focus) {popup.focus()}
+
+       }
+
+       dialog.hide();
+
+       return true;
+    },
+
+
+    message = "Your Leap Service is out of date, and may not work correctly on this site. " +
+      "<button id='leapjs-accept-upgrade'  style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; margin-left: 8px; '>Upgrade</button>" +
+      "<button id='leapjs-decline-upgrade' style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; '>Not Now</button>";
+
+  dialog = new Dialog(message, {
+      onclick: onclick,
+      onmousemove: function(e){
+        if (e.target == document.getElementById('leapjs-decline-upgrade')){
+          document.getElementById('leapjs-decline-upgrade').style.color = '#000';
+          document.getElementById('leapjs-decline-upgrade').style.boxShadow = '0px 0px 2px #5daa00';
+
+          document.getElementById('leapjs-accept-upgrade').style.color = '#444';
+          document.getElementById('leapjs-accept-upgrade').style.boxShadow = 'none';
+        }else{
+          document.getElementById('leapjs-accept-upgrade').style.color = '#000';
+          document.getElementById('leapjs-accept-upgrade').style.boxShadow = '0px 0px 2px #5daa00';
+
+          document.getElementById('leapjs-decline-upgrade').style.color = '#444';
+          document.getElementById('leapjs-decline-upgrade').style.boxShadow = 'none';
+        }
+      },
+      onmouseout: function(){
+        document.getElementById('leapjs-decline-upgrade').style.color = '#444';
+        document.getElementById('leapjs-decline-upgrade').style.boxShadow = 'none';
+        document.getElementById('leapjs-accept-upgrade').style.color = '#444';
+        document.getElementById('leapjs-accept-upgrade').style.boxShadow = 'none';
+      }
+    }
+  );
+
+  return dialog.show();
+};
+
+
+// Checks if the protocol version is the latest, if if not, shows the dialog.
+Controller.prototype.checkOutOfDate = function(){
+  console.assert(this.connection && this.connection.protocol);
+
+  if (this.connectionType.defaultProtocolVersion > this.connection.protocol.version){
+    this.warnOutOfDate();
+    return true
+  }else{
+    return false
+  }
+
+};
+
 
 
 Controller._pluginFactories = {};
@@ -1020,7 +1122,70 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":19,"./finger":6,"./frame":7,"./gesture":8,"./hand":9,"./pipeline":12,"./pointable":13,"__browserify_process":21,"events":20,"underscore":23}],6:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":20,"./dialog":6,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./pipeline":13,"./pointable":14,"__browserify_process":22,"events":21,"underscore":24}],6:[function(require,module,exports){
+var Dialog = module.exports = function(message, options){
+  this.options = (options || {});
+  this.message = message;
+
+  this.createElement();
+};
+
+Dialog.prototype.createElement = function(){
+  this.element = document.createElement('div');
+  this.element.className = "leapjs-dialog";
+  this.element.style.position = "fixed";
+  this.element.style.witdh = "100%";
+  this.element.style.top = '8px';
+  this.element.style.left = 0;
+  this.element.style.right = 0;
+  this.element.style.textAlign = 'center';
+
+  var dialog  = document.createElement('div');
+  this.element.appendChild(dialog);
+  dialog.style.display = "inline-block";
+  dialog.style.margin = "auto";
+  dialog.style.padding = "8px";
+  dialog.style.color = "#222";
+  dialog.style.background = "#eee";
+  dialog.style.borderRadius = "4px";
+  dialog.style.border = "1px solid #999";
+  dialog.style.boxShadow = "0px 0px 3px #999";
+  dialog.style.textAlign = "left";
+  dialog.style.cursor = "pointer";
+  dialog.style.whiteSpace = "nowrap";
+  dialog.style.transition = "box-shadow 1s linear";
+  dialog.innerHTML = this.message;
+
+
+  if (this.options.onclick){
+    dialog.addEventListener('click', this.options.onclick);
+  }
+
+  if (this.options.onmouseover){
+    dialog.addEventListener('mouseover', this.options.onmouseover);
+  }
+
+  if (this.options.onmouseout){
+    dialog.addEventListener('mouseout', this.options.onmouseout);
+  }
+
+  if (this.options.onmousemove){
+    dialog.addEventListener('mousemove', this.options.onmousemove);
+  }
+};
+
+Dialog.prototype.show = function(){
+  document.body.appendChild(this.element);
+  return this;
+};
+
+Dialog.prototype.hide = function(){
+  document.body.removeChild(this.element);
+  return this;
+};
+
+
+},{}],7:[function(require,module,exports){
 var Pointable = require('./pointable'),
   Bone = require('./bone')
   , _ = require('underscore');
@@ -1132,6 +1297,7 @@ var Finger = module.exports = function(data) {
   * @memberof Leap.Finger.prototype
   */
   this.type = data.type;
+
   this.finger = true;
   
   /**
@@ -1206,16 +1372,12 @@ Finger.prototype.addBones = function(data){
 };
 
 Finger.prototype.toString = function() {
-  if(this.tool == true){
     return "Finger [ id:" + this.id + " " + this.length + "mmx | width:" + this.width + "mm | direction:" + this.direction + ' ]';
-  } else {
-    return "Finger [ id:" + this.id + " " + this.length + "mmx | direction: " + this.direction + ' ]';
-  }
 };
 
 Finger.Invalid = { valid: false };
 
-},{"./bone":1,"./pointable":13,"underscore":23}],7:[function(require,module,exports){
+},{"./bone":1,"./pointable":14,"underscore":24}],8:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -1720,7 +1882,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./finger":6,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"gl-matrix":22,"underscore":23}],8:[function(require,module,exports){
+},{"./finger":7,"./gesture":9,"./hand":10,"./interaction_box":12,"./pointable":14,"gl-matrix":23,"underscore":24}],9:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -2205,7 +2367,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":20,"gl-matrix":22,"underscore":23}],9:[function(require,module,exports){
+},{"events":21,"gl-matrix":23,"underscore":24}],10:[function(require,module,exports){
 var Pointable = require("./pointable")
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
@@ -2645,7 +2807,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":13,"gl-matrix":22,"underscore":23}],10:[function(require,module,exports){
+},{"./pointable":14,"gl-matrix":23,"underscore":24}],11:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -2715,7 +2877,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":2,"./controller":5,"./finger":6,"./frame":7,"./gesture":8,"./hand":9,"./interaction_box":11,"./pointable":13,"./protocol":14,"./ui":15,"./version.js":18,"gl-matrix":22}],11:[function(require,module,exports){
+},{"./circular_buffer":2,"./controller":5,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./interaction_box":12,"./pointable":14,"./protocol":15,"./ui":16,"./version.js":19,"gl-matrix":23}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -2857,7 +3019,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":22}],12:[function(require,module,exports){
+},{"gl-matrix":23}],13:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -2911,7 +3073,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -3128,7 +3290,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":22}],14:[function(require,module,exports){
+},{"gl-matrix":23}],15:[function(require,module,exports){
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -3182,12 +3344,12 @@ var JSONProtocol = exports.JSONProtocol = function(header) {
   return protocol;
 };
 
-},{"./finger":6,"./frame":7,"./hand":9,"./pointable":13}],15:[function(require,module,exports){
+},{"./finger":7,"./frame":8,"./hand":10,"./pointable":14}],16:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":16,"./ui/region":17}],16:[function(require,module,exports){
+},{"./ui/cursor":17,"./ui/region":18}],17:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -3198,7 +3360,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -3286,7 +3448,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":20,"underscore":23}],18:[function(require,module,exports){
+},{"events":21,"underscore":24}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '0.6.0-beta3',
@@ -3294,9 +3456,9 @@ module.exports = {
   minor: 6,
   dot: 0
 }
-},{}],19:[function(require,module,exports){
-
 },{}],20:[function(require,module,exports){
+
+},{}],21:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -3492,7 +3654,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":21}],21:[function(require,module,exports){
+},{"__browserify_process":22}],22:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -3546,7 +3708,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -7796,7 +7958,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })(this);
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -9024,7 +9186,7 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -9037,5 +9199,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":10}]},{},[24])
+},{"../lib/index":11}]},{},[25])
 ;;

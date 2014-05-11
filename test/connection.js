@@ -1,4 +1,11 @@
 describe('Connection', function(){
+  describe("class methods", function(){
+    it('should return defaultProtocolVersion', function(){
+      var controller = fakeController();
+      assert(controller.connectionType.defaultProtocolVersion, 'should have default protocol version');
+    });
+  });
+
   describe('#new', function(){
     it('should return a connection that pumps events', function(done) {
       var controller = fakeController()
