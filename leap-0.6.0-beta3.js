@@ -820,85 +820,26 @@ Controller.prototype.setupConnectionEvents = function() {
 
 };
 
-// Shows a DOM dialog box with links to developer.leapmotion.com to upgrade
-// This will work whether or not the Leap is plugged in,
-// As long as it is called after a call to .connect() and the 'ready' event has fired.
-Controller.prototype.warnOutOfDate = function(){
-  var controller = this;
 
-  console.assert(controller.connection && controller.connection.protocol);
-
-  var serviceVersion = controller.connection.protocol.serviceVersion;
-  var protocolVersion = controller.connection.protocol.version;
-
-  console.warn("Your Protocol Version is v" + protocolVersion +
-    ", this app was designed for v" + this.connectionType.defaultProtocolVersion);
-
-  var dialog,
-
-    onclick = function(event){
-
-
-       if (event.target.id != 'leapjs-decline-upgrade'){
-
-         var popup = window.open("http://developer.leapmotion.com?returnTo=" +
-           encodeURIComponent(window.location.href) + "&sV=" +
-           encodeURIComponent(serviceVersion) + "&pV=" +
-           encodeURIComponent(protocolVersion),
-           '_blank',
-           'height=800,width=1000,location=1,menubar=1,resizable=1,status=1,toolbar=1,scrollbars=1'
-         );
-
-         if (window.focus) {popup.focus()}
-
-       }
-
-       dialog.hide();
-
-       return true;
-    },
-
-
-    message = "Your Leap Service is out of date, and may not work correctly on this site. " +
-      "<button id='leapjs-accept-upgrade'  style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; margin-left: 8px; '>Upgrade</button>" +
-      "<button id='leapjs-decline-upgrade' style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; '>Not Now</button>";
-
-  dialog = new Dialog(message, {
-      onclick: onclick,
-      onmousemove: function(e){
-        if (e.target == document.getElementById('leapjs-decline-upgrade')){
-          document.getElementById('leapjs-decline-upgrade').style.color = '#000';
-          document.getElementById('leapjs-decline-upgrade').style.boxShadow = '0px 0px 2px #5daa00';
-
-          document.getElementById('leapjs-accept-upgrade').style.color = '#444';
-          document.getElementById('leapjs-accept-upgrade').style.boxShadow = 'none';
-        }else{
-          document.getElementById('leapjs-accept-upgrade').style.color = '#000';
-          document.getElementById('leapjs-accept-upgrade').style.boxShadow = '0px 0px 2px #5daa00';
-
-          document.getElementById('leapjs-decline-upgrade').style.color = '#444';
-          document.getElementById('leapjs-decline-upgrade').style.boxShadow = 'none';
-        }
-      },
-      onmouseout: function(){
-        document.getElementById('leapjs-decline-upgrade').style.color = '#444';
-        document.getElementById('leapjs-decline-upgrade').style.boxShadow = 'none';
-        document.getElementById('leapjs-accept-upgrade').style.color = '#444';
-        document.getElementById('leapjs-accept-upgrade').style.boxShadow = 'none';
-      }
-    }
-  );
-
-  return dialog.show();
-};
 
 
 // Checks if the protocol version is the latest, if if not, shows the dialog.
 Controller.prototype.checkOutOfDate = function(){
   console.assert(this.connection && this.connection.protocol);
 
-  if (this.connectionType.defaultProtocolVersion > this.connection.protocol.version){
-    this.warnOutOfDate();
+  var serviceVersion = this.connection.protocol.serviceVersion;
+  var protocolVersion = this.connection.protocol.version;
+  var defaultProtocolVersion = this.connectionType.defaultProtocolVersion;
+
+  if (defaultProtocolVersion > protocolVersion){
+
+    console.warn("Your Protocol Version is v" + protocolVersion +
+        ", this app was designed for v" + defaultProtocolVersion);
+
+    Dialog.warnOutOfDate({
+      sV: serviceVersion,
+      pV: protocolVersion
+    });
     return true
   }else{
     return false
@@ -1125,7 +1066,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 _.extend(Controller.prototype, EventEmitter.prototype);
 
 },{"./circular_buffer":2,"./connection/browser":4,"./connection/node":20,"./dialog":6,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./pipeline":13,"./pointable":14,"__browserify_process":22,"events":21,"underscore":24}],6:[function(require,module,exports){
-var Dialog = module.exports = function(message, options){
+var process=require("__browserify_process");var Dialog = module.exports = function(message, options){
   this.options = (options || {});
   this.message = message;
 
@@ -1187,9 +1128,94 @@ Dialog.prototype.hide = function(){
 };
 
 
-},{}],7:[function(require,module,exports){
+
+
+// Shows a DOM dialog box with links to developer.leapmotion.com to upgrade
+// This will work whether or not the Leap is plugged in,
+// As long as it is called after a call to .connect() and the 'ready' event has fired.
+Dialog.warnOutOfDate = function(params){
+  params || (params = {});
+
+  var url = "http://developer.leapmotion.com?";
+
+  params.returnTo = window.location.href;
+
+  for (var key in params){
+    url += key + '=' + encodeURIComponent(params[key]) + '&';
+  }
+
+  var dialog,
+    onclick = function(event){
+
+       if (event.target.id != 'leapjs-decline-upgrade'){
+
+         var popup = window.open(url,
+           '_blank',
+           'height=800,width=1000,location=1,menubar=1,resizable=1,status=1,toolbar=1,scrollbars=1'
+         );
+
+         if (window.focus) {popup.focus()}
+
+       }
+
+       dialog.hide();
+
+       return true;
+    },
+
+
+    message = "Your Leap Service is out of date, and may not work correctly on this site. " +
+      "<button id='leapjs-accept-upgrade'  style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; margin-left: 8px; '>Upgrade</button>" +
+      "<button id='leapjs-decline-upgrade' style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; '>Not Now</button>";
+
+  dialog = new Dialog(message, {
+      onclick: onclick,
+      onmousemove: function(e){
+        if (e.target == document.getElementById('leapjs-decline-upgrade')){
+          document.getElementById('leapjs-decline-upgrade').style.color = '#000';
+          document.getElementById('leapjs-decline-upgrade').style.boxShadow = '0px 0px 2px #5daa00';
+
+          document.getElementById('leapjs-accept-upgrade').style.color = '#444';
+          document.getElementById('leapjs-accept-upgrade').style.boxShadow = 'none';
+        }else{
+          document.getElementById('leapjs-accept-upgrade').style.color = '#000';
+          document.getElementById('leapjs-accept-upgrade').style.boxShadow = '0px 0px 2px #5daa00';
+
+          document.getElementById('leapjs-decline-upgrade').style.color = '#444';
+          document.getElementById('leapjs-decline-upgrade').style.boxShadow = 'none';
+        }
+      },
+      onmouseout: function(){
+        document.getElementById('leapjs-decline-upgrade').style.color = '#444';
+        document.getElementById('leapjs-decline-upgrade').style.boxShadow = 'none';
+        document.getElementById('leapjs-accept-upgrade').style.color = '#444';
+        document.getElementById('leapjs-accept-upgrade').style.boxShadow = 'none';
+      }
+    }
+  );
+
+  return dialog.show();
+};
+
+
+// Tracks whether we've warned for lack of bones API.  This will be show only for early private-beta members.
+Dialog.hasWarnedBones = false;
+
+Dialog.warnBones = function(){
+  if (this.hasWarnedBones) return;
+  this.hasWarnedBones = true;
+
+  console.warn("Your Leap Service is out of date");
+
+  if ( !(typeof(process) !== 'undefined' && process.versions && process.versions.node) ){
+    this.warnOutOfDate({reason: 'bones'});
+  }
+
+}
+},{"__browserify_process":22}],7:[function(require,module,exports){
 var Pointable = require('./pointable'),
   Bone = require('./bone')
+  , Dialog = require('./dialog')
   , _ = require('underscore');
 
 /**
@@ -1314,10 +1340,8 @@ var Finger = module.exports = function(data) {
   if (data.bases){
     this.addBones(data);
   } else {
-    console.warn("You are running an old version of the Leap Service, finger bones are not be available.  Please " +
-      "upgrade as this backwards-compatibility will be removed in future versions of LeapJS.");
+    Dialog.warnBones();
   }
-
 
 };
 
@@ -1379,7 +1403,7 @@ Finger.prototype.toString = function() {
 
 Finger.Invalid = { valid: false };
 
-},{"./bone":1,"./pointable":14,"underscore":24}],8:[function(require,module,exports){
+},{"./bone":1,"./dialog":6,"./pointable":14,"underscore":24}],8:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
