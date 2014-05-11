@@ -12,7 +12,7 @@ var fingerId = 0
   , lastGestureState = false;
 
 var fakeController = exports.fakeController = function(opts) {
-  opts = _.defaults(opts || {}, {frameEventName: "deviceFrame", version: 4})
+  opts = _.defaults(opts || {}, {frameEventName: "deviceFrame", version: 6})
   var controller = new Leap.Controller(opts)
   var connection = controller.connection;
 

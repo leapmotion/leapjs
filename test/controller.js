@@ -249,19 +249,26 @@ describe('Controller', function(){
   });
 
   describe('version warning [browser-only]', function(){
-    it ('should fire no warning by default', function(){
+    it ('should fire no warning by default', function(done){
+      this.timeout(500);
+
       var controller = fakeController({version: 6}).connect();
       controller.on('ready', function(){
         assert(controller.checkOutOfDate() == false, 'Should not show version warning dialog');
+        done();
       });
     });
 
-    it ('should fire warning when out of date', function(){
-      var controller = fakeController({version: 5});
+    it ('should fire warning when out of date', function(done){
+      this.timeout(500);
+
+      var controller = fakeController({version: 5}).connect();
       controller.on('ready', function(){
         assert(controller.checkOutOfDate() == true, 'Should show version warning dialog');
+        done();
       });
     });
+
   });
 
   describe('plugins', function(){

@@ -461,7 +461,8 @@ var Controller = module.exports = function(opts) {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
     suppressAnimationLoop: !this.useAnimationLoop(),
     loopWhileDisconnected: false,
-    useAllPlugins: false
+    useAllPlugins: false,
+    checkVersion: true
   });
 
   this.animationFrameRequested = false;
@@ -482,6 +483,7 @@ var Controller = module.exports = function(opts) {
   this.lastValidFrame = Frame.Invalid;
   this.lastConnectionFrame = Frame.Invalid;
   this.accumulatedGestures = [];
+  this.checkVersion = opts.checkVersion;
   if (opts.connectionType === undefined) {
     this.connectionType = (this.inBrowser() ? require('./connection/browser') : require('./connection/node'));
   } else {
@@ -729,7 +731,7 @@ Controller.prototype.setupConnectionEvents = function() {
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('ready', function() {
 
-    if (!controller.inNode){
+    if (controller.checkVersion && !controller.inNode){
       // show dialog only to web users
       controller.checkOutOfDate();
     }
