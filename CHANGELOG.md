@@ -27,7 +27,7 @@
  - Add convenience method controller.connected()
 
 ## 0.5.0
- - [feature] Support protocol v5: multiple devices when connected to clients with Leap Service version 1.2.0 or above.
+ - [feature] Support protocol v5: better device info when connected to clients with Leap Service version 1.2.0 or above.
  - [feature] Added streamingStarted, streamingStopped, deviceStreaming, and deviceStopped events
  - [feature] Device events now include device info with the following fields:
     - attached [boolean]
@@ -37,7 +37,7 @@
  - [feature] Add convenience methods `controller.connected()` and `controller.streaming()`
  - [bugfix] Focus state is now cleared after disconnection
  - [behavior change] Leap.loop no longer uses all plugins by default.
- - [feature] serviceVersion will now be available when connected to Leap Service v1.2.1 or above
+ - [feature] serviceVersion will now be available when connected to Leap Service v1.3.0 or above
  - [bugfix] Fix issue where any call to disconnect would automatically reconnect
  - [bugfix] Send focus state more quickly when connecting
  - [bugfix] Fix issue where focus changes while disconnected would cause focus not to be updated upon reconnection
