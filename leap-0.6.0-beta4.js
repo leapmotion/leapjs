@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v0.6.0-beta3                                                  
+ * LeapJS v0.6.0-beta4                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
@@ -1164,7 +1164,7 @@ Dialog.warnOutOfDate = function(params){
     },
 
 
-    message = "Your Leap Service is out of date, and may not work correctly on this site. " +
+    message = "This site requires Leap Motion Tracking Beta, now available for developers." +
       "<button id='leapjs-accept-upgrade'  style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; margin-left: 8px; '>Upgrade</button>" +
       "<button id='leapjs-decline-upgrade' style='color: #444; transition: box-shadow 100ms linear; cursor: pointer; '>Not Now</button>";
 
@@ -3477,7 +3477,7 @@ _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":21,"underscore":24}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '0.6.0-beta3',
+  full: '0.6.0-beta4',
   major: 0,
   minor: 6,
   dot: 0

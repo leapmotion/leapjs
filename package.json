@@ -1,6 +1,6 @@
 {
   "name": "leapjs",
-  "version": "0.6.0-beta3",
+  "version": "0.6.0-beta4",
   "description": "JavaScript client for the Leap Motion Controller",
   "main": "lib",
   "scripts": {
