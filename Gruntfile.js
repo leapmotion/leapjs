@@ -1,5 +1,5 @@
 module.exports = function(grunt){
-  var filename = "leap-<%= pkg.version %>"
+  var filename = "leap-<%= pkg.version %>";
   var banner = "/*!                                                              \
 \n * LeapJS v<%= pkg.version %>                                                  \
 \n * http://github.com/leapmotion/leapjs/                                        \
@@ -7,7 +7,7 @@ module.exports = function(grunt){
 \n * Copyright 2013 LeapMotion, Inc. and other contributors                      \
 \n * Released under the BSD-2-Clause license                                     \
 \n * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 \
-\n */"
+\n */";
 
   grunt.initConfig({
     pkg: grunt.file.readJSON("package.json"),
@@ -83,7 +83,7 @@ module.exports = function(grunt){
     },
     // run with `grunt watch` or `grunt test watch`
     watch: {
-      files: 'lib/*',
+      files: 'lib/**/*',
       tasks: ['default'],
       test: {
         files: ['lib/*', 'test/*'],
@@ -93,7 +93,8 @@ module.exports = function(grunt){
     },
     exec: {
       'test-browser': './node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html',
-      'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot',
+       // -i -g stands for inverse grep.  Tests tagged browser-only will be excluded.
+      'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot -i -g browser-only',
       'test-integration': 'node integration_test/reconnection.js && node integration_test/protocol_versions.js'
     }
   });
@@ -108,10 +109,15 @@ module.exports = function(grunt){
     'usebanner'
   ]);
 
+
   grunt.registerTask('test', [
     'default',
+    'test-only'
+  ]);
+
+  grunt.registerTask('test-only', [
     'exec:test-node',
     'exec:test-browser',
     'exec:test-integration'
   ]);
-}
+};

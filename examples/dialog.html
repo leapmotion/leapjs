@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <title>Dialog - Leap</title>
+    <!-- This demos the "Leap out of date" warning dialog  -->
+    <script src="../leap-0.6.0-beta3.js"></script>
+    <script>
+
+      var controller = (new Leap.Controller);
+
+      // here we decrement the requestProtocolVersion so that we can spoof being connected to an old client.
+      controller.connection.opts.requestProtocolVersion--;
+
+      // on "ready", it should check the version and show the dialog.
+      // it won't matter if a Leap is plugged in or not, as long as the Service is running.
+      controller.connect();
+
+    </script>
+  </head>
+  <body>
+  <pre>
+    <div id="out"></div>
+  </pre>
+  </body>
+</html>

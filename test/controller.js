@@ -1,4 +1,5 @@
 describe('Controller', function(){
+
   describe('#new', function(){
     it('should allow passing in options', function(done) {
       var controller = fakeController({enableGestures:true})
@@ -245,6 +246,29 @@ describe('Controller', function(){
       
       controller.connect();
     });
+  });
+
+  describe('version warning [browser-only]', function(){
+    it ('should fire no warning by default', function(done){
+      this.timeout(500);
+
+      var controller = fakeController({version: 6}).connect();
+      controller.on('ready', function(){
+        assert(controller.checkOutOfDate() == false, 'Should not show version warning dialog');
+        done();
+      });
+    });
+
+    it ('should fire warning when out of date', function(done){
+      this.timeout(500);
+
+      var controller = fakeController({version: 5}).connect();
+      controller.on('ready', function(){
+        assert(controller.checkOutOfDate() == true, 'Should show version warning dialog');
+        done();
+      });
+    });
+
   });
 
   describe('plugins', function(){
