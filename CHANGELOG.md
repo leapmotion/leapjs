@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.6.0-beta2
+ - Bones API: finger.metacarpal, proximal, intermediate, distal, each with .prevJoin and .nextJoint
+ - Fix issue where hand options could not be used with loop + loop options
+ - console.warn plugin duplication, rather than throwing an error.
+ - Allow prototypical extension of Fingers in plugins
+
+
+## 0.6.0-beta2
+ - Added convenience `hand` event for controllers.  Add `hand` and `frame` as callback options for Leap.loop.
+ - Merge in LeapJS 0.5.0 - device events (see below)
+ - Fingers on hands will now always be ordered correctly.
+ - Upgrade gl-matrix to 2.2.1
+
+
+## 0.6.0-beta1
+ - Hand:
+  - type ('left' or 'right'),
+  - grabStrength (number 0-1) - 1 being fully closed
+  - pinchStrength (number 0-1) - 1 being fully closed, between the thumb and any finger
+  - confidence (number 0-1) (a measure of hand data accuracy, 1 being good)
+ - Finger:
+  - mcp, pip, dip, and tip positions (all array vec3) - joint positions of the finger (see source/docs4)
+  - extended (boolean) - True for a straight finger, false if the finger is curled
+  - Moved to own class
+ - Add convenience method controller.connected()
+
 ## 0.5.0
  - [feature] Support protocol v5: better device info when connected to clients with Leap Service version 1.2.0 or above.
  - [feature] Added streamingStarted, streamingStopped, deviceStreaming, and deviceStopped events
@@ -15,7 +41,6 @@
  - [bugfix] Fix issue where any call to disconnect would automatically reconnect
  - [bugfix] Send focus state more quickly when connecting
  - [bugfix] Fix issue where focus changes while disconnected would cause focus not to be updated upon reconnection
-
 
 ## 0.4.3
  - Added a new controller option `loopWhileDisconnected` which defaults to true (legacy behavior) and can be set

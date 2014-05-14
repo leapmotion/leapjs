@@ -1,4 +1,5 @@
 describe('Controller', function(){
+
   describe('#new', function(){
     it('should allow passing in options', function(done) {
       var controller = fakeController({enableGestures:true})
@@ -84,6 +85,66 @@ describe('Controller', function(){
         }, 50)
       });
       controller.connect()
+    });
+  });
+
+  describe('frame events', function(){
+    it('should fire hand events for frames', function(done){
+      this.timeout(500);
+
+      var controller = fakeController();
+      var handCount = 0;
+      controller.on('hand', function(hand){
+        handCount++;
+        console.assert(hand.fingers, hand, "is invalid");
+        if (handCount == 2){
+          done();
+        }
+      });
+      controller.processFrame(fakeFrame({hands: 2}));
+    });
+
+    it('should allow frame and hand event binding as options', function(done){
+      this.timeout(500);
+      var frameCount = 0;
+      var handCount = 0;
+
+      var controller = fakeController({
+        frame: function(frame){
+          frameCount++;
+          console.assert(frame.hands, frame, "is invalid");
+        },
+        hand: function(hand){
+          handCount++;
+          console.assert(hand.fingers, hand, "is invalid");
+          if (handCount == 2 && frameCount == 1){
+            done();
+          }
+        }
+      });
+      controller.processFrame(fakeFrame({hands: 2}));
+    });
+
+    it('should work with leap.loop', function(done){
+      this.timeout(500);
+      Leap.loop({
+        hand: function(){
+          done();
+          Leap.loopController = null;
+        }
+      });
+      Leap.loopController.processFrame(fakeFrame({hands: 1}));
+    });
+
+    it('should work with leap.loop and options', function(done){
+      this.timeout(500);
+      Leap.loop({background: true}, {
+        hand: function(){
+          done();
+          Leap.loopController = null;
+        }
+      });
+      Leap.loopController.processFrame(fakeFrame({hands: 1}));
     });
   });
 
@@ -185,6 +246,29 @@ describe('Controller', function(){
       
       controller.connect();
     });
+  });
+
+  describe('version warning [browser-only]', function(){
+    it ('should fire no warning by default', function(done){
+      this.timeout(500);
+
+      var controller = fakeController({version: 6}).connect();
+      controller.on('ready', function(){
+        assert(controller.checkOutOfDate() == false, 'Should not show version warning dialog');
+        done();
+      });
+    });
+
+    it ('should fire warning when out of date', function(done){
+      this.timeout(500);
+
+      var controller = fakeController({version: 5}).connect();
+      controller.on('ready', function(){
+        assert(controller.checkOutOfDate() == true, 'Should show version warning dialog');
+        done();
+      });
+    });
+
   });
 
   describe('plugins', function(){
@@ -340,17 +424,28 @@ describe('Controller', function(){
           testFn: function(){
             return 'pointable';
           }
+        },
+        finger: {
+          testFnFinger: function(){
+            return 'finger';
+          }
         }
       }));
       var controller = fakeController()
       controller.use('testPlugin')
       // our test doubles are not actual instances of the class, so we test the prototype
-      assert.equal(Leap.Frame.prototype.testFn(), 'frame')
-      assert.equal(Leap.Hand.prototype.testFn(), 'hand')
-      assert.equal(Leap.Pointable.prototype.testFn(), 'pointable')
-      assert.equal(Leap.Frame.Invalid.testFn(), 'frame')
-      assert.equal(Leap.Hand.Invalid.testFn(), 'hand')
-      assert.equal(Leap.Pointable.Invalid.testFn(), 'pointable')
+      assert.equal(Leap.Frame.prototype.testFn(), 'frame');
+      assert.equal(Leap.Frame.Invalid.testFn(), 'frame');
+
+      assert.equal(Leap.Hand.prototype.testFn(), 'hand');
+      assert.equal(Leap.Hand.Invalid.testFn(), 'hand');
+
+      assert.equal(Leap.Pointable.prototype.testFn(), 'pointable');
+      assert.equal(Leap.Pointable.Invalid.testFn(), 'pointable');
+
+      assert.equal(Leap.Finger.prototype.testFnFinger(), 'finger');
+      assert.equal(Leap.Finger.Invalid.testFnFinger(), 'finger');
+
       Leap.Controller._pluginFactories = {}
     });
 
@@ -388,6 +483,11 @@ describe('Controller', function(){
           testFn: function(){
             return 'pointable';
           }
+        },
+        finger: {
+          testFnFinger: function(){
+            return 'pointable';
+          }
         }
       }));
       var controller = fakeController();
@@ -395,11 +495,16 @@ describe('Controller', function(){
       controller.stopUsing('testPlugin');
       // our test doubles are not actual instances of the class, so we test the prototype
       assert.equal(Leap.Frame.prototype.testFn, undefined);
-      assert.equal(Leap.Hand.prototype.testFn, undefined);
-      assert.equal(Leap.Pointable.prototype.testFn, undefined);
       assert.equal(Leap.Frame.Invalid.testFn, undefined);
+
+      assert.equal(Leap.Hand.prototype.testFn, undefined);
       assert.equal(Leap.Hand.Invalid.testFn, undefined);
+
+      assert.equal(Leap.Pointable.prototype.testFn, undefined);
       assert.equal(Leap.Pointable.Invalid.testFn, undefined);
+
+      assert.equal(Leap.Finger.prototype.testFnFinger, undefined);
+      assert.equal(Leap.Finger.Invalid.testFnFinger, undefined);
       Leap.Controller._pluginFactories = {}
     });
 

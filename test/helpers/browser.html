@@ -8,13 +8,29 @@
     <script src="../../node_modules/underscore/underscore.js"></script>
     <script src="../../node_modules/mocha/mocha.js"></script>
     <script src="../../node_modules/chai/chai.js"></script>
+
     <script>
+
       mocha.setup({ ui: 'bdd', globals: ['top', '__flash_getTopLocation', '__flash_getWindowLocation'], reporter: 'html' });
+
       assert = chai.assert;
 
     </script>
+
     <script src="../assertUtil.js"></script>
-    <script src="../../leap-0.5.0.js"></script>
+    <script src="../../leap-0.6.0-beta4.js"></script>
+
+
+    <script>
+
+      // Allow standalone testing of private modules, such as Dialog.
+      // This has to come after assertUtil, as that uses module to detect node status
+      // in the lib scripts themselves, module is expected always, through either browserify or node.
+      window.module = {};
+
+    </script>
+
+
     <script src="./common.js"></script>
     <script src="../connection.js"></script>
     <script src="../controller.js"></script>
@@ -24,9 +40,25 @@
     <script src="../gestures.js"></script>
     <script src="../interaction_box.js"></script>
     <script src="../pointable.js"></script>
+    <script src="../finger.js"></script>
+    <script src="../bone.js"></script>
+
+    <script src="../../lib/dialog.js"></script>
+    <script src="../dialog.js"></script>
+
     <script>
-      if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
-      else { mocha.run(); }
+
+      if (window.mochaPhantomJS) {
+
+        mochaPhantomJS.run();
+
+      } else {
+
+        mocha.run();
+
+      }
+
     </script>
+
   </body>
 </html>

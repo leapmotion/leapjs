@@ -1,13 +1,16 @@
-assert = require('chai').assert
-_ = require("underscore")
+assert = require('chai').assert;
+_ = require("underscore");
 
-Leap = require('../../lib')
+Leap = require('../../lib');
 
-assertUtil = require('./../assertUtil')
-fakeHand = require('./common').fakeHand
-fakeFrame = require('./common').fakeFrame
-fakeFinger = require('./common').fakeFinger
-fakeController = require('./common').fakeController
-fakePluginFactory = require('./common').fakePluginFactory
-fakeGesture = require('./common').fakeGesture
+var common = require('./common');
+assertUtil = require('./../assertUtil');
 
+fakeHand = common.fakeHand;
+fakeFrame = common.fakeFrame;
+fakeActualFrame = common.fakeActualFrame;
+fakeFinger = common.fakeFinger;
+fakeController = common.fakeController;
+fakeGesture = common.fakeGesture;
+createFrame = common.createFrame;
+fakePluginFactory = common.fakePluginFactory;

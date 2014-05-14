@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Loop - Leap</title>
+
+    <script src="../leap-0.6.0-beta4.js"></script>
+
+    <script>
+
+      // to make working with angles easy
+      window.TO_RAD = Math.PI / 180;
+      window.TO_DEG = 1 / TO_RAD;
+
+      Leap.loop({
+
+        // frame callback is run before individual frame components
+        frame: function(frame){
+          out.innerHTML = ''
+        },
+
+        // hand callbacks are run once for each hand in the frame
+        hand: function(hand){
+          out.innerHTML += "Hand: " + hand.id + ' &nbsp;roll: ' + Math.round(hand.roll() * TO_DEG) + '°<br/>'
+        }
+
+      });
+
+    </script>
+
+    <style>
+      body {
+        line-height: 2em;
+        font-size: 2em;
+        font-family: Helvetica;
+      }
+    </style>
+
+  </head>
+
+  <body>
+
+    <div id="out"></div>
+
+  </body>
+
+</html>

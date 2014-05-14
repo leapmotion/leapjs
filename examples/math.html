@@ -1,0 +1,64 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Math - Leap</title>
+
+    <script src="../leap-0.6.0-beta4.js"></script>
+
+    <script>
+
+      Leap.loop({
+
+        frame: function(frame){
+          var hand = frame.hands[0];
+          if (hand){
+            var dot = Leap.vec3.dot(hand.direction, hand.indexFinger.direction);
+
+            console.assert(!isNaN(dot));
+
+            out.innerHTML = dot.toPrecision(2);
+          }
+        }
+
+      });
+
+    </script>
+
+    <style>
+      body {
+        line-height: 2em;
+        font-family: Helvetica;
+      }
+      #out{
+        font-weight: bold;
+      }
+    </style>
+
+  </head>
+
+  <body>
+
+  <p>
+    This page demonstrates the usage of basic vector Math with the Leap.  In this example, we will compute the dot-product,
+    of hand direction and index finger direction. This is a measure of how close two vectors are.
+  </p>
+
+  <p>
+    Find out more in the <a target="_blank" href="http://glmatrix.net/docs/2.2.0/">GL-Matrix Documentation</a> and
+    <a href="http://en.wikipedia.org/wiki/Dot_product" target="_blank">Wikipedia</a>.
+  </p>
+
+  <p>
+    <img src="images/dot-product.png"/>
+  </p>
+
+  <br/>
+  <p>
+    hand.direction &#xb7; hand.indexFinger.direction =
+    <span id="out"></span>
+  </p>
+
+
+  </body>
+
+</html>

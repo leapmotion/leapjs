@@ -1,0 +1,234 @@
+<html>
+<head>
+  <title>Bone Hands - Leap</title>
+  <script src="../leap-0.6.0-beta4.js"></script>
+  <script src="lib/leap-plugins-0.1.5-pre.js"></script>
+  <script src="lib/three.js"></script>
+
+</head>
+<body>
+
+<p>
+  Move Hand over Leap to see bones and bone basis.
+</p>
+<p>
+  Notice - Mirror symmetry in cross vectors
+</p>
+<p>
+  Even without the leap, you should see a rotating blue rectangle to know that your WebGL is working.
+</p>
+
+</body>
+
+<script>
+  var arrowLength = 15; // mm
+  var baseBoneRotation = (new THREE.Quaternion).setFromEuler(
+      new THREE.Euler(Math.PI / 2, 0, 0)
+  );
+
+  Leap.loop({background: true}, {hand: function (hand) {
+
+    hand.fingers.forEach(function (finger) {
+
+      // This is the meat of the example - Positioning `the cylinders on every frame:
+      finger.data('boneMeshes').forEach(function(mesh, i){
+        var bone = finger.bones[i];
+
+        mesh.position.fromArray(bone.center());
+
+
+        mesh.setRotationFromMatrix(
+            (new THREE.Matrix4).fromArray( bone.matrix() )
+        );
+
+        mesh.quaternion.multiply(baseBoneRotation);
+
+      });
+
+      finger.data('arrowHelpers').forEach(function(arrow, i){
+        // three arrows per bone
+        var bone = finger.bones[Math.floor(i / 3)];
+
+        arrow.position.fromArray(bone.prevJoint);
+
+        var basis = bone.basis;
+        arrow.setDirection({
+          x: basis[i % 3][0],
+          y: basis[i % 3][1],
+          z: basis[i % 3][2]
+        });
+
+
+      });
+
+
+    });
+
+    renderer.render(scene, camera);
+
+  }})
+    // these two LeapJS plugins, handHold and handEntry are available from leapjs-plugins, included above.
+    // handHold provides hand.data
+    // handEntry provides handFound/handLost events.
+  .use('handHold')
+  .use('handEntry')
+  .on('handFound', function(hand){
+
+    hand.fingers.forEach(function (finger) {
+
+      var boneMeshes = [];
+      var arrowHelpers = [];
+
+      finger.bones.forEach(function(bone){
+
+        // create joints
+
+        // CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded)
+        var mesh = new THREE.Mesh(
+          new THREE.CylinderGeometry( 5 , 5, bone.length ),
+          new THREE.MeshNormalMaterial()
+        );
+
+        scene.add(mesh);
+        boneMeshes.push(mesh);
+
+
+        // create basis vectors, three per bone
+
+        var arrowHelper = new THREE.ArrowHelper(
+            (new THREE.Vector3).fromArray(bone.basis[0]), // direction
+            (new THREE.Vector3).fromArray(bone.prevJoint) // origin
+        );
+
+        arrowHelper.setLength( arrowLength );
+        arrowHelper.setColor( 0xff0000 );
+        scene.add( arrowHelper );
+        arrowHelpers.push(arrowHelper);
+
+
+        arrowHelper = new THREE.ArrowHelper(
+            (new THREE.Vector3).fromArray(bone.basis[1]),
+            (new THREE.Vector3).fromArray(bone.prevJoint)
+        );
+
+        arrowHelper.setLength( arrowLength );
+        arrowHelper.setColor( 0x00ff00 );
+        scene.add( arrowHelper );
+        arrowHelpers.push(arrowHelper);
+
+
+        arrowHelper = new THREE.ArrowHelper(
+            (new THREE.Vector3).fromArray(bone.basis[2]),
+            (new THREE.Vector3).fromArray(bone.prevJoint)
+        );
+
+        arrowHelper.setLength( arrowLength );
+        arrowHelper.setColor( 0x0000ff );
+        scene.add( arrowHelper );
+        arrowHelpers.push(arrowHelper);
+
+
+      });
+
+      finger.data('boneMeshes', boneMeshes);
+
+      finger.data('arrowHelpers', arrowHelpers);
+
+    });
+
+  })
+  .on('handLost', function(hand){
+
+
+    hand.fingers.forEach(function (finger) {
+
+      var boneMeshes = finger.data('boneMeshes');
+
+      boneMeshes.forEach(function(mesh){
+
+        scene.remove(mesh);
+
+      });
+
+      finger.data('boneMeshes', null);
+
+      var arrowHelpers = finger.data('arrowHelpers');
+
+      arrowHelpers.forEach(function(arrow){
+        scene.remove(arrow);
+      });
+
+    });
+
+    renderer.render(scene, camera);
+
+  })
+  .connect();
+
+
+  // all units in mm
+  var initScene = function () {
+    window.scene = new THREE.Scene();
+    window.renderer = new THREE.WebGLRenderer({
+      alpha: true
+    });
+
+    window.renderer.setClearColor(0x000000, 0);
+    window.renderer.setSize(window.innerWidth, window.innerHeight);
+
+    window.renderer.domElement.style.position = 'fixed';
+    window.renderer.domElement.style.top = 0;
+    window.renderer.domElement.style.left = 0;
+    window.renderer.domElement.style.width = '100%';
+    window.renderer.domElement.style.height = '100%';
+
+    document.body.appendChild(window.renderer.domElement);
+
+    var pointLight = new THREE.PointLight(0xFFffff);
+    pointLight.position = new THREE.Vector3(-20, 10, 100);
+    pointLight.lookAt(new THREE.Vector3(0, 0, 0));
+    window.scene.add(pointLight);
+
+    window.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    window.camera.position.fromArray([0, 100, 500]);
+    window.camera.lookAt(new THREE.Vector3(0, 160, 0));
+
+    window.addEventListener('resize', function () {
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.render(scene, camera);
+
+    }, false);
+
+    scene.add(camera);
+
+
+    var geometry = new THREE.CubeGeometry(60, 90, 20);
+    var material = new THREE.MeshPhongMaterial({color: 0x0000FF});
+    window.cube = new THREE.Mesh(geometry, material);
+    cube.position.set(0,0,0);
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+    scene.add(cube);
+
+
+
+    renderer.render(scene, camera);
+  };
+
+  initScene();
+
+  var rotateCube = function(){
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.02;
+    renderer.render(scene, camera);
+
+    window.requestAnimationFrame(rotateCube);
+  };
+  
+  rotateCube();
+
+</script>
+</html>

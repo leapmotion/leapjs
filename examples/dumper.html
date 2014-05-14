@@ -1,24 +1,35 @@
 <html>
   <head>
     <title>Dumper - Leap</title>
-    <script src="../leap-0.5.0.js"></script>
+    <script src="../leap-0.6.0-beta4.js"></script>
     <script>
       console.log("LeapJS v" + Leap.version.full);
-      var pausedFrame = null;
-      var latestFrame = null;
+      var state = 'play';
       window.onkeypress = function(e) {
-        if (e.charCode == 32) {
-          if (pausedFrame == null) {
-            pausedFrame = latestFrame;
-          } else {
-            pausedFrame = null;
+        if (e.charCode == 32) { //spacebar
+          if (state == 'play') {
+            state = 'pausing';
+          }else{
+            state = 'play';
           }
         }
       };
+      var haveLoggedFrame = false;
       var controller = new Leap.Controller({enableGestures: true});
       controller.loop(function(frame) {
-        latestFrame = frame;
-        document.getElementById('out').innerHTML = (pausedFrame ? "<p><b>PAUSED</b></p>" : "") + "<div>"+(pausedFrame || latestFrame).dump()+"</div>";
+        if (state == 'paused') return;
+        if (state == 'pausing') {
+          document.getElementById('out').innerHTML = "<p><b>PAUSED</b></p><div>"+ frame.dump() + "</div>";
+          state = 'paused';
+        }else{
+          document.getElementById('out').innerHTML = "<p>spacebar to pause</p><div>"+ frame.dump() + "</div>";
+        }
+
+        if (haveLoggedFrame == false && frame.hands[0]){
+          console.log(frame);
+          haveLoggedFrame = true;
+        }
+
       });
 
       controller.on('ready', function() {
@@ -68,7 +79,8 @@
   <body>
   <button onclick="controller.disconnect();">Disconnect</button>
   <button onclick="controller.connect();">Connect</button>
+  <pre>
     <div id="out"></div>
-    <div id="log"></div>
+  </pre>
   </body>
 </html>

@@ -12,7 +12,7 @@ Leap.loop(function(frame){
 
 Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapjs/getting-started), and the [API Reference](https://developer.leapmotion.com/documentation/javascript/api/Leap_Classes.html).
 
-## Installation
+### Installation
 
 **Browser**: Download the latest `leap.js` [from our CDN](https://developer.leapmotion.com/leapjs/welcome).
 
@@ -20,58 +20,42 @@ Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapj
 
 **Node**:  `npm install leapjs`
 
-## Examples
+### Examples
 
-**Live Examples** can be found at [developer.leapmotion.com/leapjs/examples](http://developer.leapmotion.com/leapjs/examples).
+Visit [developer.leapmotion.com/downloads/skeletal-beta/gallery](https://developer.leapmotion.com/downloads/skeletal-beta/gallery) for the latest examples.
 
-Some examples have been included in the <code>examples/</code> directory. To run them do the following:
+Some more basic examples have also been included in the [examples/](https://github.com/leapmotion/leapjs-skeleton/tree/master/examples) directory.
 
-1. Run `npm install`
-2. Run `make serve`
-3. Point your browser to [localhost:8080/examples](http://localhost:8080/examples)
-
-Or in code:
-
-1. Run `node examples/node.js`
-
-## Plugins
+### Plugins
 
 [Plugins](http://developer.leapmotion.com/leapjs/plugins) are used to modularly extend Leap Webapps with external libraries.
+Here we use the `screenPosition` plugin to get the position of the hand as an on-screen cursor.
 
 ```javascript
-Leap.loop(function(frame){
-  if (frame.hands.length < 1) return;
+Leap.loop({
 
-  console.log(frame.hands[0].screenPosition());
+  hand: function(hand){
+    console.log( hand.screenPosition() );
+  }
+
 }).use('screenPosition');
 ```
 
-## Compatibility
 
-Version 0.3.0 or greater of leapjs requires version 1.0.9 or greater of the tracking software which is available at
-[https://www.leapmotion.com/setup](https://www.leapmotion.com/setup) in order to have background support work properly.
-Mixing and matching prior versions will result in inconsistent background/focus support.
+### Misc
+
+LeapJS includes the vector math library [GL-Matrix](http://glmatrix.net/) for your use and convenience.  For example, we can easily compute a dot product.  See [the example](https://github.com/leapmotion/leapjs-skeleton/tree/master/examples/math.html) and [the gl matrix docs](http://glmatrix.net/docs/2.2.0/) for more info.
+
+```javascript
+var dot = Leap.vec3.dot(hand.direction, hand.indexFinger.direction);
+```
+
+Also visit the wiki for [how to make plugins](https://github.com/leapmotion/leapjs/wiki/Plugins),
+[protocol guide](https://github.com/leapmotion/leapjs/wiki/Protocol), and [other stuff](https://github.com/leapmotion/leapjs/wiki).
 
 
-## Troubleshooting
 
-You may encounter a problem with an error message including `SELF_SIGNED_CERT_IN_CHAIN`.
-This is often a result of changes in OSX's security system; try reinstalling Node.js.
-
-If that does not work, turn off SSL checking with the following instructions:
-
-``` bash
-
-npm config set strict-ssl=false
-npm install leapjs -v0.4.1
-
-````
-
-### Protocol
-Details about the protocol used to communicate with `leapd` are detailed here
-[PROTOCOL.md](https://github.com/leapmotion/leapjs/blob/master/PROTOCOL.md).
-
-## Contributing
+### Contributing
 
 Add your name, email, and github account to the CONTRIBUTORS.txt list, thereby agreeing to the terms and conditions of the Contributor License Agreement.
 
