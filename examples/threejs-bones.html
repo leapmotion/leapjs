@@ -26,43 +26,38 @@
       new THREE.Euler(Math.PI / 2, 0, 0)
   );
 
-  Leap.loop({background: true}, {hand: function (hand) {
+  Leap.loop({background: true}, {
+    hand: function (hand) {
 
-    hand.fingers.forEach(function (finger) {
+      hand.fingers.forEach(function (finger) {
 
-      // This is the meat of the example - Positioning `the cylinders on every frame:
-      finger.data('boneMeshes').forEach(function(mesh, i){
-        var bone = finger.bones[i];
+        // This is the meat of the example - Positioning `the cylinders on every frame:
+        finger.data('boneMeshes').forEach(function(mesh, i){
+          var bone = finger.bones[i];
 
-        mesh.position.fromArray(bone.center());
+          mesh.position.fromArray(bone.center());
 
+          mesh.setRotationFromMatrix(
+              (new THREE.Matrix4).fromArray( bone.matrix() )
+          );
 
-        mesh.setRotationFromMatrix(
-            (new THREE.Matrix4).fromArray( bone.matrix() )
-        );
-
-        mesh.quaternion.multiply(baseBoneRotation);
-
-      });
-
-      finger.data('arrowHelpers').forEach(function(arrow, i){
-        // three arrows per bone
-        var bone = finger.bones[Math.floor(i / 3)];
-
-        arrow.position.fromArray(bone.prevJoint);
-
-        var basis = bone.basis;
-        arrow.setDirection({
-          x: basis[i % 3][0],
-          y: basis[i % 3][1],
-          z: basis[i % 3][2]
+          mesh.quaternion.multiply(baseBoneRotation);
         });
 
+        finger.data('jointMeshes').forEach(function(mesh, i){
+          var bone = finger.bones[i];
+
+          if (bone) {
+            mesh.position.fromArray(bone.prevJoint);
+          }else{
+            // special case for the finger tip joint sphere:
+            bone = finger.bones[i-1];
+            mesh.position.fromArray(bone.nextJoint);
+          }
+
+        });
 
       });
-
-
-    });
 
     renderer.render(scene, camera);
 
@@ -77,85 +72,61 @@
     hand.fingers.forEach(function (finger) {
 
       var boneMeshes = [];
-      var arrowHelpers = [];
+      var jointMeshes = [];
 
-      finger.bones.forEach(function(bone){
+      finger.bones.forEach(function(bone) {
 
         // create joints
 
         // CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded)
-        var mesh = new THREE.Mesh(
-          new THREE.CylinderGeometry( 5 , 5, bone.length ),
-          new THREE.MeshNormalMaterial()
+        var boneMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(5, 5, bone.length),
+            new THREE.MeshPhongMaterial()
         );
 
-        scene.add(mesh);
-        boneMeshes.push(mesh);
-
-
-        // create basis vectors, three per bone
-
-        var arrowHelper = new THREE.ArrowHelper(
-            (new THREE.Vector3).fromArray(bone.basis[0]), // direction
-            (new THREE.Vector3).fromArray(bone.prevJoint) // origin
-        );
-
-        arrowHelper.setLength( arrowLength );
-        arrowHelper.setColor( 0xff0000 );
-        scene.add( arrowHelper );
-        arrowHelpers.push(arrowHelper);
-
-
-        arrowHelper = new THREE.ArrowHelper(
-            (new THREE.Vector3).fromArray(bone.basis[1]),
-            (new THREE.Vector3).fromArray(bone.prevJoint)
-        );
-
-        arrowHelper.setLength( arrowLength );
-        arrowHelper.setColor( 0x00ff00 );
-        scene.add( arrowHelper );
-        arrowHelpers.push(arrowHelper);
-
-
-        arrowHelper = new THREE.ArrowHelper(
-            (new THREE.Vector3).fromArray(bone.basis[2]),
-            (new THREE.Vector3).fromArray(bone.prevJoint)
-        );
-
-        arrowHelper.setLength( arrowLength );
-        arrowHelper.setColor( 0x0000ff );
-        scene.add( arrowHelper );
-        arrowHelpers.push(arrowHelper);
-
-
+        boneMesh.material.color.setHex(0xffffff);
+        scene.add(boneMesh);
+        boneMeshes.push(boneMesh);
       });
 
-      finger.data('boneMeshes', boneMeshes);
+      for (var i = 0; i < finger.bones.length + 1; i++) {
 
-      finger.data('arrowHelpers', arrowHelpers);
+        var jointMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(8),
+            new THREE.MeshPhongMaterial()
+        );
+
+        jointMesh.material.color.setHex(0x0088ce);
+        scene.add(jointMesh);
+        jointMeshes.push(jointMesh);
+
+      }
+
+
+      finger.data('boneMeshes', boneMeshes);
+      finger.data('jointMeshes', jointMeshes);
 
     });
 
   })
   .on('handLost', function(hand){
 
-
     hand.fingers.forEach(function (finger) {
 
       var boneMeshes = finger.data('boneMeshes');
+      var jointMeshes = finger.data('jointMeshes');
 
       boneMeshes.forEach(function(mesh){
-
         scene.remove(mesh);
-
       });
 
-      finger.data('boneMeshes', null);
+      jointMeshes.forEach(function(mesh){
+        scene.remove(mesh);
+      });
 
-      var arrowHelpers = finger.data('arrowHelpers');
-
-      arrowHelpers.forEach(function(arrow){
-        scene.remove(arrow);
+      finger.data({
+        boneMeshes: null,
+        boneMeshes: null
       });
 
     });
@@ -184,10 +155,9 @@
 
     document.body.appendChild(window.renderer.domElement);
 
-    var pointLight = new THREE.PointLight(0xFFffff);
-    pointLight.position = new THREE.Vector3(-20, 10, 100);
-    pointLight.lookAt(new THREE.Vector3(0, 0, 0));
-    window.scene.add(pointLight);
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    directionalLight.position.set( 0, 0.5, 1 );
+    window.scene.add(directionalLight);
 
     window.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
     window.camera.position.fromArray([0, 100, 500]);
@@ -227,7 +197,7 @@
 
     window.requestAnimationFrame(rotateCube);
   };
-  
+
   rotateCube();
 
 </script>
