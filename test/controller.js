@@ -127,6 +127,7 @@ describe('Controller', function(){
 
     it('should work with leap.loop', function(done){
       this.timeout(500);
+      Leap.loopController = fakeController();
       Leap.loop({
         hand: function(){
           done();
@@ -138,6 +139,7 @@ describe('Controller', function(){
 
     it('should work with leap.loop and options', function(done){
       this.timeout(500);
+      Leap.loopController = fakeController();
       Leap.loop({background: true}, {
         hand: function(){
           done();
@@ -528,12 +530,12 @@ describe('Controller', function(){
 
   describe('method chaining', function(){
     it('should return a controller from .connect()', function(){
-      var controller = new Leap.Controller
+      var controller = fakeController();
       assert.equal(controller.connect(), controller);
     });
 
     it('should return a controller from .on()', function(){
-      var controller = new Leap.Controller
+      var controller = fakeController();
       assert.equal(controller.on('frame', function(){}), controller);
     });
 
