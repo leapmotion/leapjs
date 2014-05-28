@@ -2885,11 +2885,19 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (callback === undefined && (!opts.frame && !opts.hand)) {
+    if (opts && callback === undefined && (!opts.frame && !opts.hand)) {
       callback = opts;
       opts = {};
     }
-    if (!this.loopController) this.loopController = new this.Controller(opts);
+
+    if (this.loopController) {
+      if (opts){
+        this.loopController.setupFrameEvents(opts);
+      }
+    }else{
+      this.loopController = new this.Controller(opts);
+    }
+
     this.loopController.loop(callback);
     return this.loopController;
   },

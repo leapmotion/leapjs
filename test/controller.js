@@ -148,6 +148,23 @@ describe('Controller', function(){
       });
       Leap.loopController.processFrame(fakeFrame({hands: 1}));
     });
+
+    it('should work with leap.loop and no arguments', function(done){
+      this.timeout(500);
+      Leap.plugin('test', function(){
+        return {
+          frame: function(){
+            console.log('frame');
+            done();
+            Leap.loopController = null;
+          }
+        }
+      });
+      Leap.loopController = fakeController();
+      Leap.loop().use('test');
+      Leap.Controller._pluginFactories = {};
+      Leap.loopController.processFrame(fakeFrame({hands: 1}));
+    });
   });
 
   describe('device events', function() {
