@@ -2885,11 +2885,10 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (opts && callback === undefined && (!opts.frame && !opts.hand)) {
+    if (callback === undefined && (!opts.frame && !opts.hand)) {
       callback = opts;
       opts = {};
     }
-    console.log('existing controller:', this.loopController );
     if (!this.loopController) this.loopController = new this.Controller(opts);
     this.loopController.loop(callback);
     return this.loopController;
