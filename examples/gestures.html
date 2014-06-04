@@ -6,9 +6,9 @@
   <script>
 
   $(document).ready(function() {
-    var ctl = new Leap.Controller({enableGestures: true});
+    window.controller = new Leap.Controller({enableGestures: true});
 
-    var swiper = ctl.gesture('swipe');
+    var swiper = controller.gesture('swipe');
 
     var tolerance = 50;
     var cooloff = 300;
@@ -40,7 +40,7 @@
       }
     });
 
-    ctl.connect();
+    controller.connect();
     updateHighlight();
   })
   </script>
