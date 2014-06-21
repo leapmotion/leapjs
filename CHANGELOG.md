@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.6.1
- - Add arm bone for Leap Software > 2.0.3
+ - Add arm bone for Leap Software >= 2.0.3
  - Fix issue where initial frame can be invalid
  - Allow Leap.loop to be called with no arguments
 
