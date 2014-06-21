@@ -27,6 +27,7 @@ var Bone = module.exports = function(finger, data) {
   * * 1 -- proximal
   * * 2 -- medial
   * * 3 -- distal
+  * * 4 -- arm
   *
   * @member type
   * @type {number}
@@ -726,7 +727,7 @@ Controller.prototype.setupConnectionEvents = function() {
     }
   }
   // Delegate connection events
-  this.connection.on('focus', function() { controller.emit('focus'); controller.runAnimationLoop(); });
+  this.connection.on('focus', function() { controller.emit('focus'); });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
   this.connection.on('ready', function() {
@@ -2535,7 +2536,7 @@ var Hand = module.exports = function(data) {
   
   if (data.armBasis){
     this.arm = new Bone(this, {
-      type: 0,
+      type: 4,
       width: data.armWidth,
       prevJoint: data.elbow,
       nextJoint: data.wrist,
@@ -2899,11 +2900,19 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (callback === undefined && (!opts.frame && !opts.hand)) {
+    if (opts && callback === undefined && (!opts.frame && !opts.hand)) {
       callback = opts;
       opts = {};
     }
-    if (!this.loopController) this.loopController = new this.Controller(opts);
+
+    if (this.loopController) {
+      if (opts){
+        this.loopController.setupFrameEvents(opts);
+      }
+    }else{
+      this.loopController = new this.Controller(opts);
+    }
+
     this.loopController.loop(callback);
     return this.loopController;
   },
