@@ -2,7 +2,7 @@
 <head>
   <title>Bone Hands - Leap</title>
   <script src="../leap-0.6.0.js"></script>
-  <script src="lib/leap-plugins-0.1.5-pre.js"></script>
+  <script src="lib/leap-plugins-0.1.6.js"></script>
   <script src="lib/three.js"></script>
 
 </head>
@@ -12,15 +12,13 @@
   Move Hand over Leap to see bones and bone basis.
 </p>
 <p>
-  Notice - Mirror symmetry in cross vectors
-</p>
-<p>
   Even without the leap, you should see a rotating blue rectangle to know that your WebGL is working.
 </p>
 
 </body>
 
 <script>
+  var colors = [0xff0000, 0x00ff00, 0x0000ff];
   var baseBoneRotation = (new THREE.Quaternion).setFromEuler(
       new THREE.Euler(Math.PI / 2, 0, 0)
   );
@@ -37,7 +35,7 @@
           mesh.position.fromArray(bone.center());
 
           mesh.setRotationFromMatrix(
-              (new THREE.Matrix4).fromArray( bone.matrix() )
+            (new THREE.Matrix4).fromArray( bone.matrix() )
           );
 
           mesh.quaternion.multiply(baseBoneRotation);
@@ -57,6 +55,19 @@
         });
 
       });
+
+      var armMesh = hand.data('armMesh');
+
+      armMesh.position.fromArray(hand.arm.center());
+
+      armMesh.setRotationFromMatrix(
+        (new THREE.Matrix4).fromArray( hand.arm.matrix() )
+      );
+
+      armMesh.quaternion.multiply(baseBoneRotation);
+
+      armMesh.scale.x = hand.arm.width / 2;
+      armMesh.scale.z = hand.arm.width / 4;
 
     renderer.render(scene, camera);
 
@@ -107,6 +118,26 @@
 
     });
 
+    if (hand.arm){ // 2.0.3+ have arm api,
+      // CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded)
+      var armMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(1, 1, hand.arm.length, 64),
+        new THREE.MeshPhongMaterial()
+      );
+
+      armMesh.material.color.setHex(0xffffff);
+
+      scene.add(armMesh);
+
+      var jointMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32),
+        new THREE.MeshPhongMaterial()
+      );
+
+      hand.data('armMesh', armMesh);
+
+    }
+
   })
   .on('handLost', function(hand){
 
@@ -129,6 +160,10 @@
       });
 
     });
+
+    var armMesh = hand.data('armMesh');
+    scene.remove(armMesh);
+    hand.data('armMesh', null);
 
     renderer.render(scene, camera);
 
@@ -174,15 +209,13 @@
     scene.add(camera);
 
 
-    var geometry = new THREE.CubeGeometry(60, 90, 20);
-    var material = new THREE.MeshPhongMaterial({color: 0x0000FF});
+    var geometry = new THREE.CubeGeometry(30, 45, 10);
+    var material = new THREE.MeshPhongMaterial({color: 0x0000cc});
     window.cube = new THREE.Mesh(geometry, material);
     cube.position.set(0,0,0);
     cube.castShadow = true;
     cube.receiveShadow = true;
     scene.add(cube);
-
-
 
     renderer.render(scene, camera);
   };

@@ -27,6 +27,7 @@ var Bone = module.exports = function(finger, data) {
   * * 1 -- proximal
   * * 2 -- medial
   * * 3 -- distal
+  * * 4 -- arm
   *
   * @member type
   * @type {number}
@@ -2394,6 +2395,7 @@ KeyTapGesture.prototype.toString = function() {
 
 },{"events":21,"gl-matrix":23,"underscore":24}],10:[function(require,module,exports){
 var Pointable = require("./pointable")
+  , Bone = require('./bone')
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
@@ -2531,6 +2533,19 @@ var Hand = module.exports = function(data) {
    * @type {Leap.Pointable[]}
    */
   this.fingers = [];
+  
+  if (data.armBasis){
+    this.arm = new Bone(this, {
+      type: 4,
+      width: data.armWidth,
+      prevJoint: data.elbow,
+      nextJoint: data.wrist,
+      basis: data.armBasis
+    });
+  }else{
+    this.arm = null;
+  }
+  
   /**
    * The list of tools detected in this frame that are held by this
    * hand, given in arbitrary order.
@@ -2832,7 +2847,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./pointable":14,"gl-matrix":23,"underscore":24}],11:[function(require,module,exports){
+},{"./bone":1,"./pointable":14,"gl-matrix":23,"underscore":24}],11:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
