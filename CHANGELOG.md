@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1
+ - Add arm bone for Leap Software > 2.0.3
+ - Fix issue where initial frame can be invalid
+ - Allow Leap.loop to be called with no arguments
+
+
 ## 0.6.0-beta2
  - Bones API: finger.metacarpal, proximal, intermediate, distal, each with .prevJoin and .nextJoint
  - Fix issue where hand options could not be used with loop + loop options
