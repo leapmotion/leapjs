@@ -1,0 +1,166 @@
+<html>
+<head>
+  <title>Bone Hands - Leap</title>
+  <script src="../leap-0.6.1.js"></script>
+  <script src="lib/leap-plugins-0.1.6.js"></script>
+  <script src="lib/three.js"></script>
+
+</head>
+<body>
+
+<p>
+  Move Hand over Leap to see bones and bone basis.
+</p>
+<p>
+  Even without the leap, you should see a rotating blue rectangle to know that your WebGL is working.
+</p>
+
+</body>
+
+<script>
+  var colors = [0xff0000, 0x00ff00, 0x0000ff];
+  var baseBoneRotation = (new THREE.Quaternion).setFromEuler(
+      new THREE.Euler(Math.PI / 2, 0, 0)
+  );
+
+  Leap.loop({background: true}, {
+    hand: function (hand) {
+
+      hand.fingers.forEach(function (finger) {
+        var arrows = finger.data('arrows');
+
+        finger.bones.forEach(function(bone, i){
+          var arrow;
+
+          for (var j = 0; j < 3; j++){
+            arrow = arrows[i * 3 + j];
+            arrow.position.fromArray(bone.prevJoint);
+            arrow.setDirection((new THREE.Vector3).fromArray(bone.basis[j]));
+          }
+
+        });
+
+      });
+
+    renderer.render(scene, camera);
+
+  }})
+    // these two LeapJS plugins, handHold and handEntry are available from leapjs-plugins, included above.
+    // handHold provides hand.data
+    // handEntry provides handFound/handLost events.
+  .use('handHold')
+  .use('handEntry')
+  .on('handFound', function(hand){
+    var colors = [0xff0000, 0x00ff00, 0x0000ff];
+    var length = 24;
+
+    hand.fingers.forEach(function (finger) {
+
+      var arrows = [];
+
+      finger.bones.forEach(function(bone) {
+
+        for (var i = 0; i < 3; i++){
+          var arrow = new THREE.ArrowHelper(
+              new THREE.Vector3(0,0,0),
+              new THREE.Vector3(1,0,0),
+              length,
+              colors[i],
+              0.2 * length,
+              0.4 * 0.2 * length
+          );
+
+          scene.add(arrow);
+          arrows.push(arrow);
+        }
+
+      });
+
+      finger.data('arrows', arrows);
+
+    });
+
+
+  })
+  .on('handLost', function(hand){
+
+    hand.fingers.forEach(function (finger) {
+      var arrows = finger.data('arrows');
+
+      for (var i = 0; i < arrows.length; i++){
+        scene.remove(arrows[i]);
+      }
+
+      finger.data({arrows: null});
+
+    });
+
+    renderer.render(scene, camera);
+
+  })
+  .connect();
+
+
+  // all units in mm
+  var initScene = function () {
+    window.scene = new THREE.Scene();
+    window.renderer = new THREE.WebGLRenderer({
+      alpha: true
+    });
+
+    window.renderer.setClearColor(0x000000, 0);
+    window.renderer.setSize(window.innerWidth, window.innerHeight);
+
+    window.renderer.domElement.style.position = 'fixed';
+    window.renderer.domElement.style.top = 0;
+    window.renderer.domElement.style.left = 0;
+    window.renderer.domElement.style.width = '100%';
+    window.renderer.domElement.style.height = '100%';
+
+    document.body.appendChild(window.renderer.domElement);
+
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    directionalLight.position.set( 0, 0.5, 1 );
+    window.scene.add(directionalLight);
+
+    window.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    window.camera.position.fromArray([0, 100, 500]);
+    window.camera.lookAt(new THREE.Vector3(0, 160, 0));
+
+    window.addEventListener('resize', function () {
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.render(scene, camera);
+
+    }, false);
+
+    scene.add(camera);
+
+
+    var geometry = new THREE.CubeGeometry(30, 45, 10);
+    var material = new THREE.MeshPhongMaterial({color: 0x0000cc});
+    window.cube = new THREE.Mesh(geometry, material);
+    cube.position.set(0,0,0);
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+    scene.add(cube);
+
+    renderer.render(scene, camera);
+  };
+
+  initScene();
+
+  var rotateCube = function(){
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.02;
+    renderer.render(scene, camera);
+
+    window.requestAnimationFrame(rotateCube);
+  };
+
+  rotateCube();
+
+</script>
+</html>
