@@ -199,12 +199,14 @@ var BaseConnection = module.exports = function(opts) {
   this.opts = _.defaults(opts || {}, {
     host : '127.0.0.1',
     enableGestures: false,
-    port: 6437,
+    scheme: this.getScheme(),
+    port: this.getPort(),
     background: false,
     requestProtocolVersion: BaseConnection.defaultProtocolVersion
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
+  this.scheme = this.opts.scheme;
   this.protocolVersionVerified = false;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
@@ -216,8 +218,18 @@ var BaseConnection = module.exports = function(opts) {
 BaseConnection.defaultProtocolVersion = 6;
 
 BaseConnection.prototype.getUrl = function() {
-  return "ws://" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
+  return this.scheme + "//" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
 }
+
+
+BaseConnection.prototype.getScheme = function(){
+  return 'ws:'
+}
+
+BaseConnection.prototype.getPort = function(){
+  return 6437
+}
+
 
 BaseConnection.prototype.setBackground = function(state) {
   this.opts.background = state;
@@ -326,8 +338,6 @@ BaseConnection.prototype.reportFocus = function(state) {
 }
 
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
-
-
 },{"../protocol":15,"events":21,"underscore":24}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
@@ -344,12 +354,35 @@ _.extend(BrowserConnection.prototype, BaseConnection.prototype);
 
 BrowserConnection.__proto__ = BaseConnection;
 
+BrowserConnection.prototype.useSecure = function(){
+  return location.protocol === 'https:'
+}
+
+BrowserConnection.prototype.getScheme = function(){
+  return this.useSecure() ? 'wss:' : 'ws:'
+}
+
+BrowserConnection.prototype.getPort = function(){
+  return this.useSecure() ? 16437 : 6437
+}
+
 BrowserConnection.prototype.setupSocket = function() {
   var connection = this;
   var socket = new WebSocket(this.getUrl());
   socket.onopen = function() { connection.handleOpen(); };
   socket.onclose = function(data) { connection.handleClose(data['code'], data['reason']); };
   socket.onmessage = function(message) { connection.handleData(message.data) };
+  socket.onerror = function(error) {
+
+    // attempt to degrade to ws: after one failed attempt for older Leap Service installations.
+    if (connection.useSecure() && connection.scheme === 'wss:'){
+      connection.scheme = 'ws:';
+      connection.port = 6437;
+      connection.disconnect();
+      connection.connect();
+    }
+
+  };
   return socket;
 }
 
