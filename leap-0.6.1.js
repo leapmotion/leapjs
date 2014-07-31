@@ -363,7 +363,7 @@ BrowserConnection.prototype.getScheme = function(){
 }
 
 BrowserConnection.prototype.getPort = function(){
-  return this.useSecure() ? 16437 : 6437
+  return this.useSecure() ? 6436 : 6437
 }
 
 BrowserConnection.prototype.setupSocket = function() {
