@@ -33,10 +33,10 @@
       });
 
       controller.on('ready', function() {
-        console.log("ready");
+        console.log("ready. Service version: " + controller.connection.protocol.serviceVersion);
       });
       controller.on('connect', function() {
-        console.log("connected with protocol v" + controller.connection.opts.requestProtocolVersion + " to service version: " + controller.connection.opts.serviceVersion);
+        console.log("connected with protocol v" + controller.connection.opts.requestProtocolVersion);
       });
       controller.on('disconnect', function() {
         console.log("disconnect");
