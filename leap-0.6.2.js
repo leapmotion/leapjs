@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v0.6.1                                                  
+ * LeapJS v0.6.2                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
@@ -762,7 +762,19 @@ Controller.prototype.setupConnectionEvents = function() {
   // Delegate connection events
   this.connection.on('focus', function() { controller.emit('focus'); });
   this.connection.on('blur', function() { controller.emit('blur') });
-  this.connection.on('protocol', function(protocol) { controller.emit('protocol', protocol); });
+  this.connection.on('protocol', function(protocol) {
+
+    protocol.on('beforeFrameCreated', function(frameData){
+      controller.emit('beforeFrameCreated', frameData)
+    });
+
+    protocol.on('afterFrameCreated', function(frame, frameData){
+      controller.emit('afterFrameCreated', frame, frameData)
+    });
+
+    controller.emit('protocol', protocol); 
+  });
+
   this.connection.on('ready', function() {
 
     if (controller.checkVersion && !controller.inNode){
@@ -980,6 +992,63 @@ Controller.plugins = function() {
   return _.keys(this._pluginFactories);
 };
 
+
+
+var setPluginCallbacks = function(pluginName, type, callback){
+  
+  if ( ['beforeFrameCreated', 'afterFrameCreated'].indexOf(type) != -1 ){
+    
+      // todo - not able to "unuse" a plugin currently
+      this.on(type, callback);
+      
+    }else {
+      
+      if (!this.pipeline) this.pipeline = new Pipeline(this);
+    
+      if (!this._pluginPipelineSteps[pluginName]) this._pluginPipelineSteps[pluginName] = [];
+
+      this._pluginPipelineSteps[pluginName].push(
+        
+        this.pipeline.addWrappedStep(type, callback)
+        
+      );
+      
+    }
+  
+};
+
+var setPluginMethods = function(pluginName, type, hash){
+  var klass;
+  
+  if (!this._pluginExtendedMethods[pluginName]) this._pluginExtendedMethods[pluginName] = [];
+
+  switch (type) {
+    case 'frame':
+      klass = Frame
+      break;
+    case 'hand':
+      klass = Hand
+      break;
+    case 'pointable':
+      klass = Pointable;
+      _.extend(Finger.prototype, hash);
+      _.extend(Finger.Invalid,   hash);
+      break;
+    case 'finger':
+      klass = Finger;
+      break;
+    default:
+      throw pluginName + ' specifies invalid object type "' + type + '" for prototypical extension'
+  }
+
+  _.extend(klass.prototype, hash);
+  _.extend(klass.Invalid, hash);
+  this._pluginExtendedMethods[pluginName].push([klass, hash])
+  
+}
+
+
+
 /*
  * Begin using a registered plugin.  The plugin's functionality will be added to all frames
  * returned by the controller (and/or added to the objects within the frame).
@@ -995,7 +1064,7 @@ Controller.plugins = function() {
  * @returns the controller
  */
 Controller.prototype.use = function(pluginName, options) {
-  var functionOrHash, pluginFactory, key, pluginInstance, klass;
+  var functionOrHash, pluginFactory, key, pluginInstance;
 
   pluginFactory = (typeof pluginName == 'function') ? pluginName : Controller._pluginFactories[pluginName];
 
@@ -1015,42 +1084,26 @@ Controller.prototype.use = function(pluginName, options) {
   pluginInstance = pluginFactory.call(this, options);
 
   for (key in pluginInstance) {
+
     functionOrHash = pluginInstance[key];
 
     if (typeof functionOrHash === 'function') {
-      if (!this.pipeline) this.pipeline = new Pipeline(this);
-      if (!this._pluginPipelineSteps[pluginName]) this._pluginPipelineSteps[pluginName] = [];
-
-      this._pluginPipelineSteps[pluginName].push( this.pipeline.addWrappedStep(key, functionOrHash) );
+      
+      setPluginCallbacks.call(this, pluginName, key, functionOrHash);
+      
     } else {
-      if (!this._pluginExtendedMethods[pluginName]) this._pluginExtendedMethods[pluginName] = [];
-
-      switch (key) {
-        case 'frame':
-          klass = Frame
-          break;
-        case 'hand':
-          klass = Hand
-          break;
-        case 'pointable':
-          klass = Pointable;
-          _.extend(Finger.prototype, functionOrHash);
-          _.extend(Finger.Invalid,   functionOrHash);
-          break;
-        case 'finger':
-          klass = Finger;
-          break;
-        default:
-          throw pluginName + ' specifies invalid object type "' + key + '" for prototypical extension'
-      }
-
-      _.extend(klass.prototype, functionOrHash);
-      _.extend(klass.Invalid, functionOrHash);
-      this._pluginExtendedMethods[pluginName].push([klass, functionOrHash])
+      
+      setPluginMethods.call(this, pluginName, key, functionOrHash);
+      
     }
+
   }
+
   return this;
 };
+
+
+
 
 /*
  * Stop using a used plugin.  This will remove any of the plugin's pipeline methods (those called on every frame)
@@ -1119,6 +1172,7 @@ Dialog.prototype.createElement = function(){
 
   var dialog  = document.createElement('div');
   this.element.appendChild(dialog);
+  dialog.style.className = "leapjs-dialog";
   dialog.style.display = "inline-block";
   dialog.style.margin = "auto";
   dialog.style.padding = "8px";
@@ -1231,7 +1285,7 @@ Dialog.warnOutOfDate = function(params){
 };
 
 
-// Tracks whether we've warned for lack of bones API.  This will be show only for early private-beta members.
+// Tracks whether we've warned for lack of bones API.  This will be shown only for early private-beta members.
 Dialog.hasWarnedBones = false;
 
 Dialog.warnBones = function(){
@@ -3375,7 +3429,9 @@ Pointable.Invalid = { valid: false };
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
-  , Finger = require('./finger');
+  , Finger = require('./finger')
+  , _ = require('underscore')
+  , EventEmitter = require('events').EventEmitter;
 
 var Event = function(data) {
   this.type = data.type;
@@ -3406,26 +3462,43 @@ exports.chooseProtocol = function(header) {
 }
 
 var JSONProtocol = exports.JSONProtocol = function(header) {
-  var protocol = function(data) {
-    if (data.event) {
-      return new Event(data.event);
+
+  var protocol = function(frameData) {
+
+    if (frameData.event) {
+
+      return new Event(frameData.event);
+
     } else {
-      var frame = new Frame(data);
+
+      protocol.emit('beforeFrameCreated', frameData);
+
+      var frame = new Frame(frameData);
+
+      protocol.emit('afterFrameCreated', frame, frameData);
+
       return frame;
+
     }
+
   };
 
   protocol.encode = function(message) {
     return JSON.stringify(message);
-  }
+  };
   protocol.version = header.version;
   protocol.serviceVersion = header.serviceVersion;
   protocol.versionLong = 'Version ' + header.version;
   protocol.type = 'protocol';
+
+  _.extend(protocol, EventEmitter.prototype);
+
   return protocol;
 };
 
-},{"./finger":7,"./frame":8,"./hand":10,"./pointable":14}],16:[function(require,module,exports){
+
+
+},{"./finger":7,"./frame":8,"./hand":10,"./pointable":14,"events":21,"underscore":24}],16:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
@@ -3532,10 +3605,10 @@ _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":21,"underscore":24}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '0.6.1',
+  full: '0.6.2',
   major: 0,
   minor: 6,
-  dot: 1
+  dot: 2
 }
 },{}],20:[function(require,module,exports){
 
