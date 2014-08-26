@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2
+ - Add support for Secure Websocket connection over https:// pages
+ - Add events fore beforeFrameCreated and afterFrameCreated (allowing low-level frame access)
+
 ## 0.6.1
  - Add arm bone for Leap Software >= 2.0.3
  - Fix issue where initial frame can be invalid
