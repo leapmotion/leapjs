@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.6.2
- - Add support for Secure Websocket connection over https:// pages
+ - Add support for Secure Websocket connection over https:// pages for Leap Software >= 2.1.0
  - Add events fore beforeFrameCreated and afterFrameCreated (allowing low-level frame access)
 
 ## 0.6.1
