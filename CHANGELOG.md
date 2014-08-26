@@ -10,7 +10,7 @@
  - Allow Leap.loop to be called with no arguments
 
 
-## 0.6.0-beta2
+## 0.6.0
  - Bones API: finger.metacarpal, proximal, intermediate, distal, each with .prevJoin and .nextJoint
  - Fix issue where hand options could not be used with loop + loop options
  - console.warn plugin duplication, rather than throwing an error.
