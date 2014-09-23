@@ -209,11 +209,12 @@ var BaseConnection = module.exports = function(opts) {
   this.port = this.opts.port;
   this.scheme = this.opts.scheme;
   this.protocolVersionVerified = false;
-  this._optimizeHMD = null;
+  this.background = null;
+  this.optimizeHMD = null;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
-    this.optimizeHMD(this.opts.optimizeHMD);
+    this.setOptimizeHMD(this.opts.optimizeHMD);
   });
 };
 
@@ -242,11 +243,11 @@ BaseConnection.prototype.setBackground = function(state) {
   }
 }
 
-BaseConnection.prototype.optimizeHMD = function(state) {
+BaseConnection.prototype.setOptimizeHMD = function(state) {
   this.opts.optimizeHMD = state;
-  if (this.protocol && this.protocol.sendHMD && this._optimizeHMD !== this.opts.optimizeHMD) {
-    this._optimizeHMD = this.opts.optimizeHMD;
-    this.protocol.sendHMD(this, this.opts.optimizeHMD);
+  if (this.protocol && this.protocol.sendOptimizeHMD && this.optimizeHMD !== this.opts.optimizeHMD) {
+    this.optimizeHMD = this.opts.optimizeHMD;
+    this.protocol.sendOptimizeHMD(this, this.opts.optimizeHMD);
   }
 }
 
@@ -562,8 +563,8 @@ Controller.prototype.setBackground = function(state) {
   return this;
 }
 
-Controller.prototype.optimizeHMD = function(state) {
-  this.connection.optimizeHMD(state);
+Controller.prototype.setOptimizeHMD = function(state) {
+  this.connection.setOptimizeHMD(state);
   return this;
 }
 
@@ -3471,7 +3472,7 @@ exports.chooseProtocol = function(header) {
       protocol.sendFocused = function(connection, state) {
         connection.send(protocol.encode({focused: state}));
       }
-      protocol.sendHMD = function(connection, state) {
+      protocol.sendOptimizeHMD = function(connection, state) {
         connection.send(protocol.encode({optimizeHMD: state}));
       }
       break;

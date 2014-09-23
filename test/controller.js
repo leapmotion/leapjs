@@ -594,7 +594,7 @@ describe('Controller', function(){
 
     it('should return a controller from .optimizeHMD()', function(){
       var controller = new Leap.Controller;
-      assert.equal(controller.optimizeHMD(true), controller);
+      assert.equal(controller.setOptimizeHMD(true), controller);
     });
 
 

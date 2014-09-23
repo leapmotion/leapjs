@@ -102,7 +102,7 @@ describe('Connection', function(){
     it('should send optimizeHMD true', function(done){
       var controller = fakeController({version: 6});
       var connection = controller.connection;
-      connection.optimizeHMD(true);
+      connection.setOptimizeHMD(true);
       controller.on('ready', function() {
         setTimeout(function() {
           assert.include(connection.socket.messages, JSON.stringify({"optimizeHMD":true}));
@@ -117,7 +117,7 @@ describe('Connection', function(){
       var controller = fakeController({version: 4});
       var connection = controller.connection;
       controller.on('ready', function() {
-        controller.optimizeHMD(false);
+        controller.setOptimizeHMD(false);
         setTimeout(function() {
           assert.include(connection.socket.messages, JSON.stringify({"optimizeHMD":false}));
           connection.disconnect();
