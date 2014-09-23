@@ -99,7 +99,7 @@ describe('Connection', function(){
 
   describe('HMD in protocol 6', function(){
 
-    it('should send background true', function(done){
+    it('should send optimizeHMD true', function(done){
       var controller = fakeController({version: 6});
       var connection = controller.connection;
       connection.optimizeHMD(true);
@@ -113,7 +113,7 @@ describe('Connection', function(){
       controller.connection.connect()
     });
 
-    it('should send background false', function(done){
+    it('should send optimizeHMD false', function(done){
       var controller = fakeController({version: 4});
       var connection = controller.connection;
       controller.on('ready', function() {
