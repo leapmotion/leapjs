@@ -1,0 +1,16 @@
+<html>
+  <head>
+    <title>HMD Optimization - Leap</title>
+    <script src="../leap-0.6.2.js"></script>
+    <script>
+      var controller = new Leap.Controller({optimizeHMD: true}).connect();
+    </script>
+  </head>
+  <body>
+  <button onclick="controller.optimizeHMD(true);">controller.optimizeHMD(true);</button>
+  <button onclick="controller.optimizeHMD(false);">controller.optimizeHMD(false);</button>
+  <pre>
+    <div id="out"></div>
+  </pre>
+  </body>
+</html>

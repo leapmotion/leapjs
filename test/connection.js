@@ -95,4 +95,37 @@ describe('Connection', function(){
       controller.connection.connect()
     })
   })
-})
+
+
+  describe('HMD in protocol 6', function(){
+
+    it('should send background true', function(done){
+      var controller = fakeController({version: 6});
+      var connection = controller.connection;
+      connection.optimizeHMD(true);
+      controller.on('ready', function() {
+        setTimeout(function() {
+          assert.include(connection.socket.messages, JSON.stringify({"optimizeHMD":true}));
+          connection.disconnect();
+          done();
+        }, 100);
+      });
+      controller.connection.connect()
+    });
+
+    it('should send background false', function(done){
+      var controller = fakeController({version: 4});
+      var connection = controller.connection;
+      controller.on('ready', function() {
+        controller.optimizeHMD(false);
+        setTimeout(function() {
+          assert.include(connection.socket.messages, JSON.stringify({"optimizeHMD":false}));
+          connection.disconnect();
+          done();
+        }, 100);
+      });
+      controller.connection.connect()
+    })
+
+  })
+});
