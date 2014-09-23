@@ -577,19 +577,24 @@ describe('Controller', function(){
         }
       }));
       var controller = new Leap.Controller
-      controller.use('testPlugin')
+      controller.use('testPlugin');
       assert.equal(controller.stopUsing('testPlugin'), controller);
       Leap.Controller._pluginFactories = {}
     });
 
     it('should return a controller from .disconnect()', function(){
-      var controller = new Leap.Controller
+      var controller = new Leap.Controller;
       assert.equal(controller.disconnect(), controller);
     });
 
     it('should return a controller from .setBackground()', function(){
-      var controller = new Leap.Controller
+      var controller = new Leap.Controller;
       assert.equal(controller.setBackground(true), controller);
+    });
+
+    it('should return a controller from .optimizeHMD()', function(){
+      var controller = new Leap.Controller;
+      assert.equal(controller.setOptimizeHMD(true), controller);
     });
 
 

@@ -202,15 +202,19 @@ var BaseConnection = module.exports = function(opts) {
     scheme: this.getScheme(),
     port: this.getPort(),
     background: false,
+    optimizeHMD: false,
     requestProtocolVersion: BaseConnection.defaultProtocolVersion
   });
   this.host = this.opts.host;
   this.port = this.opts.port;
   this.scheme = this.opts.scheme;
   this.protocolVersionVerified = false;
+  this.background = null;
+  this.optimizeHMD = null;
   this.on('ready', function() {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
+    this.setOptimizeHMD(this.opts.optimizeHMD);
   });
 };
 
@@ -236,6 +240,14 @@ BaseConnection.prototype.setBackground = function(state) {
   if (this.protocol && this.protocol.sendBackground && this.background !== this.opts.background) {
     this.background = this.opts.background;
     this.protocol.sendBackground(this, this.opts.background);
+  }
+}
+
+BaseConnection.prototype.setOptimizeHMD = function(state) {
+  this.opts.optimizeHMD = state;
+  if (this.protocol && this.protocol.sendOptimizeHMD && this.optimizeHMD !== this.opts.optimizeHMD) {
+    this.optimizeHMD = this.opts.optimizeHMD;
+    this.protocol.sendOptimizeHMD(this, this.opts.optimizeHMD);
   }
 }
 
@@ -287,6 +299,7 @@ BaseConnection.prototype.disconnect = function(allowReconnect) {
   delete this.socket;
   delete this.protocol;
   delete this.background; // This is not persisted when reconnecting to the web socket server
+  delete this.optimizeHMD;
   delete this.focusedState;
   if (this.connected) {
     this.connected = false;
@@ -547,6 +560,11 @@ Controller.prototype.gesture = function(type, cb) {
  */
 Controller.prototype.setBackground = function(state) {
   this.connection.setBackground(state);
+  return this;
+}
+
+Controller.prototype.setOptimizeHMD = function(state) {
+  this.connection.setOptimizeHMD(state);
   return this;
 }
 
@@ -3453,6 +3471,9 @@ exports.chooseProtocol = function(header) {
       }
       protocol.sendFocused = function(connection, state) {
         connection.send(protocol.encode({focused: state}));
+      }
+      protocol.sendOptimizeHMD = function(connection, state) {
+        connection.send(protocol.encode({optimizeHMD: state}));
       }
       break;
     default:
