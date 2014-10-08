@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v0.6.2                                                  
+ * LeapJS v0.6.3                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
@@ -3633,10 +3633,10 @@ _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":21,"underscore":24}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '0.6.2',
+  full: '0.6.3',
   major: 0,
   minor: 6,
-  dot: 2
+  dot: 3
 }
 },{}],20:[function(require,module,exports){
 
