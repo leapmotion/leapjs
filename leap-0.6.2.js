@@ -215,6 +215,13 @@ var BaseConnection = module.exports = function(opts) {
     this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
     this.setOptimizeHMD(this.opts.optimizeHMD);
+
+    if (this.opts.optimizeHMD){
+      console.log("Optimized for head mounted display usage.");
+    }else {
+      console.log("Optimized for desktop usage.");
+    }
+
   });
 };
 
