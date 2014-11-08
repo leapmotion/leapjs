@@ -35,7 +35,7 @@
     (50%) or more of the outstanding shares, or (iii) beneficial ownership 
     of such entity. 
 
-    “Contribution" shall mean any original work of authorship, including 
+    â€œContribution" shall mean any original work of authorship, including 
     any modifications or additions to an existing work, that is 
     intentionally submitted by You to Leap Motion for inclusion in, or 
     documentation of, any of the products owned or managed by Leap Motion 
@@ -152,3 +152,7 @@ Email: andrew@akenn.org
 9. Victor Norgren
 Github account: logotype
 Email: victor@logotype.se
+
+10. Carl Goldberg
+Github account: ceg1236
+Email: carlgoldberg1236@gmail.com
