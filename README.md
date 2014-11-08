@@ -24,7 +24,7 @@ Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapj
 
 Visit [developer.leapmotion.com/downloads/skeletal-beta/gallery](https://developer.leapmotion.com/downloads/skeletal-beta/gallery) for the latest examples.
 
-Some more basic examples have also been included in the [examples/](https://github.com/leapmotion/leapjs-skeleton/tree/master/examples) directory.
+Some more basic examples have also been included in the [examples/](https://github.com/leapmotion/leapjs/tree/master/examples) directory.
 
 ### Plugins
 
@@ -44,7 +44,7 @@ Leap.loop({
 
 ### Misc
 
-LeapJS includes the vector math library [GL-Matrix](http://glmatrix.net/) for your use and convenience.  For example, we can easily compute a dot product.  See [the example](https://github.com/leapmotion/leapjs-skeleton/tree/master/examples/math.html) and [the gl matrix docs](http://glmatrix.net/docs/2.2.0/) for more info.
+LeapJS includes the vector math library [GL-Matrix](http://glmatrix.net/) for your use and convenience.  For example, we can easily compute a dot product.  See [the example](https://github.com/leapmotion/leapjs/blob/master/examples/math.html) and [the gl matrix docs](http://glmatrix.net/docs/2.2.0/) for more info.
 
 ```javascript
 var dot = Leap.vec3.dot(hand.direction, hand.indexFinger.direction);
