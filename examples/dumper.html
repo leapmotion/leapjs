@@ -32,6 +32,7 @@
 
       });
 
+      // Note that this means Leap is connected, but not streaming.  Use streamingStarted for that.
       controller.on('ready', function() {
         console.log("ready. Service version: " + controller.connection.protocol.serviceVersion);
       });
@@ -72,6 +73,14 @@
       });
       controller.on('deviceDisconnected', function() {
         console.log("deviceDisconnected");
+      });
+
+      // This event is always called after other frame events, and is ideal for rendering WebGL scenes.
+      // The timestamp is from requestAnimationFrame and is when the pixels hit the screen.
+      controller.on('frameEnd', function(timestamp){
+
+//        console.log('frameEnd', timestamp);
+
       });
 
     </script>
