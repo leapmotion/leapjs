@@ -1836,14 +1836,25 @@ Frame.prototype.hand = function(id) {
 Frame.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
 
+  // A derivation of the following can be found here:
+  // http://en.wikipedia.org/wiki/Axis–angle_representation
   var rot = this.rotationMatrix(sinceFrame);
-  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5;
-  var angle = Math.acos(cs);
+  
+  var axis = [
+    rot[7] - rot[5],
+    rot[2] - rot[6],
+    rot[3] - rot[1]
+  ];
+
+  var sin = Leap.vec3.len(axis);
+  var cos = (rot[0] + rot[4] + rot[8] - 1.0) * 0.5;
+
+  var angle;
+  angle = Math.atan2(sin,cos);
   angle = isNaN(angle) ? 0.0 : angle;
 
   if (axis !== undefined) {
-    var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
+    angle *= vec3.dot(sin, vec3.normalize(vec3.create(), axis));
   }
 
   return angle;
@@ -1854,6 +1865,9 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
  * the current frame and the specified frame.
  *
  * The returned direction vector is normalized.
+ * 
+ * In the case of a complete reversal of direction (180 deg / PI rad)
+ * this method will return an undefined axis.
  *
  * The Leap derives frame rotation from the relative change in position and
  * orientation of all objects detected in the field of view.
@@ -1869,10 +1883,14 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
  */
 Frame.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
+
+  var rotation = Leap.mat3.create();
+  Leap.mat3.multiply(rotation, this._rotation, sinceFrame._rotation);
+
   return vec3.normalize(vec3.create(), [
-    this._rotation[7] - sinceFrame._rotation[5],
-    this._rotation[2] - sinceFrame._rotation[6],
-    this._rotation[3] - sinceFrame._rotation[1]
+    rotation[7] - rotation[5],
+    rotation[2] - rotation[6],
+    rotation[3] - rotation[1]
   ]);
 }
 
@@ -2754,15 +2772,29 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis) {
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 0.0;
   var rot = this.rotationMatrix(sinceFrame);
-  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5
-  var angle = Math.acos(cs);
-  angle = isNaN(angle) ? 0.0 : angle;
+
+  var axis = [
+    rot[7] - rot[5],
+    rot[2] - rot[6],
+    rot[3] - rot[1]
+  ];
+
+  var sin = Leap.vec3.len(axis);
+  var cos = (rot[0] + rot[4] + rot[8] - 1.0) * 0.5;
+
+  var angle;
+  if (-1e-7 < sin && sin < 1e-7) {  // small values of sin
+    angle = 0;
+  } else {
+    angle = Math.atan2(sin,cos);
+    angle = isNaN(angle) ? 0.0 : angle;
+  }
+
   if (axis !== undefined) {
-    var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
+    angle *= vec3.dot(sin, vec3.normalize(vec3.create(), axis));
   }
   return angle;
-}
+};
 
 /**
  * The axis of rotation derived from the change in orientation of this hand, and
@@ -2783,12 +2815,16 @@ Hand.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   if (!sinceHand.valid) return vec3.create();
+
+  var rotation = Leap.mat3.create();
+  Leap.mat3.multiply(rotation, this._rotation, sinceHand._rotation);
+
   return vec3.normalize(vec3.create(), [
-    this._rotation[7] - sinceHand._rotation[5],
-    this._rotation[2] - sinceHand._rotation[6],
-    this._rotation[3] - sinceHand._rotation[1]
+    rotation[7] - rotation[5],
+    rotation[2] - rotation[6],
+    rotation[3] - rotation[1]
   ]);
-}
+};
 
 /**
  * The transform matrix expressing the rotation derived from the change in
