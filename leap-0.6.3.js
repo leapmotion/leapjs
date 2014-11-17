@@ -498,6 +498,13 @@ var process=require("__browserify_process");var Frame = require('./frame')
  *
  * Polling is an appropriate strategy for applications which already have an
  * intrinsic update loop, such as a game.
+ *
+ * loopWhileDisconnected defaults to true, and maintains a 60FPS frame rate even when Leap Motion is not streaming
+ * data at that rate (such as no hands in frame).  This is important for VR/WebGL apps which rely on rendering for
+ * regular visual updates, including from other input devices.  Flipping this to false should be considered an
+ * optimization for very specific use-cases.
+ *
+ *
  */
 
 
@@ -514,20 +521,24 @@ var Controller = module.exports = function(opts) {
   opts = _.defaults(opts || {}, {
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
     suppressAnimationLoop: !this.useAnimationLoop(),
-    loopWhileDisconnected: false,
+    loopWhileDisconnected: true,
     useAllPlugins: false,
     checkVersion: true
   });
 
   this.animationFrameRequested = false;
-  this.onAnimationFrame = function() {
+  this.onAnimationFrame = function(timestamp) {
     controller.emit('animationFrame', controller.lastConnectionFrame);
-    if (controller.loopWhileDisconnected && (controller.connection.focusedState || controller.connection.opts.background) ){
+    controller.emit('frameEnd', timestamp);
+    if (
+      controller.loopWhileDisconnected &&
+      ( ( controller.connection.focusedState !== false )  // loop while undefined, pre-ready.
+        || controller.connection.opts.background) ){
       window.requestAnimationFrame(controller.onAnimationFrame);
     }else{
       controller.animationFrameRequested = false;
     }
-  }
+  };
   this.suppressAnimationLoop = opts.suppressAnimationLoop;
   this.loopWhileDisconnected = opts.loopWhileDisconnected;
   this.frameEventName = opts.frameEventName;
@@ -552,6 +563,8 @@ var Controller = module.exports = function(opts) {
   if (opts.useAllPlugins) this.useRegisteredPlugins();
   this.setupFrameEvents(opts);
   this.setupConnectionEvents();
+  
+  this.startAnimationLoop(); // immediately when started
 }
 
 Controller.prototype.gesture = function(type, cb) {
@@ -607,7 +620,7 @@ Controller.prototype.connected = function() {
   return !!this.connection.connected;
 }
 
-Controller.prototype.runAnimationLoop = function(){
+Controller.prototype.startAnimationLoop = function(){
   if (!this.suppressAnimationLoop && !this.animationFrameRequested) {
     this.animationFrameRequested = true;
     window.requestAnimationFrame(this.onAnimationFrame);
@@ -667,7 +680,7 @@ Controller.prototype.processFrame = function(frame) {
   }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
-  this.runAnimationLoop();
+  this.startAnimationLoop(); // Only has effect if loopWhileDisconnected: false
   this.emit('deviceFrame', frame);
 }
 
@@ -785,7 +798,17 @@ Controller.prototype.setupConnectionEvents = function() {
     }
   }
   // Delegate connection events
-  this.connection.on('focus', function() { controller.emit('focus'); });
+  this.connection.on('focus', function() {
+
+    if ( controller.loopWhileDisconnected ){
+
+      controller.startAnimationLoop();
+
+    }
+
+    controller.emit('focus');
+
+  });
   this.connection.on('blur', function() { controller.emit('blur') });
   this.connection.on('protocol', function(protocol) {
 
@@ -1049,10 +1072,10 @@ var setPluginMethods = function(pluginName, type, hash){
 
   switch (type) {
     case 'frame':
-      klass = Frame
+      klass = Frame;
       break;
     case 'hand':
-      klass = Hand
+      klass = Hand;
       break;
     case 'pointable':
       klass = Pointable;
@@ -1100,7 +1123,7 @@ Controller.prototype.use = function(pluginName, options) {
   options || (options = {});
 
   if (this.plugins[pluginName]){
-    _.extend(this.plugins[pluginName], options)
+    _.extend(this.plugins[pluginName], options);
     return this;
   }
 
@@ -1154,16 +1177,16 @@ Controller.prototype.stopUsing = function (pluginName) {
 
   if (extMethodHashes){
     for (i = 0; i < extMethodHashes.length; i++){
-      klass = extMethodHashes[i][0]
-      extMethodHash = extMethodHashes[i][1]
+      klass = extMethodHashes[i][0];
+      extMethodHash = extMethodHashes[i][1];
       for (var methodName in extMethodHash) {
-        delete klass.prototype[methodName]
-        delete klass.Invalid[methodName]
+        delete klass.prototype[methodName];
+        delete klass.Invalid[methodName];
       }
     }
   }
 
-  delete this.plugins[pluginName]
+  delete this.plugins[pluginName];
 
   return this;
 }
@@ -1837,13 +1860,21 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
 
   var rot = this.rotationMatrix(sinceFrame);
-  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5;
-  var angle = Math.acos(cs);
-  angle = isNaN(angle) ? 0.0 : angle;
+
+  var sin = Leap.vec3.len(this.rotationAxis(sinceFrame));
+
+  var cos = (rot[0] + rot[4] + rot[8] - 1.0) * 0.5;
+
+  var angle;
+  if (-1e-7 < sin && sin < 1e-7) {  // small values of sin
+    angle = 0;
+  } else {
+    angle = Math.atan2(sin,cos);
+    angle = isNaN(angle) ? 0.0 : angle;
+  }
 
   if (axis !== undefined) {
-    var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
+    angle *= vec3.dot(sin, vec3.normalize(vec3.create(), axis));
   }
 
   return angle;
@@ -1869,10 +1900,14 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
  */
 Frame.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
+
+  var rotation = Leap.mat3.create();
+  Leap.mat3.multiply(rotation, this._rotation, sinceFrame._rotation);
+
   return vec3.normalize(vec3.create(), [
-    this._rotation[7] - sinceFrame._rotation[5],
-    this._rotation[2] - sinceFrame._rotation[6],
-    this._rotation[3] - sinceFrame._rotation[1]
+    rotation[7] - rotation[5],
+    rotation[2] - rotation[6],
+    rotation[3] - rotation[1]
   ]);
 }
 
@@ -2754,15 +2789,24 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis) {
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 0.0;
   var rot = this.rotationMatrix(sinceFrame);
-  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5
-  var angle = Math.acos(cs);
-  angle = isNaN(angle) ? 0.0 : angle;
+
+  var sin = Leap.vec3.len(this.rotationAxis(sinceFrame));
+
+  var cos = (rot[0] + rot[4] + rot[8] - 1.0) * 0.5;
+
+  var angle;
+  if (-1e-7 < sin && sin < 1e-7) {  // small values of sin
+    angle = 0;
+  } else {
+    angle = Math.atan2(sin,cos);
+    angle = isNaN(angle) ? 0.0 : angle;
+  }
+
   if (axis !== undefined) {
-    var rotAxis = this.rotationAxis(sinceFrame);
-    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
+    angle *= vec3.dot(sin, vec3.normalize(vec3.create(), axis));
   }
   return angle;
-}
+};
 
 /**
  * The axis of rotation derived from the change in orientation of this hand, and
@@ -2783,12 +2827,16 @@ Hand.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   if (!sinceHand.valid) return vec3.create();
+
+  var rotation = Leap.mat3.create();
+  Leap.mat3.multiply(rotation, this._rotation, sinceHand._rotation);
+
   return vec3.normalize(vec3.create(), [
-    this._rotation[7] - sinceHand._rotation[5],
-    this._rotation[2] - sinceHand._rotation[6],
-    this._rotation[3] - sinceHand._rotation[1]
+    rotation[7] - rotation[5],
+    rotation[2] - rotation[6],
+    rotation[3] - rotation[1]
   ]);
-}
+};
 
 /**
  * The transform matrix expressing the rotation derived from the change in
@@ -2980,6 +3028,15 @@ module.exports = {
   vec3: require("gl-matrix").vec3,
   loopController: undefined,
   version: require('./version.js'),
+
+  /**
+   * Expose utility libraries for convenience
+   * Use carefully - they may be subject to upgrade or removal in different versions of LeapJS.
+   *
+   */
+  _: require('underscore'),
+  EventEmitter: require('events').EventEmitter,
+
   /**
    * The Leap.loop() function passes a frame of Leap data to your
    * callback function and then calls window.requestAnimationFrame() after
@@ -3012,7 +3069,7 @@ module.exports = {
    * ```
    */
   loop: function(opts, callback) {
-    if (opts && callback === undefined && (!opts.frame && !opts.hand)) {
+    if (opts && callback === undefined &&  ( ({}).toString.call(opts) === '[object Function]' ) ) {
       callback = opts;
       opts = {};
     }
@@ -3037,7 +3094,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":2,"./controller":5,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./interaction_box":12,"./pointable":14,"./protocol":15,"./ui":16,"./version.js":19,"gl-matrix":23}],12:[function(require,module,exports){
+},{"./circular_buffer":2,"./controller":5,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./interaction_box":12,"./pointable":14,"./protocol":15,"./ui":16,"./version.js":19,"events":21,"gl-matrix":23,"underscore":24}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
