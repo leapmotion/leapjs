@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.6.2
+## 0.6.4
+ - Expose EventEmitter and _ on Leap
+ - Fixes #190 Cannot pass in Leap.loop options without callback
+ - Fix #194: Add frameEnd event dumper example
+ - loopWhileDisconnected now defaults to true
+ - FrameEnd Looping now begins even before (or without) controller connection
+
+
+## 0.6.3
  - Add Optimize HMD flag for Controller
  
 

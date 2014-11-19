@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v0.6.3                                                  
+ * LeapJS v0.6.4                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
@@ -528,7 +528,9 @@ var Controller = module.exports = function(opts) {
 
   this.animationFrameRequested = false;
   this.onAnimationFrame = function(timestamp) {
-    controller.emit('animationFrame', controller.lastConnectionFrame);
+    if (controller.lastConnectionFrame.valid){
+      controller.emit('animationFrame', controller.lastConnectionFrame);
+    }
     controller.emit('frameEnd', timestamp);
     if (
       controller.loopWhileDisconnected &&
@@ -1860,21 +1862,13 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
   if (!this.valid || !sinceFrame.valid) return 0.0;
 
   var rot = this.rotationMatrix(sinceFrame);
-
-  var sin = Leap.vec3.len(this.rotationAxis(sinceFrame));
-
-  var cos = (rot[0] + rot[4] + rot[8] - 1.0) * 0.5;
-
-  var angle;
-  if (-1e-7 < sin && sin < 1e-7) {  // small values of sin
-    angle = 0;
-  } else {
-    angle = Math.atan2(sin,cos);
-    angle = isNaN(angle) ? 0.0 : angle;
-  }
+  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5;
+  var angle = Math.acos(cs);
+  angle = isNaN(angle) ? 0.0 : angle;
 
   if (axis !== undefined) {
-    angle *= vec3.dot(sin, vec3.normalize(vec3.create(), axis));
+    var rotAxis = this.rotationAxis(sinceFrame);
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
   }
 
   return angle;
@@ -1900,14 +1894,10 @@ Frame.prototype.rotationAngle = function(sinceFrame, axis) {
  */
 Frame.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
-
-  var rotation = Leap.mat3.create();
-  Leap.mat3.multiply(rotation, this._rotation, sinceFrame._rotation);
-
   return vec3.normalize(vec3.create(), [
-    rotation[7] - rotation[5],
-    rotation[2] - rotation[6],
-    rotation[3] - rotation[1]
+    this._rotation[7] - sinceFrame._rotation[5],
+    this._rotation[2] - sinceFrame._rotation[6],
+    this._rotation[3] - sinceFrame._rotation[1]
   ]);
 }
 
@@ -2789,24 +2779,15 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis) {
   var sinceHand = sinceFrame.hand(this.id);
   if(!sinceHand.valid) return 0.0;
   var rot = this.rotationMatrix(sinceFrame);
-
-  var sin = Leap.vec3.len(this.rotationAxis(sinceFrame));
-
-  var cos = (rot[0] + rot[4] + rot[8] - 1.0) * 0.5;
-
-  var angle;
-  if (-1e-7 < sin && sin < 1e-7) {  // small values of sin
-    angle = 0;
-  } else {
-    angle = Math.atan2(sin,cos);
-    angle = isNaN(angle) ? 0.0 : angle;
-  }
-
+  var cs = (rot[0] + rot[4] + rot[8] - 1.0)*0.5
+  var angle = Math.acos(cs);
+  angle = isNaN(angle) ? 0.0 : angle;
   if (axis !== undefined) {
-    angle *= vec3.dot(sin, vec3.normalize(vec3.create(), axis));
+    var rotAxis = this.rotationAxis(sinceFrame);
+    angle *= vec3.dot(rotAxis, vec3.normalize(vec3.create(), axis));
   }
   return angle;
-};
+}
 
 /**
  * The axis of rotation derived from the change in orientation of this hand, and
@@ -2827,16 +2808,12 @@ Hand.prototype.rotationAxis = function(sinceFrame) {
   if (!this.valid || !sinceFrame.valid) return vec3.create();
   var sinceHand = sinceFrame.hand(this.id);
   if (!sinceHand.valid) return vec3.create();
-
-  var rotation = Leap.mat3.create();
-  Leap.mat3.multiply(rotation, this._rotation, sinceHand._rotation);
-
   return vec3.normalize(vec3.create(), [
-    rotation[7] - rotation[5],
-    rotation[2] - rotation[6],
-    rotation[3] - rotation[1]
+    this._rotation[7] - sinceHand._rotation[5],
+    this._rotation[2] - sinceHand._rotation[6],
+    this._rotation[3] - sinceHand._rotation[1]
   ]);
-};
+}
 
 /**
  * The transform matrix expressing the rotation derived from the change in
@@ -3690,10 +3667,10 @@ _.extend(Region.prototype, EventEmitter.prototype)
 },{"events":21,"underscore":24}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '0.6.3',
+  full: '0.6.4',
   major: 0,
   minor: 6,
-  dot: 3
+  dot: 4
 }
 },{}],20:[function(require,module,exports){
 
