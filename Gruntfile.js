@@ -5,8 +5,8 @@ module.exports = function(grunt){
 \n * http://github.com/leapmotion/leapjs/                                        \
 \n *                                                                             \
 \n * Copyright 2013 LeapMotion, Inc. and other contributors                      \
-\n * Released under the Apache-2.0 license                                     \
-\n * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 \
+\n * Released under the Apache-2.0 license                                       \
+\n * http://github.com/leapmotion/leapjs/blob/master/LICENSE                     \
 \n */";
 
   grunt.initConfig({
