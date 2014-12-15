@@ -18,8 +18,10 @@
 </body>
 
 <script>
-// note: before implementing based off of this, you can instead grab the boneHand plugin
-// here: js.leapmotion.com
+// note: before implementing based off of this, you can instead grab the boneHand plugin, which does this all for you,
+// better than the way it is done here.
+// https://developer.leapmotion.com/gallery/bone-hands
+// If you prefer to see exactly how it all works, read on..
 
   var colors = [0xff0000, 0x00ff00, 0x0000ff];
   var baseBoneRotation = (new THREE.Quaternion).setFromEuler(
