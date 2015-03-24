@@ -60,6 +60,5 @@ Also visit the wiki for [how to make plugins](https://github.com/leapmotion/leap
 Add your name, email, and github account to the CONTRIBUTORS.txt list, thereby agreeing to the terms and conditions of the Contributor License Agreement.
 
 Open a Pull Request. If your information is not in the CONTRIBUTORS file, your pull request will not be reviewed.
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/f4522a98d0918ac69a49119ac3249bdb "githalytics.com")](http://githalytics.com/leapmotion/leapjs)
 
 [![Analytics](https://ga-beacon.appspot.com/UA-31536531-10/LeapJS/README.md?pixel)](https://github.com/leapmotion/LeapJS)
