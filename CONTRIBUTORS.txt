@@ -156,3 +156,7 @@ Email: victor@logotype.se
 10. Carl Goldberg
 Github account: ceg1236
 Email: carlgoldberg1236@gmail.com
+
+11. Wilbur Yu
+Github account: yuwilbur
+Email: yuwilbur@gmail.com
