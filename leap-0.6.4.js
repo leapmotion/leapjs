@@ -3,8 +3,8 @@
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2013 LeapMotion, Inc. and other contributors                      
- * Released under the Apache-2.0 license                                     
- * http://github.com/leapmotion/leapjs/blob/master/LICENSE.txt                 
+ * Released under the Apache-2.0 license                                       
+ * http://github.com/leapmotion/leapjs/blob/master/LICENSE                     
  */
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 var Pointable = require('./pointable'),
@@ -171,7 +171,22 @@ Bone.prototype.direction = function(){
 
 };
 
-},{"./pointable":14,"gl-matrix":23,"underscore":24}],2:[function(require,module,exports){
+},{"./pointable":15,"gl-matrix":24,"underscore":25}],2:[function(require,module,exports){
+var BugReport = module.exports = function(connection) {
+  this.connection = connection;
+  this.progress = 0;
+  this.duration = null;
+  this.isActive = false;
+};
+
+BugReport.prototype.beginRecording = function() {
+  this.connection.send(this.connection.protocol.encode({SetBugReportRecording: true}));
+};
+
+BugReport.prototype.endRecording = function() {
+  this.connection.send(this.connection.protocol.encode({SetBugReportRecording: false}));
+};
+},{}],3:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -190,7 +205,7 @@ CircularBuffer.prototype.push = function(o) {
   return this.pos++;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var chooseProtocol = require('../protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter
   , _ = require('underscore');
@@ -358,7 +373,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 }
 
 _.extend(BaseConnection.prototype, EventEmitter.prototype);
-},{"../protocol":15,"events":21,"underscore":24}],4:[function(require,module,exports){
+},{"../protocol":16,"events":22,"underscore":25}],5:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base')
   , _ = require('underscore');
 
@@ -458,7 +473,7 @@ BrowserConnection.prototype.stopFocusLoop = function() {
   delete this.focusDetectorTimer;
 }
 
-},{"./base":3,"underscore":24}],5:[function(require,module,exports){
+},{"./base":4,"underscore":25}],6:[function(require,module,exports){
 var process=require("__browserify_process");var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -468,6 +483,7 @@ var process=require("__browserify_process");var Frame = require('./frame')
   , EventEmitter = require('events').EventEmitter
   , gestureListener = require('./gesture').gestureListener
   , Dialog = require('./dialog')
+  , BugReport = require('./bugreport')
   , _ = require('underscore');
 
 /**
@@ -557,6 +573,7 @@ var Controller = module.exports = function(opts) {
     this.connectionType = opts.connectionType;
   }
   this.connection = new this.connectionType(opts);
+  this.bugReport = new BugReport(this.connection);
   this.streamingCount = 0;
   this.devices = {};
   this.plugins = {};
@@ -705,6 +722,9 @@ Controller.prototype.processFinishedFrame = function(frame) {
     frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
   }
+  
+  // Add bug report edit here
+  
   this.emit('frame', frame);
   this.emitHandEvents(frame);
 }
@@ -1202,7 +1222,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 _.extend(Controller.prototype, EventEmitter.prototype);
 
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":20,"./dialog":6,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./pipeline":13,"./pointable":14,"__browserify_process":22,"events":21,"underscore":24}],6:[function(require,module,exports){
+},{"./bugreport":2,"./circular_buffer":3,"./connection/browser":5,"./connection/node":21,"./dialog":7,"./finger":8,"./frame":9,"./gesture":10,"./hand":11,"./pipeline":14,"./pointable":15,"__browserify_process":23,"events":22,"underscore":25}],7:[function(require,module,exports){
 var process=require("__browserify_process");var Dialog = module.exports = function(message, options){
   this.options = (options || {});
   this.message = message;
@@ -1349,7 +1369,7 @@ Dialog.warnBones = function(){
   }
 
 }
-},{"__browserify_process":22}],7:[function(require,module,exports){
+},{"__browserify_process":23}],8:[function(require,module,exports){
 var Pointable = require('./pointable'),
   Bone = require('./bone')
   , Dialog = require('./dialog')
@@ -1540,7 +1560,7 @@ Finger.prototype.toString = function() {
 
 Finger.Invalid = { valid: false };
 
-},{"./bone":1,"./dialog":6,"./pointable":14,"underscore":24}],8:[function(require,module,exports){
+},{"./bone":1,"./dialog":7,"./pointable":15,"underscore":25}],9:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
   , createGesture = require("./gesture").createGesture
@@ -2045,7 +2065,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./finger":7,"./gesture":9,"./hand":10,"./interaction_box":12,"./pointable":14,"gl-matrix":23,"underscore":24}],9:[function(require,module,exports){
+},{"./finger":8,"./gesture":10,"./hand":11,"./interaction_box":13,"./pointable":15,"gl-matrix":24,"underscore":25}],10:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , EventEmitter = require('events').EventEmitter
@@ -2530,7 +2550,7 @@ KeyTapGesture.prototype.toString = function() {
   return "KeyTapGesture ["+JSON.stringify(this)+"]";
 }
 
-},{"events":21,"gl-matrix":23,"underscore":24}],10:[function(require,module,exports){
+},{"events":22,"gl-matrix":24,"underscore":25}],11:[function(require,module,exports){
 var Pointable = require("./pointable")
   , Bone = require('./bone')
   , glMatrix = require("gl-matrix")
@@ -2984,7 +3004,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./bone":1,"./pointable":14,"gl-matrix":23,"underscore":24}],11:[function(require,module,exports){
+},{"./bone":1,"./pointable":15,"gl-matrix":24,"underscore":25}],12:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -3071,7 +3091,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":2,"./controller":5,"./finger":7,"./frame":8,"./gesture":9,"./hand":10,"./interaction_box":12,"./pointable":14,"./protocol":15,"./ui":16,"./version.js":19,"events":21,"gl-matrix":23,"underscore":24}],12:[function(require,module,exports){
+},{"./circular_buffer":3,"./controller":6,"./finger":8,"./frame":9,"./gesture":10,"./hand":11,"./interaction_box":13,"./pointable":15,"./protocol":16,"./ui":17,"./version.js":20,"events":22,"gl-matrix":24,"underscore":25}],13:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -3213,7 +3233,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":23}],13:[function(require,module,exports){
+},{"gl-matrix":24}],14:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -3267,7 +3287,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -3484,7 +3504,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":23}],15:[function(require,module,exports){
+},{"gl-matrix":24}],16:[function(require,module,exports){
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -3560,12 +3580,12 @@ var JSONProtocol = exports.JSONProtocol = function(header) {
 
 
 
-},{"./finger":7,"./frame":8,"./hand":10,"./pointable":14,"events":21,"underscore":24}],16:[function(require,module,exports){
+},{"./finger":8,"./frame":9,"./hand":11,"./pointable":15,"events":22,"underscore":25}],17:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":17,"./ui/region":18}],17:[function(require,module,exports){
+},{"./ui/cursor":18,"./ui/region":19}],18:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -3576,7 +3596,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter
   , _ = require('underscore')
 
@@ -3664,7 +3684,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 _.extend(Region.prototype, EventEmitter.prototype)
-},{"events":21,"underscore":24}],19:[function(require,module,exports){
+},{"events":22,"underscore":25}],20:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '0.6.4',
@@ -3672,9 +3692,9 @@ module.exports = {
   minor: 6,
   dot: 4
 }
-},{}],20:[function(require,module,exports){
-
 },{}],21:[function(require,module,exports){
+
+},{}],22:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -3870,7 +3890,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":22}],22:[function(require,module,exports){
+},{"__browserify_process":23}],23:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -3925,7 +3945,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /**
  * @fileoverview gl-matrix - High performance matrix and vector operations
  * @author Brandon Jones
@@ -8175,7 +8195,7 @@ if(typeof(exports) !== 'undefined') {
   })(shim.exports);
 })(this);
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -9403,7 +9423,7 @@ if(typeof(exports) !== 'undefined') {
 
 }).call(this);
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -9416,5 +9436,5 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":11}]},{},[25])
+},{"../lib/index":12}]},{},[26])
 ;
