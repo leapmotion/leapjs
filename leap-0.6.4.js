@@ -175,7 +175,7 @@ Bone.prototype.direction = function(){
 var BugReport = module.exports = function(connection) {
   this.connection = connection;
   this.progress = 0;
-  this.duration = null;
+  this.duration = 0;
   this.isActive = false;
 };
 
@@ -723,8 +723,6 @@ Controller.prototype.processFinishedFrame = function(frame) {
     if (!frame) frame = Frame.Invalid;
   }
   
-  // Add bug report edit here
-  
   this.emit('frame', frame);
   this.emitHandEvents(frame);
 }
@@ -927,6 +925,13 @@ Controller.prototype.setupConnectionEvents = function() {
 
   });
 
+  this.connection.on('bugReportEvent', function(event) {
+    if(event.state) {
+      controller.bugReport.progress = event.state["progress"];
+      controller.bugReport.duration = event.state["duration"];
+      controller.bugReport.isActive = event.state["active"];
+    }
+  });
 
   this.on('newListener', function(event, listener) {
     if( event == 'deviceConnected' || event == 'deviceDisconnected' ) {
