@@ -241,7 +241,7 @@ var BaseConnection = module.exports = function(opts) {
 };
 
 // The latest available:
-BaseConnection.defaultProtocolVersion = 6;
+BaseConnection.defaultProtocolVersion = 7;
 
 BaseConnection.prototype.getUrl = function() {
   return this.scheme + "//" + this.host + ":" + this.port + "/v" + this.opts.requestProtocolVersion + ".json";
@@ -3531,6 +3531,7 @@ exports.chooseProtocol = function(header) {
     case 4:
     case 5:
     case 6:
+    case 7:
       protocol = JSONProtocol(header);
       protocol.sendBackground = function(connection, state) {
         connection.send(protocol.encode({background: state}));
