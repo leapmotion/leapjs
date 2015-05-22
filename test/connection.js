@@ -97,10 +97,10 @@ describe('Connection', function(){
   })
 
 
-  describe('HMD in protocol 6', function(){
+  describe('HMD in protocol 7', function(){
 
     it('should send optimizeHMD true', function(done){
-      var controller = fakeController({version: 6});
+      var controller = fakeController({version: 7});
       var connection = controller.connection;
       connection.setOptimizeHMD(true);
       controller.on('ready', function() {

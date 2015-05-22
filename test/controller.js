@@ -271,7 +271,7 @@ describe('Controller', function(){
     it ('should fire no warning by default', function(done){
       this.timeout(500);
 
-      var controller = fakeController({version: 6}).connect();
+      var controller = fakeController({version: 7}).connect();
       controller.on('ready', function(){
         assert(controller.checkOutOfDate() == false, 'Should not show version warning dialog');
         done();
