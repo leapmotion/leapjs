@@ -51,6 +51,40 @@ describe('Hand', function(){
         assert.closeTo(0.72273, result, 0.0001)
       })
     })
+
+    it('should have a transform matrix', function() {
+
+      var matrix = hand.matrix();
+
+      //scale
+      assert(matrix[3] == 1);
+      assert(matrix[7] == 1);
+      assert(matrix[11] == 1);
+      assert(matrix[15] == 1);
+
+      //position
+      assert(matrix[12] = hand.palmPosition[0]);
+      assert(matrix[13] = hand.palmPosition[1]);
+      assert(matrix[14] = hand.palmPosition[2]);
+
+      // rotation
+      assert(matrix[4] = -hand.palmNormal[0]);
+      assert(matrix[5] = -hand.palmNormal[1]);
+      assert(matrix[6] = -hand.palmNormal[2]);
+
+      assert(matrix[8] =  hand.direction[0]);
+      assert(matrix[9] =  hand.direction[1]);
+      assert(matrix[10] = hand.direction[2]);
+
+      var cross = vec3.create();
+      vec3.cross(cross, this.palmNormal, this.direction);
+
+      assert(matrix[0] =  hand.direction[0]);
+      assert(matrix[1] =  hand.direction[1]);
+      assert(matrix[2] = hand.direction[2]);
+
+
+    })
   });
 
   describe('#translation()', function(){
