@@ -5,7 +5,7 @@ __What do you think about the future of VR? [Take our survey.](https://www.surve
 
 Welcome to the [Leap Motion](https://www.leapmotion.com) JavaScript framework.
 
-[![Build Status](https://travis-ci.org/leapmotion/leapjs.png)](https://travis-ci.org/leapmotion/leapjs)
+[![Build Status](https://travis-ci.org/leapmotion/leapjs.svg)](https://travis-ci.org/leapmotion/leapjs)
 
 ```javascript
 Leap.loop(function(frame){
