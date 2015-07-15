@@ -11,7 +11,7 @@ downgradeProtocol = function(){
   // Once a controller tried to connect, it will always be trying to reconnect. For now we just use two ports.
   var passed = false;
 
-  var expected = ['/v6.json', '/v5.json', '/v4.json', '/v3.json', '/v2.json', '/v1.json'];
+  var expected = ['/v7.json', '/v6.json', '/v5.json', '/v4.json', '/v3.json', '/v2.json', '/v1.json'];
 
   var wss = new WebSocketServer({port: 9494})
   wss.on('connection', function(ws) {

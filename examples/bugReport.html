@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Dumper - Leap</title>
+    <script src="../leap-0.6.4.js"></script>
+    <script>
+      Leap.loop({background: true});
+      Leap.loopController.on('frame', function(){
+        var bugReport = Leap.loopController.bugReport;
+        document.getElementById('out').innerHTML = "BugReport: Active: " + bugReport.isActive + " Duration: " + bugReport.duration + " seconds. Progress: " + parseInt(bugReport.progress*100) + "%";
+      });
+    </script>
+  </head>
+<div id="out"></div>
+  <button onclick="Leap.loopController.bugReport.beginRecording();">Begin Report</button>
+  <button onclick="Leap.loopController.bugReport.endRecording();">Close Report</button>
+<p>
+  The bug report will close after 30 seconds or when the Close Report button is clicked.
+</p>
+</html>
