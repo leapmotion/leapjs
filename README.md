@@ -25,7 +25,7 @@ Learn more in the [Getting Started Guide](https://developer.leapmotion.com/leapj
 
 ### Examples
 
-Visit [developer.leapmotion.com/downloads/skeletal-beta/gallery](https://developer.leapmotion.com/downloads/skeletal-beta/gallery) for the latest examples.
+Visit [developer.leapmotion.com/gallery/category/javascript](https://developer.leapmotion.com/gallery/category/javascript) for the latest examples.
 
 Some more basic examples have also been included in the [examples/](https://github.com/leapmotion/leapjs/tree/master/examples) directory.
 
