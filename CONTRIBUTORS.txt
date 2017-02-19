@@ -1,4 +1,4 @@
-     Leap Motion Individual Contributor License Agreement, v1.0 
+﻿     Leap Motion Individual Contributor License Agreement, v1.0 
 
     In order to clarify the intellectual property license granted with 
     Contributions from any person or entity, Leap Motion, Inc. ("Leap 
@@ -156,3 +156,7 @@ Email: victor@logotype.se
 10. Carl Goldberg
 Github account: ceg1236
 Email: carlgoldberg1236@gmail.com
+
+11. Ashley Wright
+Github account: AshleyWright
+Email: ashley.wright.77.aw@gmail.com
