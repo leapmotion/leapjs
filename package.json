@@ -3,6 +3,9 @@
   "version": "0.6.4",
   "description": "JavaScript client for the Leap Motion Controller",
   "main": "lib",
+  "engines": {
+    "node": "~0.10"
+  },
   "scripts": {
     "test": "make test-node test-integration"
   },
@@ -34,6 +37,6 @@
     "mocha-phantomjs": "3.0.0",
     "nodemon": "0.7.8",
     "phantomjs": "1.9.7-8",
-    "uglify-js": "2.3.6"
+    "uglify-js": "2.6.0"
   }
 }
