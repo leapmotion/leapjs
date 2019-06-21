@@ -15,7 +15,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "0.4.25",
+    "ws": ">=3.3.1",
     "underscore": "^1.4.4",
     "gl-matrix": "2.2.1"
   },
