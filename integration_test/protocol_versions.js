@@ -14,7 +14,10 @@ downgradeProtocol = function(){
   var expected = ['/v6.json', '/v5.json', '/v4.json', '/v3.json', '/v2.json', '/v1.json'];
 
   var wss = new WebSocketServer({port: 9494})
-  wss.on('connection', function(ws) {
+  // https://github.com/websockets/ws/issues/1114
+  // https://github.com/websockets/ws/pull/1099
+  wss.on('connection', function(ws, req) {
+    ws.upgradeReq = req
     if (passed) return;
     console.log("connected to socket with "+ws.upgradeReq.url)
     if (expected.length == 0) {
@@ -41,7 +44,8 @@ saveGoodProtocol = function(){
 
   var wss = new WebSocketServer({port: 9495})
   var origUrl;
-  wss.on('connection', function(ws) {
+  wss.on('connection', function(ws, req) {
+    ws.upgradeReq = req
     console.log("connected to socket with "+ws.upgradeReq.url)
 
     ws.send('{"version": 4}');
@@ -80,7 +84,8 @@ disconnectAfterConnect = function () {
   var wss = new WebSocketServer({port: 9496})
 
 
-  wss.on('connection', function (ws) {
+  wss.on('connection', function (ws, req) {
+    ws.upgradeReq = req
     timesConnected++;
     console.log("connected to socket with "+ws.upgradeReq.url)
 
