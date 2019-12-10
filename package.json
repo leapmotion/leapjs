@@ -16,7 +16,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "coffeescript": "^2.4.1",
-    "fsevents": "^2.1.2",
     "gl-matrix": "^3.1.0",
     "graceful-fs": "^4.2.3",
     "minimatch": "^3.0.4",
@@ -41,7 +40,7 @@
     "mocha": "^6.2.2",
     "mocha-phantomjs": "^4.1.0",
     "nodemon": "^2.0.1",
-    "phantomjs": "^2.1.7",
+    "phantomjs-prebuilt": "^2.1.16",
     "uglify-js": "^3.7.2"
   }
 }
