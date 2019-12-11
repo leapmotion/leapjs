@@ -6,7 +6,8 @@
   "main": "leap-1.0.0.js",
   "keywords": [
     "leap",
-    "leapmotion"
+    "leapmotion",
+    "ultraleap"
   ],
   "ignore": [
     "**/.*",
