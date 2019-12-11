@@ -395,7 +395,7 @@ BrowserConnection.prototype.setupSocket = function() {
   socket.onerror = function(error) {
 
     // attempt to degrade to ws: after one failed attempt for older Leap Service installations.
-    if (!connection.useSecure() && connection.scheme === 'wss:'){
+    if (connection.useSecure() && connection.scheme === 'wss:'){
       connection.scheme = 'ws:';
       connection.port = 6437;
       connection.disconnect();

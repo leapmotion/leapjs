@@ -95,7 +95,7 @@ module.exports = function(grunt){
 
     },
     exec: {
-      'test-browser': './node_modules/.bin/mocha-phantomjs -R dot test/helpers/browser.html',
+      'test-browser': './node_modules/.bin/mocha-chrome -R dot test/helpers/browser.html',
        // -i -g stands for inverse grep.  Tests tagged browser-only will be excluded.
       'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot -i -g browser-only',
       'test-integration': 'node integration_test/reconnection.js && node integration_test/protocol_versions.js'
