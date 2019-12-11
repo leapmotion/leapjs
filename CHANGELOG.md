@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0
+
+- Upgraded Node to v12
+- Upgraded and removed deprecated and vulnerable depends/packages
+- Fixed compatiility with v3 of wss (Websockets) package
+- Removed phantomjs and related mocha components and migrated to mocha-chrome
+- Added ultraleap to bower keywords
+
+
 ## 0.6.4
  - Expose EventEmitter and _ on Leap
  - Fixes #190 Cannot pass in Leap.loop options without callback
