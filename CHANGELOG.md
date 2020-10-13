@@ -1,7 +1,10 @@
 # Changelog
 
-## 1.0.0
+## 1.1.0
+- Resolved new npm security advisories as of Oct 13, 2020
 
+
+## 1.0.0
 - Upgraded Node to v12
 - Upgraded and removed deprecated and vulnerable depends/packages
 - Fixed compatiility with v3 of wss (Websockets) package
@@ -19,7 +22,7 @@
 
 ## 0.6.3
  - Add Optimize HMD flag for Controller
- 
+
 
 ## 0.6.2
  - Add support for Secure Websocket connection over https:// pages for Leap Software >= 2.1.0
