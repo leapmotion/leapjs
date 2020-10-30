@@ -90,9 +90,9 @@
 
                 if (_DEBUG) console.log('veca: %s', f(vecA));
                 if (!threshold) threshold = lib.DEFAULT_RANGE();
-                _.each(_.range(0, 3), function (dim) {
+                for (let dim = 0; dim < 3; dim++){
                     lib.closeTo(vecA[dim], vecB[dim], threshold, comment, dim);
-                });
+                }
             } catch (e) {
                 console.log('vct error: %s', e, f(vecA), f(vecB));
                 throw e;
@@ -123,9 +123,9 @@
 
                 if (!threshold) threshold = lib.DEFAULT_RANGE();
 
-                _.each(_.range(0, 9), function (dim) {
+                for (let dim = 0; dim < 9; dim++){
                     lib.closeTo(matB[dim], matA[dim], threshold, dim + ': ' + comment, dim);
-                });
+                }
             } catch (e) {
                 console.log('mct error: %s -- %s, %s', e, f(matA), f(matB));
                 throw e;
