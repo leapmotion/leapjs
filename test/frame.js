@@ -87,18 +87,18 @@ describe('Frame', function(){
   })
 
   describe('Invalid', function() {
-    it('should be invalid', function() { assert(!Leap.Frame.Invalid.valid)})
-    it('should have empty fingers', function() { assert.equal(0, Leap.Frame.Invalid.fingers.length)})
-    it('should have empty tools', function() { assert.equal(0, Leap.Frame.Invalid.tools.length)})
-    it('should have empty pointables', function() { assert.equal(0, Leap.Frame.Invalid.pointables.length)})
-    it('should return an invalid #pointable', function() { assert(!Leap.Frame.Invalid.pointable().valid)})
-    it('should return an invalid #finger', function() { assert(!Leap.Frame.Invalid.finger().valid)})
-    it('should return 0.0 from #rotationAngle', function() { assert.equal(0.0, Leap.Frame.Invalid.rotationAngle())})
+    it('should be invalid',                                     function() { assert(!Leap.Frame.Invalid.valid)})
+    it('should have empty fingers',                             function() { assert.equal(0, Leap.Frame.Invalid.fingers.length)})
+    it('should have empty tools',                               function() { assert.equal(0, Leap.Frame.Invalid.tools.length)})
+    it('should have empty pointables',                          function() { assert.equal(0, Leap.Frame.Invalid.pointables.length)})
+    it('should return an invalid #pointable',                   function() { assert(!Leap.Frame.Invalid.pointable().valid)})
+    it('should return an invalid #finger',                      function() { assert(!Leap.Frame.Invalid.finger().valid)})
+    it('should return 0.0 from #rotationAngle',                 function() { assert.equal(0.0, Leap.Frame.Invalid.rotationAngle())})
     it('should return an identity matrix from #rotationMatrix', function() { assertUtil.matrix3CloseTo(Leap.mat3.create(), Leap.Frame.Invalid.rotationMatrix(), assertUtil.DEFAULT_RANGE())})
-    it('should return a null vector from #rotationAxis', function() { assertUtil.vectorCloseTo(Leap.vec3.create(),Leap.Frame.Invalid.rotationAxis(),  assertUtil.DEFAULT_RANGE())})
-    it('should return 1.0 from #scaleFactor', function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
-    it('should return a null vector from #translation', function() {  assertUtil.vectorCloseTo(Leap.vec3.create(),Leap.Frame.Invalid.translation(),  assertUtil.DEFAULT_RANGE())})
-    it('should return a null vector from #translation', function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
+    it('should return a null vector from #rotationAxis',        function() { assertUtil.vectorCloseTo (Leap.vec3.create(), Leap.Frame.Invalid.rotationAxis  (), assertUtil.DEFAULT_RANGE())})
+    it('should return 1.0 from #scaleFactor',                   function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
+    it('should return a null vector from #translation',         function() {  assertUtil.vectorCloseTo(Leap.vec3.create(), Leap.Frame.Invalid.translation   (), assertUtil.DEFAULT_RANGE())})
+    it('should return a null vector from #translation',         function() { assert.equal(1.0, Leap.Frame.Invalid.scaleFactor())})
   });
 
     describe('End to End', function(){
@@ -112,12 +112,15 @@ describe('Frame', function(){
             assert.ok(frame.valid, 'frame is valid');
         });
 
-        _.each(frame.pointables, function (pointable) {
+        frame.pointables.forEach(function (pointable) {
             var stp = pointable.stabilizedTipPosition;
-            var match = _.find(frame.pointables, function (p) {
-                return  p.stabilizedTipPosition[0] == stp[0] &&
-                    p.stabilizedTipPosition[0] == stp[0] &&
-                    p.stabilizedTipPosition[0] == stp[0];
+            var match = undefined;
+            frame.pointables.forEach((p) => {
+                if(p.stabilizedTipPosition[0] == stp[0] &&
+                   p.stabilizedTipPosition[1] == stp[1] &&
+                   p.stabilizedTipPosition[2] == stp[2]){
+                  match = p;
+                }
             });
 
             assert.ok(match, 'found a match for stp ' + stp.join(','));

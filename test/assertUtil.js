@@ -18,11 +18,7 @@
     }
 
     function isObject(o){
-        if (_){
-            return _.isObject(o);
-        } else {
-            return typeof o == 'object';
-        }
+        return typeof o == 'object';
     }
 
     var _DEFAULT_RANGE = 1e-6;
@@ -115,7 +111,7 @@
                 if (!comment) comment = 'matrix3CloseTo';
                 lib.validThreshold(threshold, 'matrix3CloseTo: ' + comment);
 
-                if (!_.isNumber(threshold)) throw new Error("matrix3CloseTo: third argument must be a number");
+                if (!(typeof threshold == 'number')) throw new Error("matrix3CloseTo: third argument must be a number");
                 if (threshold < 0) throw new Error('matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
 
                 ok(matA && isObject(matA), f('vectorCloseTo bad argument 1: %s', matA));
@@ -132,8 +128,8 @@
             }
         },
         closeTo: function (a, b, threshold, comment, dim) {
-            ok(!_.isNaN(a), 'bad number a: ' + comment);
-            ok(!_.isNaN(b), 'bad number b: ' + comment);
+            ok(!Number.isNaN(a), 'bad number a: ' + comment);
+            ok(!Number.IsNaN(b), 'bad number b: ' + comment);
             var dd = Math.abs(a - b);
             if (_DEBUG) console.log('dim: %s, dd: %s, threshold: %s ', dim, dd, threshold);
             ok(dd <= threshold, comment);
