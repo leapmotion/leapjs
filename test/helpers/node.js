@@ -1,5 +1,4 @@
 assert = require('chai').assert;
-_ = require("underscore");
 
 Leap = require('../../lib');
 

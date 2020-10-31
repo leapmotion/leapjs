@@ -3,17 +3,15 @@
     if (typeof module != 'undefined') {
         var assert = require('assert');
         var util = require('util');
-        var _ = require('underscore');
     } else {
         var assert = window.assert;
-        var _ = window._;
     }
 
     function ok(test, message) {
         if (assert && assert.ok) {
             assert.ok(test, message);
         } else {
-            assert.equal(!!test, message);
+            assert.strictEqual(!!test, message);
         }
     }
 
