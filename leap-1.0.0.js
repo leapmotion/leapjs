@@ -195,7 +195,7 @@ var chooseProtocol = require('../protocol').chooseProtocol
   , EventEmitter = require('events').EventEmitter;
 
 var BaseConnection = module.exports = function(opts) {
-  this.opts = Object.create(opts || {}, {
+  this.opts = Object.assign({
     host : '127.0.0.1',
     enableGestures: false,
     scheme: this.getScheme(),
@@ -203,7 +203,7 @@ var BaseConnection = module.exports = function(opts) {
     background: false,
     optimizeHMD: false,
     requestProtocolVersion: BaseConnection.defaultProtocolVersion
-  });
+  }, opts || {});
   this.host = this.opts.host;
   this.port = this.opts.port;
   this.scheme = this.opts.scheme;
@@ -534,14 +534,14 @@ var Controller = module.exports = function(opts) {
   var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node),
     controller = this;
 
-  opts = Object.create(opts || {}, {
+  opts = Object.assign({
     inNode: inNode,
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
     suppressAnimationLoop: !this.useAnimationLoop(),
     loopWhileDisconnected: true,
     useAllPlugins: false,
     checkVersion: true
-  });
+  }, opts || {});
 
   this.inNode = opts.inNode;
 
@@ -750,7 +750,7 @@ Controller.prototype.setupFrameEvents = function(opts){
 }
 
 /**
-  Controller events.  The old 'deviceConnected' and 'deviceDisconnected' have been depricated -
+  Controller events.  The old 'deviceConnected' and 'deviceDisconnected' have been deprecated -
   use 'deviceStreaming' and 'deviceStopped' instead, except in the case of an unexpected disconnect.
 
   There are 4 pairs of device events recently added/changed:
@@ -929,7 +929,7 @@ Controller.prototype.setupConnectionEvents = function() {
 
   this.on('newListener', function(event, listener) {
     if( event == 'deviceConnected' || event == 'deviceDisconnected' ) {
-      console.warn(event + " events are depricated.  Consider using 'streamingStarted/streamingStopped' or 'deviceStreaming/deviceStopped' instead");
+      console.warn(event + " events are deprecated.  Consider using 'streamingStarted/streamingStopped' or 'deviceStreaming/deviceStopped' instead");
     }
   });
 
@@ -1679,7 +1679,7 @@ var Frame = module.exports = function(data) {
   this.gestures = [];
   this.pointablesMap = {};
   this._translation = data.t;
-  this._rotation = data.r.reduce(function(a, b) { return a.concat(b), [] });
+  this._rotation = data.r ? data.r.reduce(function(a, b) { return a.concat(b), [] }) : undefined;
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
@@ -2717,7 +2717,7 @@ var Hand = module.exports = function(data) {
    */
   this.tools = [];
   this._translation = data.t;
-  this._rotation = data.r.reduce(function (a, b) { return a.concat(b), [] });
+  this._rotation = data.r ? data.r.reduce(function(a, b) { return a.concat(b), [] }) : undefined;
   this._scaleFactor = data.s;
 
   /**
