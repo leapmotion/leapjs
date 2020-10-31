@@ -115,7 +115,7 @@ describe('Frame', function(){
         frame.pointables.forEach(function (pointable) {
             var stp = pointable.stabilizedTipPosition;
             var match = undefined;
-            frame.pointables.forEach((p) => {
+            frame.pointables.forEach(function(p) {
                 if(p.stabilizedTipPosition[0] == stp[0] &&
                    p.stabilizedTipPosition[1] == stp[1] &&
                    p.stabilizedTipPosition[2] == stp[2]){
