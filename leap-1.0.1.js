@@ -1,13 +1,12 @@
 /*!                                                              
- * LeapJS v1.0.0                                                  
+ * LeapJS v1.0.1                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
- * Copyright 2020 LeapMotion, Inc. and other contributors                      
+ * Copyright 2020 Ultraleap, Inc. and other contributors                       
  * Released under the Apache-2.0 license                                       
  * http://github.com/leapmotion/leapjs/blob/master/LICENSE                     
  */
-(function () { function r(e, n, t) { function o(i, f) { if (!n[i]) { if (!e[i]) { var c = "function" == typeof require && require; if (!f && c) return c(i, !0); if (u) return u(i, !0); var a = new Error("Cannot find module '" + i + "'"); throw a.code = "MODULE_NOT_FOUND", a } var p = n[i] = { exports: {} }; e[i][0].call(p.exports, function (r) { var n = e[i][1][r]; return o(n || r) }, p, p.exports, r, e, n, t) } return n[i].exports } for (var u = "function" == typeof require && require, i = 0; i < t.length; i++)o(t[i]); return o } return r })()({
-  1: [function (require, module, exports) {
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 var Pointable = require('./pointable'),
   glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
@@ -3685,10 +3684,10 @@ Object.assign(Region.prototype, EventEmitter.prototype)
 },{"events":21}],20:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '1.0.0',
+  full: '1.0.1',
   major: 1,
   minor: 0,
-  dot: 0
+  dot: 1
 }
 },{}],21:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
