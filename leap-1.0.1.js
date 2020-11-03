@@ -524,16 +524,16 @@ var Controller = module.exports = function(opts) {
   var inNode = (typeof(process) !== 'undefined' && process.versions && process.versions.node),
     controller = this;
 
+  this.inNode = inNode;
+
   opts = Object.assign({
-    inNode: inNode,
+    inNode: this.inNode,
     frameEventName: this.useAnimationLoop() ? 'animationFrame' : 'deviceFrame',
     suppressAnimationLoop: !this.useAnimationLoop(),
     loopWhileDisconnected: true,
     useAllPlugins: false,
     checkVersion: true
   }, opts || {});
-
-  this.inNode = opts.inNode;
 
   this.animationFrameRequested = false;
   this.onAnimationFrame = function(timestamp) {
