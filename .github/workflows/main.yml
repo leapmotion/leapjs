@@ -34,7 +34,6 @@ jobs:
           set +e
           git add *
           git diff-index --quiet HEAD || git commit -m "Build leapjs"
-          set -e
 
       # Push Build Artifacts
       - name: Push Changes to branch
@@ -42,3 +41,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      # Reenable Errors
+      - name: Clean Up
+        run: set -e
