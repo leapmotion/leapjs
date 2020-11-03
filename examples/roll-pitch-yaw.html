@@ -13,7 +13,7 @@
           }
         }
       };
-      var controller = new Leap.Controller({enableGestures: true});
+      var controller = new Leap.Controller();
       controller.loop(function(frame) {
         latestFrame = frame;
         if (paused) {

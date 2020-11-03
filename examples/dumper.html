@@ -15,7 +15,7 @@
         }
       };
       var haveLoggedFrame = false;
-      var controller = new Leap.Controller({enableGestures: true});
+      var controller = new Leap.Controller();
       controller.loop(function(frame) {
         if (state == 'paused') return;
         if (state == 'pausing') {

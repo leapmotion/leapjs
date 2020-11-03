@@ -10,6 +10,5 @@ fakeFrame = common.fakeFrame;
 fakeActualFrame = common.fakeActualFrame;
 fakeFinger = common.fakeFinger;
 fakeController = common.fakeController;
-fakeGesture = common.fakeGesture;
 createFrame = common.createFrame;
 fakePluginFactory = common.fakePluginFactory;

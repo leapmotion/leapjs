@@ -170,7 +170,7 @@ Bone.prototype.direction = function(){
 
 };
 
-},{"./pointable":15,"gl-matrix":23}],2:[function(require,module,exports){
+},{"./pointable":14,"gl-matrix":22}],2:[function(require,module,exports){
 var CircularBuffer = module.exports = function(size) {
   this.pos = 0;
   this._buf = [];
@@ -196,7 +196,6 @@ var chooseProtocol = require('../protocol').chooseProtocol
 var BaseConnection = module.exports = function(opts) {
   this.opts = Object.assign({
     host : '127.0.0.1',
-    enableGestures: false,
     scheme: this.getScheme(),
     port: this.getPort(),
     background: false,
@@ -210,7 +209,6 @@ var BaseConnection = module.exports = function(opts) {
   this.background = null;
   this.optimizeHMD = null;
   this.on('ready', function() {
-    this.enableGestures(this.opts.enableGestures);
     this.setBackground(this.opts.background);
     this.setOptimizeHMD(this.opts.optimizeHMD);
 
@@ -261,11 +259,6 @@ BaseConnection.prototype.handleOpen = function() {
     this.connected = true;
     this.emit('connect');
   }
-}
-
-BaseConnection.prototype.enableGestures = function(enabled) {
-  this.gesturesEnabled = enabled ? true : false;
-  this.send(this.protocol.encode({"enableGestures": this.gesturesEnabled}));
 }
 
 BaseConnection.prototype.handleClose = function(code, reason) {
@@ -356,7 +349,7 @@ BaseConnection.prototype.reportFocus = function(state) {
 }
 
 Object.assign(BaseConnection.prototype, EventEmitter.prototype);
-},{"../protocol":16,"events":21}],4:[function(require,module,exports){
+},{"../protocol":15,"events":20}],4:[function(require,module,exports){
 var BaseConnection = module.exports = require('./base');
 
 
@@ -479,7 +472,7 @@ NodeConnection.prototype.setupSocket = function() {
   return socket;
 }
 
-},{"./base":3,"ws":34}],6:[function(require,module,exports){
+},{"./base":3,"ws":33}],6:[function(require,module,exports){
 (function (process){
 var Frame = require('./frame')
   , Hand = require('./hand')
@@ -488,20 +481,18 @@ var Frame = require('./frame')
   , CircularBuffer = require("./circular_buffer")
   , Pipeline = require("./pipeline")
   , EventEmitter = require('events').EventEmitter
-  , gestureListener = require('./gesture').gestureListener
   , Dialog = require('./dialog');
 
 /**
  * Constructs a Controller object.
  *
  * When creating a Controller object, you may optionally pass in options
- * to set the host , set the port, enable gestures, or select the frame event type.
+ * to set the host , set the port, or select the frame event type.
  *
  * ```javascript
  * var controller = new Leap.Controller({
  *   host: '127.0.0.1',
  *   port: 6437,
- *   enableGestures: true,
  *   frameEventName: 'animationFrame'
  * });
  * ```
@@ -567,7 +558,6 @@ var Controller = module.exports = function(opts) {
   this.lastFrame = Frame.Invalid;
   this.lastValidFrame = Frame.Invalid;
   this.lastConnectionFrame = Frame.Invalid;
-  this.accumulatedGestures = [];
   this.checkVersion = opts.checkVersion;
   if (opts.connectionType === undefined) {
     this.connectionType = (this.inBrowser() ? require('./connection/browser') : require('./connection/node'));
@@ -585,14 +575,6 @@ var Controller = module.exports = function(opts) {
   this.setupConnectionEvents();
   
   this.startAnimationLoop(); // immediately when started
-}
-
-Controller.prototype.gesture = function(type, cb) {
-  var creator = gestureListener(this, type);
-  if (cb !== undefined) {
-    creator.stop(cb);
-  }
-  return creator;
 }
 
 /*
@@ -695,9 +677,6 @@ Controller.prototype.addStep = function(step) {
 
 // this is run on every deviceFrame
 Controller.prototype.processFrame = function(frame) {
-  if (frame.gestures) {
-    this.accumulatedGestures = this.accumulatedGestures.concat(frame.gestures);
-  }
   // lastConnectionFrame is used by the animation loop
   this.lastConnectionFrame = frame;
   this.startAnimationLoop(); // Only has effect if loopWhileDisconnected: false
@@ -712,13 +691,6 @@ Controller.prototype.processFinishedFrame = function(frame) {
   }
   frame.controller = this;
   frame.historyIdx = this.history.push(frame);
-  if (frame.gestures) {
-    frame.gestures = this.accumulatedGestures;
-    this.accumulatedGestures = [];
-    for (var gestureIdx = 0; gestureIdx != frame.gestures.length; gestureIdx++) {
-      this.emit("gesture", frame.gestures[gestureIdx], frame);
-    }
-  }
   if (this.pipeline) {
     frame = this.pipeline.run(frame);
     if (!frame) frame = Frame.Invalid;
@@ -1221,7 +1193,7 @@ Controller.prototype.useRegisteredPlugins = function(){
 Object.assign(Controller.prototype, EventEmitter.prototype);
 
 }).call(this,require('_process'))
-},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./dialog":7,"./finger":8,"./frame":9,"./gesture":10,"./hand":11,"./pipeline":14,"./pointable":15,"_process":33,"events":21}],7:[function(require,module,exports){
+},{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./dialog":7,"./finger":8,"./frame":9,"./hand":10,"./pipeline":13,"./pointable":14,"_process":32,"events":20}],7:[function(require,module,exports){
 (function (process){
 var Dialog = module.exports = function(message, options){
   this.options = (options || {});
@@ -1370,7 +1342,7 @@ Dialog.warnBones = function(){
 
 }
 }).call(this,require('_process'))
-},{"_process":33}],8:[function(require,module,exports){
+},{"_process":32}],8:[function(require,module,exports){
 var Pointable = require('./pointable'),
   Bone = require('./bone')
   , Dialog = require('./dialog');
@@ -1560,10 +1532,9 @@ Finger.prototype.toString = function() {
 
 Finger.Invalid = { valid: false };
 
-},{"./bone":1,"./dialog":7,"./pointable":15}],9:[function(require,module,exports){
+},{"./bone":1,"./dialog":7,"./pointable":14}],9:[function(require,module,exports){
 var Hand = require("./hand")
   , Pointable = require("./pointable")
-  , createGesture = require("./gesture").createGesture
   , glMatrix = require("gl-matrix")
   , mat3 = glMatrix.mat3
   , vec3 = glMatrix.vec3
@@ -1675,30 +1646,19 @@ var Frame = module.exports = function(data) {
   if (data.interactionBox) {
     this.interactionBox = new InteractionBox(data.interactionBox);
   }
-  this.gestures = [];
   this.pointablesMap = {};
   this._translation = data.t;
-  this._rotation = data.r ? data.r.reduce(function(a, b) { return a.concat(b), [] }) : undefined;
+  function flattenDeep(arr) {
+    return Array.isArray(arr)
+      ? arr.reduce(function (a, b) { return a.concat(flattenDeep(b)) }, [])
+      : [arr];
+  }
+  this._rotation    = flattenDeep(data.r);
   this._scaleFactor = data.s;
   this.data = data;
   this.type = 'frame'; // used by event emitting
   this.currentFrameRate = data.currentFrameRate;
 
-  if (data.gestures) {
-   /**
-    * The list of Gesture objects detected in this frame, given in arbitrary order.
-    * The list can be empty if no gestures are detected.
-    *
-    * Circle and swipe gestures are updated every frame. Tap gestures
-    * only appear in the list for a single frame.
-    * @member gestures[]
-    * @memberof Leap.Frame.prototype
-    * @type {Leap.Gesture}
-    */
-    for (var gestureIdx = 0, gestureCount = data.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
-      this.gestures.push(createGesture(data.gestures[gestureIdx]));
-    }
-  }
   this.postprocessData(data);
 };
 
@@ -2001,13 +1961,12 @@ Frame.prototype.translation = function(sinceFrame) {
  */
 Frame.prototype.toString = function() {
   var str = "Frame [ id:"+this.id+" | timestamp:"+this.timestamp+" | Hand count:("+this.hands.length+") | Pointable count:("+this.pointables.length+")";
-  if (this.gestures) str += " | Gesture count:("+this.gestures.length+")";
   str += " ]";
   return str;
 }
 
 /**
- * Returns a JSON-formatted string containing the hands, pointables and gestures
+ * Returns a JSON-formatted string containing the hands, pointables
  * in this frame.
  *
  * @method dump
@@ -2025,12 +1984,6 @@ Frame.prototype.dump = function() {
   out += "<br/><br/>Pointables:<br/>";
   for (var pointableIdx = 0, pointableCount = this.pointables.length; pointableIdx != pointableCount; pointableIdx++) {
       out += "  "+ this.pointables[pointableIdx].toString() + "<br/>";
-  }
-  if (this.gestures) {
-    out += "<br/><br/>Gestures:<br/>";
-    for (var gestureIdx = 0, gestureCount = this.gestures.length; gestureIdx != gestureCount; gestureIdx++) {
-        out += "  "+ this.gestures[gestureIdx].toString() + "<br/>";
-    }
   }
   out += "<br/><br/>Raw JSON:<br/>";
   out += JSON.stringify(this.data);
@@ -2054,7 +2007,6 @@ Frame.Invalid = {
   hands: [],
   fingers: [],
   tools: [],
-  gestures: [],
   pointables: [],
   pointable: function() { return Pointable.Invalid },
   finger: function() { return Pointable.Invalid },
@@ -2068,491 +2020,7 @@ Frame.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./finger":8,"./gesture":10,"./hand":11,"./interaction_box":13,"./pointable":15,"gl-matrix":23}],10:[function(require,module,exports){
-var glMatrix = require("gl-matrix")
-  , vec3 = glMatrix.vec3
-  , EventEmitter = require('events').EventEmitter;
-
-/**
- * Constructs a new Gesture object.
- *
- * An uninitialized Gesture object is considered invalid. Get valid instances
- * of the Gesture class, which will be one of the Gesture subclasses, from a
- * Frame object.
- *
- * @class Gesture
- * @abstract
- * @memberof Leap
- * @classdesc
- * The Gesture class represents a recognized movement by the user.
- *
- * The Leap watches the activity within its field of view for certain movement
- * patterns typical of a user gesture or command. For example, a movement from side to
- * side with the hand can indicate a swipe gesture, while a finger poking forward
- * can indicate a screen tap gesture.
- *
- * When the Leap recognizes a gesture, it assigns an ID and adds a
- * Gesture object to the frame gesture list. For continuous gestures, which
- * occur over many frames, the Leap updates the gesture by adding
- * a Gesture object having the same ID and updated properties in each
- * subsequent frame.
- *
- * **Important:** Recognition for each type of gesture must be enabled;
- * otherwise **no gestures are recognized or reported**.
- *
- * Subclasses of Gesture define the properties for the specific movement patterns
- * recognized by the Leap.
- *
- * The Gesture subclasses for include:
- *
- * * CircleGesture -- A circular movement by a finger.
- * * SwipeGesture -- A straight line movement by the hand with fingers extended.
- * * ScreenTapGesture -- A forward tapping movement by a finger.
- * * KeyTapGesture -- A downward tapping movement by a finger.
- *
- * Circle and swipe gestures are continuous and these objects can have a
- * state of start, update, and stop.
- *
- * The screen tap gesture is a discrete gesture. The Leap only creates a single
- * ScreenTapGesture object appears for each tap and it always has a stop state.
- *
- * Get valid Gesture instances from a Frame object. You can get a list of gestures
- * from the Frame gestures array. You can also use the Frame gesture() method
- * to find a gesture in the current frame using an ID value obtained in a
- * previous frame.
- *
- * Gesture objects can be invalid. For example, when you get a gesture by ID
- * using Frame.gesture(), and there is no gesture with that ID in the current
- * frame, then gesture() returns an Invalid Gesture object (rather than a null
- * value). Always check object validity in situations where a gesture might be
- * invalid.
- */
-var createGesture = exports.createGesture = function(data) {
-  var gesture;
-  switch (data.type) {
-    case 'circle':
-      gesture = new CircleGesture(data);
-      break;
-    case 'swipe':
-      gesture = new SwipeGesture(data);
-      break;
-    case 'screenTap':
-      gesture = new ScreenTapGesture(data);
-      break;
-    case 'keyTap':
-      gesture = new KeyTapGesture(data);
-      break;
-    default:
-      throw "unknown gesture type";
-  }
-
- /**
-  * The gesture ID.
-  *
-  * All Gesture objects belonging to the same recognized movement share the
-  * same ID value. Use the ID value with the Frame::gesture() method to
-  * find updates related to this Gesture object in subsequent frames.
-  *
-  * @member id
-  * @memberof Leap.Gesture.prototype
-  * @type {number}
-  */
-  gesture.id = data.id;
- /**
-  * The list of hands associated with this Gesture, if any.
-  *
-  * If no hands are related to this gesture, the list is empty.
-  *
-  * @member handIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.handIds = data.handIds.slice();
- /**
-  * The list of fingers and tools associated with this Gesture, if any.
-  *
-  * If no Pointable objects are related to this gesture, the list is empty.
-  *
-  * @member pointableIds
-  * @memberof Leap.Gesture.prototype
-  * @type {Array}
-  */
-  gesture.pointableIds = data.pointableIds.slice();
- /**
-  * The elapsed duration of the recognized movement up to the
-  * frame containing this Gesture object, in microseconds.
-  *
-  * The duration reported for the first Gesture in the sequence (with the
-  * start state) will typically be a small positive number since
-  * the movement must progress far enough for the Leap to recognize it as
-  * an intentional gesture.
-  *
-  * @member duration
-  * @memberof Leap.Gesture.prototype
-  * @type {number}
-  */
-  gesture.duration = data.duration;
- /**
-  * The gesture ID.
-  *
-  * Recognized movements occur over time and have a beginning, a middle,
-  * and an end. The 'state()' attribute reports where in that sequence this
-  * Gesture object falls.
-  *
-  * Possible values for the state field are:
-  *
-  * * start
-  * * update
-  * * stop
-  *
-  * @member state
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.state = data.state;
- /**
-  * The gesture type.
-  *
-  * Possible values for the type field are:
-  *
-  * * circle
-  * * swipe
-  * * screenTap
-  * * keyTap
-  *
-  * @member type
-  * @memberof Leap.Gesture.prototype
-  * @type {String}
-  */
-  gesture.type = data.type;
-  return gesture;
-}
-
-/*
- * Returns a builder object, which uses method chaining for gesture callback binding.
- */
-var gestureListener = exports.gestureListener = function(controller, type) {
-  var handlers = {};
-  var gestureMap = {};
-
-  controller.on('gesture', function(gesture, frame) {
-    if (gesture.type == type) {
-      if (gesture.state == "start" || gesture.state == "stop") {
-        if (gestureMap[gesture.id] === undefined) {
-          var gestureTracker = new Gesture(gesture, frame);
-          gestureMap[gesture.id] = gestureTracker;
-          handlers.forEach(function(cb, name) {
-            gestureTracker.on(name, cb);
-          });
-        }
-      }
-      gestureMap[gesture.id].update(gesture, frame);
-      if (gesture.state == "stop") {
-        delete gestureMap[gesture.id];
-      }
-    }
-  });
-  var builder = {
-    start: function(cb) {
-      handlers['start'] = cb;
-      return builder;
-    },
-    stop: function(cb) {
-      handlers['stop'] = cb;
-      return builder;
-    },
-    complete: function(cb) {
-      handlers['stop'] = cb;
-      return builder;
-    },
-    update: function(cb) {
-      handlers['update'] = cb;
-      return builder;
-    }
-  }
-  return builder;
-}
-
-var Gesture = exports.Gesture = function(gesture, frame) {
-  this.gestures = [gesture];
-  this.frames = [frame];
-}
-
-Gesture.prototype.update = function(gesture, frame) {
-  this.lastGesture = gesture;
-  this.lastFrame = frame;
-  this.gestures.push(gesture);
-  this.frames.push(frame);
-  this.emit(gesture.state, this);
-}
-
-Gesture.prototype.translation = function() {
-  return vec3.subtract(vec3.create(), this.lastGesture.startPosition, this.lastGesture.position);
-}
-
-Object.assign(Gesture.prototype, EventEmitter.prototype);
-
-/**
- * Constructs a new CircleGesture object.
- *
- * An uninitialized CircleGesture object is considered invalid. Get valid instances
- * of the CircleGesture class from a Frame object.
- *
- * @class CircleGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The CircleGesture classes represents a circular finger movement.
- *
- * A circle movement is recognized when the tip of a finger draws a circle
- * within the Leap field of view.
- *
- * ![CircleGesture](images/Leap_Gesture_Circle.png)
- *
- * Circle gestures are continuous. The CircleGesture objects for the gesture have
- * three possible states:
- *
- * * start -- The circle gesture has just started. The movement has
- *  progressed far enough for the recognizer to classify it as a circle.
- * * update -- The circle gesture is continuing.
- * * stop -- The circle gesture is finished.
- */
-var CircleGesture = function(data) {
- /**
-  * The center point of the circle within the Leap frame of reference.
-  *
-  * @member center
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number[]}
-  */
-  this.center = data.center;
- /**
-  * The normal vector for the circle being traced.
-  *
-  * If you draw the circle clockwise, the normal vector points in the same
-  * general direction as the pointable object drawing the circle. If you draw
-  * the circle counterclockwise, the normal points back toward the
-  * pointable. If the angle between the normal and the pointable object
-  * drawing the circle is less than 90 degrees, then the circle is clockwise.
-  *
-  * ```javascript
-  *    var clockwiseness;
-  *    if (circle.pointable.direction.angleTo(circle.normal) <= PI/4) {
-  *        clockwiseness = "clockwise";
-  *    }
-  *    else
-  *    {
-  *        clockwiseness = "counterclockwise";
-  *    }
-  * ```
-  *
-  * @member normal
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number[]}
-  */
-  this.normal = data.normal;
- /**
-  * The number of times the finger tip has traversed the circle.
-  *
-  * Progress is reported as a positive number of the number. For example,
-  * a progress value of .5 indicates that the finger has gone halfway
-  * around, while a value of 3 indicates that the finger has gone around
-  * the the circle three times.
-  *
-  * Progress starts where the circle gesture began. Since the circle
-  * must be partially formed before the Leap can recognize it, progress
-  * will be greater than zero when a circle gesture first appears in the
-  * frame.
-  *
-  * @member progress
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number}
-  */
-  this.progress = data.progress;
- /**
-  * The radius of the circle in mm.
-  *
-  * @member radius
-  * @memberof Leap.CircleGesture.prototype
-  * @type {number}
-  */
-  this.radius = data.radius;
-}
-
-CircleGesture.prototype.toString = function() {
-  return "CircleGesture ["+JSON.stringify(this)+"]";
-}
-
-/**
- * Constructs a new SwipeGesture object.
- *
- * An uninitialized SwipeGesture object is considered invalid. Get valid instances
- * of the SwipeGesture class from a Frame object.
- *
- * @class SwipeGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The SwipeGesture class represents a swiping motion of a finger or tool.
- *
- * ![SwipeGesture](images/Leap_Gesture_Swipe.png)
- *
- * Swipe gestures are continuous.
- */
-var SwipeGesture = function(data) {
- /**
-  * The starting position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member startPosition
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.startPosition = data.startPosition;
- /**
-  * The current swipe position within the Leap frame of
-  * reference, in mm.
-  *
-  * @member position
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.position = data.position;
- /**
-  * The unit direction vector parallel to the swipe motion.
-  *
-  * You can compare the components of the vector to classify the swipe as
-  * appropriate for your application. For example, if you are using swipes
-  * for two dimensional scrolling, you can compare the x and y values to
-  * determine if the swipe is primarily horizontal or vertical.
-  *
-  * @member direction
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number[]}
-  */
-  this.direction = data.direction;
- /**
-  * The speed of the finger performing the swipe gesture in
-  * millimeters per second.
-  *
-  * @member speed
-  * @memberof Leap.SwipeGesture.prototype
-  * @type {number}
-  */
-  this.speed = data.speed;
-}
-
-SwipeGesture.prototype.toString = function() {
-  return "SwipeGesture ["+JSON.stringify(this)+"]";
-}
-
-/**
- * Constructs a new ScreenTapGesture object.
- *
- * An uninitialized ScreenTapGesture object is considered invalid. Get valid instances
- * of the ScreenTapGesture class from a Frame object.
- *
- * @class ScreenTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The ScreenTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A screen tap gesture is recognized when the tip of a finger pokes forward
- * and then springs back to approximately the original postion, as if
- * tapping a vertical screen. The tapping finger must pause briefly before beginning the tap.
- *
- * ![ScreenTap](images/Leap_Gesture_Tap2.png)
- *
- * ScreenTap gestures are discrete. The ScreenTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one ScreenTapGesture object is created for each
- * screen tap gesture recognized.
- */
-var ScreenTapGesture = function(data) {
- /**
-  * The position where the screen tap is registered.
-  *
-  * @member position
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number[]}
-  */
-  this.position = data.position;
- /**
-  * The direction of finger tip motion.
-  *
-  * @member direction
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number[]}
-  */
-  this.direction = data.direction;
- /**
-  * The progess value is always 1.0 for a screen tap gesture.
-  *
-  * @member progress
-  * @memberof Leap.ScreenTapGesture.prototype
-  * @type {number}
-  */
-  this.progress = data.progress;
-}
-
-ScreenTapGesture.prototype.toString = function() {
-  return "ScreenTapGesture ["+JSON.stringify(this)+"]";
-}
-
-/**
- * Constructs a new KeyTapGesture object.
- *
- * An uninitialized KeyTapGesture object is considered invalid. Get valid instances
- * of the KeyTapGesture class from a Frame object.
- *
- * @class KeyTapGesture
- * @memberof Leap
- * @augments Leap.Gesture
- * @classdesc
- * The KeyTapGesture class represents a tapping gesture by a finger or tool.
- *
- * A key tap gesture is recognized when the tip of a finger rotates down toward the
- * palm and then springs back to approximately the original postion, as if
- * tapping. The tapping finger must pause briefly before beginning the tap.
- *
- * ![KeyTap](images/Leap_Gesture_Tap.png)
- *
- * Key tap gestures are discrete. The KeyTapGesture object representing a tap always
- * has the state, STATE_STOP. Only one KeyTapGesture object is created for each
- * key tap gesture recognized.
- */
-var KeyTapGesture = function(data) {
-    /**
-     * The position where the key tap is registered.
-     *
-     * @member position
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number[]}
-     */
-    this.position = data.position;
-    /**
-     * The direction of finger tip motion.
-     *
-     * @member direction
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number[]}
-     */
-    this.direction = data.direction;
-    /**
-     * The progess value is always 1.0 for a key tap gesture.
-     *
-     * @member progress
-     * @memberof Leap.KeyTapGesture.prototype
-     * @type {number}
-     */
-    this.progress = data.progress;
-}
-
-KeyTapGesture.prototype.toString = function() {
-  return "KeyTapGesture ["+JSON.stringify(this)+"]";
-}
-
-},{"events":21,"gl-matrix":23}],11:[function(require,module,exports){
+},{"./finger":8,"./hand":10,"./interaction_box":12,"./pointable":14,"gl-matrix":22}],10:[function(require,module,exports){
 var Pointable = require("./pointable")
   , Bone = require('./bone')
   , glMatrix = require("gl-matrix")
@@ -2716,7 +2184,12 @@ var Hand = module.exports = function(data) {
    */
   this.tools = [];
   this._translation = data.t;
-  this._rotation = data.r ? data.r.reduce(function(a, b) { return a.concat(b), [] }) : undefined;
+  function flattenDeep(arr) {
+    return Array.isArray(arr)
+      ? arr.reduce(function (a, b) { return a.concat(flattenDeep(b)) }, [])
+      : [arr];
+  }
+  this._rotation    = flattenDeep(data.r);
   this._scaleFactor = data.s;
 
   /**
@@ -3005,7 +2478,7 @@ Hand.Invalid = {
   translation: function() { return vec3.create(); }
 };
 
-},{"./bone":1,"./pointable":15,"gl-matrix":23}],12:[function(require,module,exports){
+},{"./bone":1,"./pointable":14,"gl-matrix":22}],11:[function(require,module,exports){
 /**
  * Leap is the global namespace of the Leap API.
  * @namespace Leap
@@ -3013,7 +2486,6 @@ Hand.Invalid = {
 module.exports = {
   Controller: require("./controller"),
   Frame: require("./frame"),
-  Gesture: require("./gesture"),
   Hand: require("./hand"),
   Pointable: require("./pointable"),
   Finger: require("./finger"),
@@ -3090,7 +2562,7 @@ module.exports = {
   }
 }
 
-},{"./circular_buffer":2,"./controller":6,"./finger":8,"./frame":9,"./gesture":10,"./hand":11,"./interaction_box":13,"./pointable":15,"./protocol":16,"./ui":17,"./version.js":20,"events":21,"gl-matrix":23}],13:[function(require,module,exports){
+},{"./circular_buffer":2,"./controller":6,"./finger":8,"./frame":9,"./hand":10,"./interaction_box":12,"./pointable":14,"./protocol":15,"./ui":16,"./version.js":19,"events":20,"gl-matrix":22}],12:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -3232,7 +2704,7 @@ InteractionBox.prototype.toString = function() {
  */
 InteractionBox.Invalid = { valid: false };
 
-},{"gl-matrix":23}],14:[function(require,module,exports){
+},{"gl-matrix":22}],13:[function(require,module,exports){
 var Pipeline = module.exports = function (controller) {
   this.steps = [];
   this.controller = controller;
@@ -3286,7 +2758,7 @@ Pipeline.prototype.addWrappedStep = function (type, callback) {
   this.addStep(step);
   return step;
 };
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3;
 
@@ -3503,7 +2975,7 @@ Pointable.prototype.hand = function(){
  */
 Pointable.Invalid = { valid: false };
 
-},{"gl-matrix":23}],16:[function(require,module,exports){
+},{"gl-matrix":22}],15:[function(require,module,exports){
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -3578,12 +3050,12 @@ var JSONProtocol = exports.JSONProtocol = function(header) {
 
 
 
-},{"./finger":8,"./frame":9,"./hand":11,"./pointable":15,"events":21}],17:[function(require,module,exports){
+},{"./finger":8,"./frame":9,"./hand":10,"./pointable":14,"events":20}],16:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")
 };
-},{"./ui/cursor":18,"./ui/region":19}],18:[function(require,module,exports){
+},{"./ui/cursor":17,"./ui/region":18}],17:[function(require,module,exports){
 var Cursor = module.exports = function() {
   return function(frame) {
     var pointable = frame.pointables.sort(function(a, b) { return a.z - b.z })[0]
@@ -3594,7 +3066,7 @@ var Cursor = module.exports = function() {
   }
 }
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 
 var Region = module.exports = function(start, end) {
@@ -3681,7 +3153,7 @@ Region.prototype.mapToXY = function(position, width, height) {
 }
 
 Object.assign(Region.prototype, EventEmitter.prototype)
-},{"events":21}],20:[function(require,module,exports){
+},{"events":20}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
   full: '1.0.1',
@@ -3689,7 +3161,7 @@ module.exports = {
   minor: 0,
   dot: 1
 }
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4214,7 +3686,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4282,7 +3754,7 @@ if (!Math.hypot) Math.hypot = function () {
 
   return Math.sqrt(y);
 };
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -4335,7 +3807,7 @@ exports.vec4 = vec4;
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-},{"./common.js":22,"./mat2.js":24,"./mat2d.js":25,"./mat3.js":26,"./mat4.js":27,"./quat.js":28,"./quat2.js":29,"./vec2.js":30,"./vec3.js":31,"./vec4.js":32}],24:[function(require,module,exports){
+},{"./common.js":21,"./mat2.js":23,"./mat2d.js":24,"./mat3.js":25,"./mat4.js":26,"./quat.js":27,"./quat2.js":28,"./vec2.js":29,"./vec3.js":30,"./vec4.js":31}],23:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -4831,7 +4303,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":22}],25:[function(require,module,exports){
+},{"./common.js":21}],24:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -5379,7 +4851,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":22}],26:[function(require,module,exports){
+},{"./common.js":21}],25:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -6233,7 +5705,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":22}],27:[function(require,module,exports){
+},{"./common.js":21}],26:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -8153,7 +7625,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":22}],28:[function(require,module,exports){
+},{"./common.js":21}],27:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -8945,7 +8417,7 @@ var setAxes = function () {
 }();
 
 exports.setAxes = setAxes;
-},{"./common.js":22,"./mat3.js":26,"./vec3.js":31,"./vec4.js":32}],29:[function(require,module,exports){
+},{"./common.js":21,"./mat3.js":25,"./vec3.js":30,"./vec4.js":31}],28:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -9870,7 +9342,7 @@ function equals(a, b) {
       b7 = b[7];
   return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) && Math.abs(a4 - b4) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) && Math.abs(a5 - b5) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) && Math.abs(a6 - b6) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) && Math.abs(a7 - b7) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7));
 }
-},{"./common.js":22,"./mat4.js":27,"./quat.js":28}],30:[function(require,module,exports){
+},{"./common.js":21,"./mat4.js":26,"./quat.js":27}],29:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -10592,7 +10064,7 @@ var forEach = function () {
 }();
 
 exports.forEach = forEach;
-},{"./common.js":22}],31:[function(require,module,exports){
+},{"./common.js":21}],30:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -11483,7 +10955,7 @@ var forEach = function () {
 }();
 
 exports.forEach = forEach;
-},{"./common.js":22}],32:[function(require,module,exports){
+},{"./common.js":21}],31:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -12236,7 +11708,7 @@ var forEach = function () {
 }();
 
 exports.forEach = forEach;
-},{"./common.js":22}],33:[function(require,module,exports){
+},{"./common.js":21}],32:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -12422,7 +11894,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 
 module.exports = function() {
@@ -12432,7 +11904,7 @@ module.exports = function() {
   );
 };
 
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== 'function') {
   window.requestAnimationFrame = (
     window.webkitRequestAnimationFrame   ||
@@ -12445,4 +11917,4 @@ if (typeof(window) !== 'undefined' && typeof(window.requestAnimationFrame) !== '
 
 Leap = require("../lib/index");
 
-},{"../lib/index":12}]},{},[35]);
+},{"../lib/index":11}]},{},[34]);

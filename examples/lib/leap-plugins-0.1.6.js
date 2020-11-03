@@ -900,7 +900,7 @@ function Recording (options){
     'id',
     'timestamp',
     // this should be replace/upgraded with a whitelist instead of a blacklist.
-    // leaving out r,s,y, and gestures
+    // leaving out r,s,y
     {hands: [[
       'id',
       'type',

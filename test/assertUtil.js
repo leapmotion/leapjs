@@ -56,7 +56,7 @@
          */
         validThreshold: function (threshold, comment) {
             if (!comment) comment = 'threshold violation';
-            ok(!isNaN(threshold), "matrix3CloseTo: third argument must be a number");
+            ok(!Number.isNaN(threshold), "matrix3CloseTo: third argument must be a number");
             ok(threshold >= 0, 'matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
         },
 
@@ -126,8 +126,9 @@
             }
         },
         closeTo: function (a, b, threshold, comment, dim) {
-            ok(!Number.isNaN(a), 'bad number a: ' + comment);
-            ok(!Number.IsNaN(b), 'bad number b: ' + comment);
+            // Inline Definition of Number.IsNaN()
+            ok(!(typeof a === 'number' && a !== a), 'bad number a: ' + comment);
+            ok(!(typeof b === 'number' && b !== b), 'bad number b: ' + comment);
             var dd = Math.abs(a - b);
             if (_DEBUG) console.log('dim: %s, dd: %s, threshold: %s ', dim, dd, threshold);
             ok(dd <= threshold, comment);
