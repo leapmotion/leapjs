@@ -33,15 +33,18 @@ jobs:
           git config --local user.name "GitHub Action"
           set +e
           git add *
-          git diff-index --quiet HEAD || git commit -m "Build leapjs"
+          git diff-index --quiet HEAD || git commit -m "Build Leap.js"
 
       # Push Build Artifacts
       - name: Push Changes to branch
+        id: push-build
         uses: ad-m/github-push-action@master
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
       # Reenable Errors
       - name: Clean Up
+        if: steps.push-build.outcome == 'success' && steps.push-build.conclusion == 'success'
         run: set -e
