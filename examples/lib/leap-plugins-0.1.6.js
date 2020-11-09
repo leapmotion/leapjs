@@ -1699,7 +1699,6 @@ Recording.prototype = {
       finalFrame.hands = [];
       finalFrame.fingers = [];
       finalFrame.pointables = [];
-      finalFrame.tools = [];
       this.sendImmediateFrame(finalFrame);
     },
 

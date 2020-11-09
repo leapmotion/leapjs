@@ -11,7 +11,6 @@ describe('Hand', function(){
       it('should have palmNormal', function() { assert(hand.palmNormal) })
       it('should have sphereCenter', function() { assert(hand.sphereCenter) })
       it('should have 5 pointables', function() { assert.equal(5, hand.pointables.length) })
-      it('should have 0 tools', function() { assert.equal(0, hand.tools.length) })
       it('should have 5 fingers', function() { assert.equal(5, hand.fingers.length) })
       it('should have timeVisible', function() { assert(hand.timeVisible) })
       it('should have stabilizedPalmPosition', function() { assert(hand.stabilizedPalmPosition) })
@@ -98,7 +97,6 @@ describe('Hand', function(){
   describe('Invalid', function() {
     it('should be invalid', function() { assert(!Leap.Hand.Invalid.valid)})
     it('should have empty fingers', function() { assert.equal(0, Leap.Hand.Invalid.fingers.length)})
-    it('should have empty tools', function() { assert.equal(0, Leap.Hand.Invalid.tools.length)})
     it('should have empty pointables', function() { assert.equal(0, Leap.Hand.Invalid.pointables.length)})
     it('should return an invalid #pointable', function() { assert(!Leap.Hand.Invalid.pointable().valid)})
     it('should return an invalid #finger', function() { assert(!Leap.Hand.Invalid.finger().valid)})

@@ -7,8 +7,8 @@
  * http://github.com/leapmotion/leapjs/blob/master/LICENSE                     
  */
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-var Pointable = require('./pointable'),
-  glMatrix = require("gl-matrix")
+var Pointable = require('./pointable')
+  , glMatrix = require("gl-matrix")
   , vec3 = glMatrix.vec3
   , mat3 = glMatrix.mat3
   , mat4 = glMatrix.mat4;
@@ -47,13 +47,13 @@ var Bone = module.exports = function(finger, data) {
   this.nextJoint = data.nextJoint;
 
   /**
-   * The estimated width of the tool in millimeters.
+   * The estimated width of the pointable in millimeters.
    *
    * The reported width is the average width of the visible portion of the
-   * tool from the hand to the tip. If the width isn't known,
+   * pointable from the hand to the tip. If the width isn't known,
    * then a value of 0 is returned.
    *
-   * Pointable objects representing fingers do not have a width property.
+   * Bone objects representing fingers do not have a width property.
    *
    * @member width
    * @type {number}
@@ -946,7 +946,7 @@ Controller._pluginFactories = {};
  * @param {function} factory A factory method which will return an instance of a plugin.
  * The factory receives an optional hash of options, passed in via controller.use.
  *
- * Valid keys for the object include frame, hand, finger, tool, and pointable.  The value
+ * Valid keys for the object include frame, hand, finger, and pointable.  The value
  * of each key can be either a function or an object.  If given a function, that function
  * will be called once for every instance of the object, with that instance injected as an
  * argument.  This allows decoration of objects with additional data:
@@ -976,7 +976,7 @@ Controller._pluginFactories = {};
  * ```
  *
  * A factory can return an object to add custom functionality to Frames, Hands, or Pointables.
- * The methods are added directly to the object's prototype.  Finger and Tool cannot be used here, Pointable
+ * The methods are added directly to the object's prototype.  Finger cannot be used here, Pointable
  * must be used instead.
  * This is encouraged for calculations which may not be necessary on every frame.
  * Memoization is also encouraged, for cases where the method may be called many times per frame by the application.
@@ -1343,8 +1343,8 @@ Dialog.warnBones = function(){
 }
 }).call(this,require('_process'))
 },{"_process":32}],8:[function(require,module,exports){
-var Pointable = require('./pointable'),
-  Bone = require('./bone')
+var Pointable = require('./pointable')
+  , Bone = require('./bone')
   , Dialog = require('./dialog');
 
 /**
@@ -1358,7 +1358,7 @@ var Pointable = require('./pointable'),
 * @classdesc
 * The Finger class reports the physical characteristics of a finger.
 *
-* Both fingers and tools are classified as Pointable objects. Use the
+* Both fingers are classified as Pointable objects. Use the
 * Pointable.tool property to determine whether a Pointable object represents a
 * tool or finger. The Leap classifies a detected entity as a tool when it is
 * thinner, straighter, and longer than a typical finger.
@@ -1554,7 +1554,7 @@ var Hand = require("./hand")
  * The Frame class represents a set of hand and finger tracking data detected
  * in a single frame.
  *
- * The Leap detects hands, fingers and tools within the tracking area, reporting
+ * The Leap detects hands, fingers within the tracking area, reporting
  * their positions, orientations and motions in frames at the Leap frame rate.
  *
  * Access Frame objects using the [Controller.frame]{@link Leap.Controller#frame}() function.
@@ -1609,8 +1609,8 @@ var Frame = module.exports = function(data) {
   this.hands = [];
   this.handsMap = {};
   /**
-   * The list of Pointable objects (fingers and tools) detected in this frame,
-   * given in arbitrary order. The list can be empty if no fingers or tools are
+   * The list of Pointable objects (fingers) detected in this frame,
+   * given in arbitrary order. The list can be empty if no fingers are
    * detected.
    *
    * @member pointables[]
@@ -2039,7 +2039,7 @@ var Pointable = require("./pointable")
  *
  * Hand tracking data includes a palm position and velocity; vectors for
  * the palm normal and direction to the fingers; properties of a sphere fit
- * to the hand; and lists of the attached fingers and tools.
+ * to the hand; and lists of the attached fingers.
  *
  * Note that Hand objects can be invalid, which means that they do not contain
  * valid tracking data and do not correspond to a physical entity. Invalid Hand
@@ -2134,14 +2134,13 @@ var Hand = module.exports = function(data) {
    */
   this.valid = true;
   /**
-   * The list of Pointable objects (fingers and tools) detected in this frame
+   * The list of Pointable objects (fingers) detected in this frame
    * that are associated with this hand, given in arbitrary order. The list
    * can be empty if no fingers or tools associated with this hand are detected.
    *
    * Use the {@link Pointable} tool property to determine
    * whether or not an item in the list represents a tool or finger.
-   * You can also get only the tools using the Hand.tools[] list or
-   * only the fingers using the Hand.fingers[] list.
+   * You can also get only the fingers using the Hand.fingers[] list.
    *
    * @member pointables[]
    * @memberof Leap.Hand.prototype
@@ -2172,17 +2171,6 @@ var Hand = module.exports = function(data) {
     this.arm = null;
   }
   
-  /**
-   * The list of tools detected in this frame that are held by this
-   * hand, given in arbitrary order.
-   *
-   * The list can be empty if no tools held by this hand are detected.
-   *
-   * @member tools[]
-   * @memberof Leap.Hand.prototype
-   * @type {Leap.Pointable[]}
-   */
-  this.tools = [];
   this._translation = data.t;
   function flattenDeep(arr) {
     return Array.isArray(arr)
@@ -2250,7 +2238,7 @@ Hand.prototype.finger = function(id) {
 
 /**
  * The angle of rotation around the rotation axis derived from the change in
- * orientation of this hand, and any associated fingers and tools, between the
+ * orientation of this hand, and any associated fingers, between the
  * current frame and the specified frame.
  *
  * The returned angle is expressed in radians measured clockwise around the
@@ -2285,7 +2273,7 @@ Hand.prototype.rotationAngle = function(sinceFrame, axis) {
 
 /**
  * The axis of rotation derived from the change in orientation of this hand, and
- * any associated fingers and tools, between the current frame and the specified frame.
+ * any associated fingers, between the current frame and the specified frame.
  *
  * The returned direction vector is normalized.
  *
@@ -2311,7 +2299,7 @@ Hand.prototype.rotationAxis = function(sinceFrame) {
 
 /**
  * The transform matrix expressing the rotation derived from the change in
- * orientation of this hand, and any associated fingers and tools, between
+ * orientation of this hand, and any associated fingers, between
  * the current frame and the specified frame.
  *
  * If a corresponding Hand object is not found in sinceFrame, or if either
@@ -2340,7 +2328,7 @@ Hand.prototype.rotationMatrix = function(sinceFrame) {
  * Values between 0.0 and 1.0 indicate contraction and values greater than 1.0 indicate expansion.
  *
  * The Leap derives scaling from the relative inward or outward motion of a hand
- * and its associated fingers and tools (independent of translation and rotation).
+ * and its associated fingers (independent of translation and rotation).
  *
  * If a corresponding Hand object is not found in sinceFrame, or if either this frame or sinceFrame
  * are invalid Frame objects, then this method returns 1.0.
@@ -2464,7 +2452,6 @@ Hand.prototype.roll = function() {
 Hand.Invalid = {
   valid: false,
   fingers: [],
-  tools: [],
   pointables: [],
   left: false,
   pointable: function() { return Pointable.Invalid },
@@ -2738,7 +2725,7 @@ Pipeline.prototype.removeStep = function(step){
  * @memberOf Leap.Controller.prototype
  * @param {Controller} The controller on which the callback is called.
  * @param {String} type What frame object the callback is run for and receives.
- *       Can be one of 'frame', 'finger', 'hand', 'pointable', 'tool'
+ *       Can be one of 'frame', 'finger', 'hand', 'pointable'
  * @param {function} callback The method which will be run inside the pipeline loop.  Receives one argument, such as a hand.
  * @private
  */
@@ -2834,7 +2821,7 @@ var Pointable = module.exports = function(data) {
    * @type {Boolean}
    * @memberof Leap.Pointable.prototype
    */
-  this.tool = data.tool;
+  this.tool = false;//data.tool;
   /**
    * The estimated width of the tool in millimeters.
    *
@@ -2977,9 +2964,6 @@ Pointable.Invalid = { valid: false };
 
 },{"gl-matrix":22}],15:[function(require,module,exports){
 var Frame = require('./frame')
-  , Hand = require('./hand')
-  , Pointable = require('./pointable')
-  , Finger = require('./finger')
   , EventEmitter = require('events').EventEmitter;
 
 var Event = function(data) {
@@ -3050,7 +3034,7 @@ var JSONProtocol = exports.JSONProtocol = function(header) {
 
 
 
-},{"./finger":8,"./frame":9,"./hand":10,"./pointable":14,"events":20}],16:[function(require,module,exports){
+},{"./frame":9,"events":20}],16:[function(require,module,exports){
 exports.UI = {
   Region: require("./ui/region"),
   Cursor: require("./ui/cursor")

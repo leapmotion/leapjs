@@ -1,6 +1,6 @@
 describe('Pointable', function(){
   describe("properties", function() {
-    var data = fakeFrame({tools: 5, hands:1})
+    var data = fakeFrame({fingers: 5, hands:1})
     var frame = createFrame(data);
     var pointable = frame.hands[0].pointables[0];
 
@@ -15,8 +15,8 @@ describe('Pointable', function(){
     it('should have touchZone', function() { assert.property(pointable, 'touchZone') })
     it('should have touchDistance', function() { assert.property(pointable, 'touchDistance') })
     it('should have timeVisible', function() { assert.property(pointable, 'timeVisible') })
-    it('should not have mcpPosition', function() { assert.notProperty(pointable, 'mcpPosition') })
-    it('should match Pointable in #toString', function() { assert.match(pointable.toString(), /^Pointable/); })
+    //it('should not have mcpPosition', function() { assert.notProperty(pointable, 'mcpPosition') })
+    it('should match Pointable in #toString', function() { assert.match(pointable.toString(), /^Finger/); })
     it('should respond to hand()', function() { assert.equal(pointable.hand(), frame.hands[0]) })
   });
 });

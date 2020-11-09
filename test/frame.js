@@ -89,7 +89,6 @@ describe('Frame', function(){
   describe('Invalid', function() {
     it('should be invalid',                                     function() { assert(!Leap.Frame.Invalid.valid)})
     it('should have empty fingers',                             function() { assert.equal(0, Leap.Frame.Invalid.fingers.length)})
-    it('should have empty tools',                               function() { assert.equal(0, Leap.Frame.Invalid.tools.length)})
     it('should have empty pointables',                          function() { assert.equal(0, Leap.Frame.Invalid.pointables.length)})
     it('should return an invalid #pointable',                   function() { assert(!Leap.Frame.Invalid.pointable().valid)})
     it('should return an invalid #finger',                      function() { assert(!Leap.Frame.Invalid.finger().valid)})
