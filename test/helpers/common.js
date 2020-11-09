@@ -59,16 +59,14 @@ var fakeFrame = exports.fakeFrame = function(opts) {
   handId = 0
   fingerId = 0
 
-  var fingers = opts.pointableData || times((opts.fingers || 0), function(n) { return fakeFinger(n) }),
-      tools   = opts.pointableData || times((opts.tools   || 0), function(n) { return fakeTool(n) });
+  var fingers = opts.pointableData || times((opts.fingers || 0), function(n) { return fakeFinger(n) });
 
   var frame = {
     id: opts.id || ++frameId,
     valid: true,
     timestamp: frameId,
     fingers: fingers,
-    tools: tools,
-    pointables: fingers.concat(tools),
+    pointables: fingers.slice(),
     hands: opts.handData || times((opts.hands || 0), function() { return fakeHand() }),
     r: opts.rotation || [[0,1,2], [2,3,4], [2,3,4]],
     t: opts.translation || [1, 2, 3],
@@ -76,7 +74,7 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     currentFrameRate: 10
   };
   for (var i = 0; i != frame.pointables.length; i++) {
-    (frame.pointables[i].tool ? frame.tools : frame.fingers).push(frame.pointables[i]);
+    (frame.fingers).push(frame.pointables[i]);
   }
 
   return frame;
@@ -105,9 +103,9 @@ var fakeHand = exports.fakeHand = function(opts) {
   }
 }
 
-var fakeTool = exports.fakeTool = function() {
+var fakeFinger = exports.fakeFinger = function (type) {
   fingerId++
-  return {
+  var finger = {
     id: fingerId - 1,
     handId: 0,
     length: 5,
@@ -120,11 +118,7 @@ var fakeTool = exports.fakeTool = function() {
     touchZone: "none",
     touchDistance: 5,
     timeVisible: 10
-  }
-}
-
-var fakeFinger = exports.fakeFinger = function(type) {
-  var finger = fakeTool();
+  };
   finger.type = type;
   finger.carpPosition = [10.1, 10.1, 10.1];
   finger.mcpPosition =  [11, 11, 11];

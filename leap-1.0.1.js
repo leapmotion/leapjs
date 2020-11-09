@@ -1619,15 +1619,6 @@ var Frame = module.exports = function(data) {
    */
   this.pointables = [];
   /**
-   * The list of Tool objects detected in this frame, given in arbitrary order.
-   * The list can be empty if no tools are detected.
-   *
-   * @member tools[]
-   * @memberof Leap.Frame.prototype
-   * @type {Leap.Pointable}
-   */
-  this.tools = [];
-  /**
    * The list of Finger objects detected in this frame, given in arbitrary order.
    * The list can be empty if no fingers are detected.
    * @member fingers[]
@@ -1691,18 +1682,18 @@ Frame.prototype.postprocessData = function(data){
 /**
  * Adds data from a pointable element into the pointablesMap; 
  * also adds the pointable to the frame.handsMap hand to which it belongs,
- * and to the hand's tools or hand's fingers map.
+ * and to the hand's fingers map.
  * 
  * @param pointable {Object} a Pointable
  */
 Frame.prototype.addPointable = function (pointable) {
   this.pointables.push(pointable);
   this.pointablesMap[pointable.id] = pointable;
-  (pointable.tool ? this.tools : this.fingers).push(pointable);
+  (this.fingers).push(pointable);
   if (pointable.handId !== undefined && this.handsMap.hasOwnProperty(pointable.handId)) {
     var hand = this.handsMap[pointable.handId];
     hand.pointables.push(pointable);
-    (pointable.tool ? hand.tools : hand.fingers).push(pointable);
+    (hand.fingers).push(pointable);
     switch (pointable.type){
       case 0:
         hand.thumb = pointable;
@@ -1724,42 +1715,17 @@ Frame.prototype.addPointable = function (pointable) {
 };
 
 /**
- * The tool with the specified ID in this frame.
- *
- * Use the Frame tool() function to retrieve a tool from
- * this frame using an ID value obtained from a previous frame.
- * This function always returns a Pointable object, but if no tool
- * with the specified ID is present, an invalid Pointable object is returned.
- *
- * Note that ID values persist across frames, but only until tracking of a
- * particular object is lost. If tracking of a tool is lost and subsequently
- * regained, the new Pointable object representing that tool may have a
- * different ID than that representing the tool in an earlier frame.
- *
- * @method tool
- * @memberof Leap.Frame.prototype
- * @param {String} id The ID value of a Tool object from a previous frame.
- * @returns {Leap.Pointable} The tool with the
- * matching ID if one exists in this frame; otherwise, an invalid Pointable object
- * is returned.
- */
-Frame.prototype.tool = function(id) {
-  var pointable = this.pointable(id);
-  return pointable.tool ? pointable : Pointable.Invalid;
-};
-
-/**
  * The Pointable object with the specified ID in this frame.
  *
  * Use the Frame pointable() function to retrieve the Pointable object from
  * this frame using an ID value obtained from a previous frame.
- * This function always returns a Pointable object, but if no finger or tool
+ * This function always returns a Pointable object, but if no finger
  * with the specified ID is present, an invalid Pointable object is returned.
  *
  * Note that ID values persist across frames, but only until tracking of a
- * particular object is lost. If tracking of a finger or tool is lost and subsequently
- * regained, the new Pointable object representing that finger or tool may have
- * a different ID than that representing the finger or tool in an earlier frame.
+ * particular object is lost. If tracking of a finger is lost and subsequently
+ * regained, the new Pointable object representing that finger may have
+ * a different ID than that representing the finger in an earlier frame.
  *
  * @method pointable
  * @memberof Leap.Frame.prototype
@@ -1793,8 +1759,7 @@ Frame.prototype.pointable = function(id) {
  * object is returned.
  */
 Frame.prototype.finger = function(id) {
-  var pointable = this.pointable(id);
-  return !pointable.tool ? pointable : Pointable.Invalid;
+  return this.pointable(id);
 };
 
 /**
@@ -2006,7 +1971,6 @@ Frame.Invalid = {
   valid: false,
   hands: [],
   fingers: [],
-  tools: [],
   pointables: [],
   pointable: function() { return Pointable.Invalid },
   finger: function() { return Pointable.Invalid },
@@ -2821,7 +2785,7 @@ var Pointable = module.exports = function(data) {
    * @type {Boolean}
    * @memberof Leap.Pointable.prototype
    */
-  this.tool = false;//data.tool;
+  this.tool = data.tool;
   /**
    * The estimated width of the tool in millimeters.
    *
