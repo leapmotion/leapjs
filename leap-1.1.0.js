@@ -1,5 +1,5 @@
 /*!                                                              
- * LeapJS v1.0.1                                                  
+ * LeapJS v1.1.0                                                  
  * http://github.com/leapmotion/leapjs/                                        
  *                                                                             
  * Copyright 2020 Ultraleap, Inc. and other contributors                       
@@ -3104,10 +3104,10 @@ Object.assign(Region.prototype, EventEmitter.prototype)
 },{"events":20}],19:[function(require,module,exports){
 // This file is automatically updated from package.json by grunt.
 module.exports = {
-  full: '1.0.1',
+  full: '1.1.0',
   major: 1,
-  minor: 0,
-  dot: 1
+  minor: 1,
+  dot: 0
 }
 },{}],20:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -11845,7 +11845,7 @@ process.umask = function() { return 0; };
 },{}],33:[function(require,module,exports){
 'use strict';
 
-module.exports = function() {
+module.exports = function () {
   throw new Error(
     'ws does not work in the browser. Browser clients must use the native ' +
       'WebSocket object'
