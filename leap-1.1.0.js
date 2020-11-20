@@ -473,7 +473,7 @@ NodeConnection.prototype.setupSocket = function() {
 }
 
 },{"./base":3,"ws":33}],6:[function(require,module,exports){
-(function (process){
+(function (process){(function (){
 var Frame = require('./frame')
   , Hand = require('./hand')
   , Pointable = require('./pointable')
@@ -1192,9 +1192,9 @@ Controller.prototype.useRegisteredPlugins = function(){
 
 Object.assign(Controller.prototype, EventEmitter.prototype);
 
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"./circular_buffer":2,"./connection/browser":4,"./connection/node":5,"./dialog":7,"./finger":8,"./frame":9,"./hand":10,"./pipeline":13,"./pointable":14,"_process":32,"events":20}],7:[function(require,module,exports){
-(function (process){
+(function (process){(function (){
 var Dialog = module.exports = function(message, options){
   this.options = (options || {});
   this.message = message;
@@ -1341,7 +1341,7 @@ Dialog.warnBones = function(){
   }
 
 }
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"_process":32}],8:[function(require,module,exports){
 var Pointable = require('./pointable')
   , Bone = require('./bone')
