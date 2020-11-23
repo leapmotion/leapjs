@@ -3,26 +3,20 @@
     if (typeof module != 'undefined') {
         var assert = require('assert');
         var util = require('util');
-        var _ = require('underscore');
     } else {
         var assert = window.assert;
-        var _ = window._;
     }
 
     function ok(test, message) {
         if (assert && assert.ok) {
             assert.ok(test, message);
         } else {
-            assert.equal(!!test, message);
+            assert.strictEqual(!!test, message);
         }
     }
 
     function isObject(o){
-        if (_){
-            return _.isObject(o);
-        } else {
-            return typeof o == 'object';
-        }
+        return typeof o == 'object';
     }
 
     var _DEFAULT_RANGE = 1e-6;
@@ -62,7 +56,7 @@
          */
         validThreshold: function (threshold, comment) {
             if (!comment) comment = 'threshold violation';
-            ok(!isNaN(threshold), "matrix3CloseTo: third argument must be a number");
+            ok(!Number.isNaN(threshold), "matrix3CloseTo: third argument must be a number");
             ok(threshold >= 0, 'matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
         },
 
@@ -90,9 +84,9 @@
 
                 if (_DEBUG) console.log('veca: %s', f(vecA));
                 if (!threshold) threshold = lib.DEFAULT_RANGE();
-                _.each(_.range(0, 3), function (dim) {
+                for (let dim = 0; dim < 3; dim++){
                     lib.closeTo(vecA[dim], vecB[dim], threshold, comment, dim);
-                });
+                }
             } catch (e) {
                 console.log('vct error: %s', e, f(vecA), f(vecB));
                 throw e;
@@ -115,7 +109,7 @@
                 if (!comment) comment = 'matrix3CloseTo';
                 lib.validThreshold(threshold, 'matrix3CloseTo: ' + comment);
 
-                if (!_.isNumber(threshold)) throw new Error("matrix3CloseTo: third argument must be a number");
+                if (!(typeof threshold == 'number')) throw new Error("matrix3CloseTo: third argument must be a number");
                 if (threshold < 0) throw new Error('matrix3CloseTo: threshold must be >= 0 -- is ' + threshold);
 
                 ok(matA && isObject(matA), f('vectorCloseTo bad argument 1: %s', matA));
@@ -123,17 +117,18 @@
 
                 if (!threshold) threshold = lib.DEFAULT_RANGE();
 
-                _.each(_.range(0, 9), function (dim) {
+                for (let dim = 0; dim < 9; dim++){
                     lib.closeTo(matB[dim], matA[dim], threshold, dim + ': ' + comment, dim);
-                });
+                }
             } catch (e) {
                 console.log('mct error: %s -- %s, %s', e, f(matA), f(matB));
                 throw e;
             }
         },
         closeTo: function (a, b, threshold, comment, dim) {
-            ok(!_.isNaN(a), 'bad number a: ' + comment);
-            ok(!_.isNaN(b), 'bad number b: ' + comment);
+            // Inline Definition of Number.IsNaN()
+            ok(!(typeof a === 'number' && a !== a), 'bad number a: ' + comment);
+            ok(!(typeof b === 'number' && b !== b), 'bad number b: ' + comment);
             var dd = Math.abs(a - b);
             if (_DEBUG) console.log('dim: %s, dd: %s, threshold: %s ', dim, dd, threshold);
             ok(dd <= threshold, comment);

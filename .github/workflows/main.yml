@@ -1,0 +1,50 @@
+name: leapjs - Build Library and Run Unit Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build Library and Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+    
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Install Node
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      # Install Dependencies
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      # Build and Run Tests
+      - name: Build Library and Run Tests
+        run: ./node_modules/.bin/grunt test
+
+      # Commit All Build Artifacts
+      - name: Commit Build Artifacts
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          set +e
+          git add *
+          git diff-index --quiet HEAD || git commit -m "Build Leap.js"
+
+      # Push Build Artifacts
+      - name: Push Changes to branch
+        id: push-build
+        uses: ad-m/github-push-action@master
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      # Reenable Errors
+      - name: Clean Up
+        if: steps.push-build.outcome == 'success' && steps.push-build.conclusion == 'success'
+        run: set -e

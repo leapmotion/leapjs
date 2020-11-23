@@ -4,7 +4,7 @@ module.exports = function(grunt){
 \n * LeapJS v<%= pkg.version %>                                                  \
 \n * http://github.com/leapmotion/leapjs/                                        \
 \n *                                                                             \
-\n * Copyright 2013 LeapMotion, Inc. and other contributors                      \
+\n * Copyright 2020 Ultraleap, Inc. and other contributors                       \
 \n * Released under the Apache-2.0 license                                       \
 \n * http://github.com/leapmotion/leapjs/blob/master/LICENSE                     \
 \n */";
@@ -95,9 +95,9 @@ module.exports = function(grunt){
 
     },
     exec: {
-      'test-browser': './node_modules/.bin/mocha-chrome -R dot test/helpers/browser.html',
+      'test-browser': '"./node_modules/.bin/mocha-headless-chrome" -r dot -f test/helpers/browser.html',
        // -i -g stands for inverse grep.  Tests tagged browser-only will be excluded.
-      'test-node': './node_modules/.bin/mocha lib/index.js test/helpers/node.js test/*.js -R dot -i -g browser-only',
+      'test-node': '"./node_modules/.bin/mocha" lib/index.js test/helpers/node.js test/*.js -R dot -i -g browser-only',
       'test-integration': 'node integration_test/reconnection.js && node integration_test/protocol_versions.js'
     }
   });

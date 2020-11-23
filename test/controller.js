@@ -2,9 +2,9 @@ describe('Controller', function(){
 
   describe('#new', function(){
     it('should allow passing in options', function(done) {
-      var controller = fakeController({enableGestures:true})
+      var controller = fakeController({"background":true})
       controller.connection.send = function(message) {
-        if (message == '{"enableGestures":true}') {
+        if (message == '{"background":true}') {
           done();
         }
       }
@@ -64,29 +64,6 @@ describe('Controller', function(){
       controller.connect()
     })
   })
-
-  describe('accumulating gestures', function() {
-    it('should accumulate gestures', function(done) {
-      var controller = fakeController({suppressAnimationLoop: true, frameEventName: 'animationFrame'})
-      var count = 0
-      controller.on('animationFrame', function(frame) {
-        assert.equal(7, frame.gestures.length);
-        controller.disconnect();
-        done();
-      });
-
-      controller.on('ready', function() {
-        controller.connection.handleData(JSON.stringify(fakeFrame({gestures:[fakeGesture()]})));
-        controller.connection.handleData(JSON.stringify(fakeFrame({gestures:[fakeGesture(), fakeGesture()]})));
-        controller.connection.handleData(JSON.stringify(fakeFrame({gestures:[fakeGesture(), fakeGesture(), fakeGesture(), fakeGesture()]})));
-
-        setTimeout(function() {
-          controller.emit('animationFrame', controller.lastConnectionFrame)
-        }, 50)
-      });
-      controller.connect()
-    });
-  });
 
   describe('frame events', function(){
     it('should fire hand events for frames', function(done){

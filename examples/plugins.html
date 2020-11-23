@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>Plugins - Leap</title>
-    <script src="../leap-1.0.0.js"></script>
+    <script src="../leap-1.1.0.js"></script>
     <script>
       Leap.Controller.plugin('test', function(){
 
@@ -16,7 +16,7 @@
             }
           },
 
-          // for fingers/tools, run every frame
+          // for fingers, run every frame
           pointable: function(pointable){
             // debugger; // uncomment this to see plugin context: the controller.
             pointable.favoriteColor = 'yellow'
