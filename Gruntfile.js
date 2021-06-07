@@ -4,7 +4,7 @@ module.exports = function(grunt){
 \n * LeapJS v<%= pkg.version %>                                                  \
 \n * http://github.com/leapmotion/leapjs/                                        \
 \n *                                                                             \
-\n * Copyright 2020 Ultraleap, Inc. and other contributors                       \
+\n * Copyright 2021 Ultraleap, Inc. and other contributors                       \
 \n * Released under the Apache-2.0 license                                       \
 \n * http://github.com/leapmotion/leapjs/blob/master/LICENSE                     \
 \n */";
