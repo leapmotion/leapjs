@@ -22,6 +22,12 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: 'javascript'
+
       # Build and Run Tests
       - name: Build Library and Run Tests
         run: ./node_modules/.bin/grunt test
@@ -48,3 +54,7 @@ jobs:
       - name: Clean Up
         if: steps.push-build.outcome == 'success' && steps.push-build.conclusion == 'success'
         run: set -e
+
+      # Run CodeQL after everything else for posterity
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
