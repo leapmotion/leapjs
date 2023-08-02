@@ -2,7 +2,7 @@ assert = require('chai').assert;
 
 Leap = require('../../lib');
 
-var common = require('./common');
+let common = require('./common');
 assertUtil = require('./../assertUtil');
 
 fakeHand = common.fakeHand;
