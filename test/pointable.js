@@ -1,8 +1,8 @@
 describe('Pointable', function(){
   describe("properties", function() {
-    var data = fakeFrame({fingers: 5, hands:1})
-    var frame = createFrame(data);
-    var pointable = frame.hands[0].pointables[0];
+    let data = fakeFrame({fingers: 5, hands:1})
+    let frame = createFrame(data);
+    let pointable = frame.hands[0].pointables[0];
 
     it('should have id', function() { assert.property(pointable, 'id') })
     it('should have tool', function() { assert.equal(false, pointable.tool) })
