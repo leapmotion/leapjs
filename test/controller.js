@@ -2,7 +2,7 @@ describe('Controller', function(){
 
   describe('#new', function(){
     it('should allow passing in options', function(done) {
-      var controller = fakeController({"background":true})
+      let controller = fakeController({"background":true})
       controller.connection.send = function(message) {
         if (message == '{"background":true}') {
           done();
@@ -14,8 +14,8 @@ describe('Controller', function(){
 
   describe('#connect', function(){
     it('should pump frames', function(done) {
-      var controller = fakeController()
-      var count = 0
+      let controller = fakeController()
+      let count = 0
       controller.on('disconnect', done);
       controller.on('frame', function(frame) {
         count++;
@@ -32,7 +32,7 @@ describe('Controller', function(){
     })
 
     it('should respond to streaming', function () {
-      var controller = fakeController()
+      let controller = fakeController()
       assert.equal(controller.streaming(), false);
       controller.connect()
       controller.on('streamingStarted', function () {
@@ -45,7 +45,7 @@ describe('Controller', function(){
     });
 
     it('should respond to connected', function(){
-      var controller = fakeController()
+      let controller = fakeController()
       assert.equal(controller.connected(), false);
       controller.connect()
       controller.on('ready', function() {
@@ -56,7 +56,7 @@ describe('Controller', function(){
 
   describe('#disconnect', function() {
     it('should fire a "disconnect" event', function(done) {
-      var controller = fakeController()
+      let controller = fakeController()
       controller.on('disconnect', done);
       controller.on('ready', function() {
         controller.disconnect()
@@ -69,8 +69,8 @@ describe('Controller', function(){
     it('should fire hand events for frames', function(done){
       this.timeout(500);
 
-      var controller = fakeController();
-      var handCount = 0;
+      let controller = fakeController();
+      let handCount = 0;
       controller.on('hand', function(hand){
         handCount++;
         console.assert(hand.fingers, hand, "is invalid");
@@ -83,10 +83,10 @@ describe('Controller', function(){
 
     it('should allow frame and hand event binding as options', function(done){
       this.timeout(500);
-      var frameCount = 0;
-      var handCount = 0;
+      let frameCount = 0;
+      let handCount = 0;
 
-      var controller = fakeController({
+      let controller = fakeController({
         frame: function(frame){
           frameCount++;
           console.assert(frame.hands, frame, "is invalid");
@@ -146,8 +146,8 @@ describe('Controller', function(){
 
   describe('device events', function() {
     it('should fire deviceAttached/Removed ', function(done) {
-	    var controller = fakeController({version: 5});
-      var count = 0;
+	    let controller = fakeController({version: 5});
+      let count = 0;
       
 	    controller.on('protocol', function(protocol) {
 	      assert.equal(5, protocol.version);
@@ -160,7 +160,7 @@ describe('Controller', function(){
 		    controller.connection.handleData(JSON.stringify({event: {type:'deviceEvent', state: { type: 'peripheral', streaming: false, attached: false}}}));
 	    });
 	    
-      var assertFalseFunc = function(deviceInfo) {
+      let assertFalseFunc = function(deviceInfo) {
         assert.equal(true,false); //I'm sure there's a better way to do this...
       };
       
@@ -180,8 +180,8 @@ describe('Controller', function(){
     });
     
     it('should fire both deviceAttached AND deviceStreaming', function(done) {
-      var controller = fakeController({version: 5});
-      var count = 0;
+      let controller = fakeController({version: 5});
+      let count = 0;
       
 	    controller.on('protocol', function(protocol) {
 	      assert.equal(5, protocol.version);
@@ -214,8 +214,8 @@ describe('Controller', function(){
     });
 
     it('Should fire deviceConnected & deviceRemoved', function(done) {
-      var controller = fakeController({version: 5});
-      var count = 0;
+      let controller = fakeController({version: 5});
+      let count = 0;
       
       controller.on('protocol', function(protocol) {
         assert.equal(5, protocol.version);
@@ -248,7 +248,7 @@ describe('Controller', function(){
     it ('should fire no warning by default', function(done){
       this.timeout(500);
 
-      var controller = fakeController({version: 6}).connect();
+      let controller = fakeController({version: 6}).connect();
       controller.on('ready', function(){
         assert(controller.checkOutOfDate() == false, 'Should not show version warning dialog');
         done();
@@ -258,7 +258,7 @@ describe('Controller', function(){
     it ('should fire warning when out of date', function(done){
       this.timeout(500);
 
-      var controller = fakeController({version: 5}).connect();
+      let controller = fakeController({version: 5}).connect();
       controller.on('ready', function(){
         assert(controller.checkOutOfDate() == true, 'Should show version warning dialog');
         done();
@@ -283,7 +283,7 @@ describe('Controller', function(){
         }
       }));
 
-      var controller = fakeController()
+      let controller = fakeController()
       controller.use('testPlugin')
       controller.on('frame', function(frame){
         assert.equal(frame.foo, 'bar')
@@ -297,8 +297,8 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
       Leap.Controller.plugin('testPlugin', fakePluginFactory());
 
-      var scope = {color: 'blue'};
-      var plugins = fakeController()
+      let scope = {color: 'blue'};
+      let plugins = fakeController()
         .use('testPlugin', scope)
         .plugins;
 
@@ -310,8 +310,8 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
       Leap.Controller.plugin('testPlugin', fakePluginFactory());
 
-      var scope = {color: 'blue'};
-      var plugins = fakeController()
+      let scope = {color: 'blue'};
+      let plugins = fakeController()
         .use('testPlugin', scope)
         .use('testPlugin', {color: 'red'})
         .plugins;
@@ -325,7 +325,7 @@ describe('Controller', function(){
       Leap.Controller._pluginFactories = {}
       Leap.Controller.plugin('testPlugin', fakePluginFactory());
 
-      var plugins = fakeController()
+      let plugins = fakeController()
         .use('testPlugin')
         .stopUsing('testPlugin')
         .plugins;
@@ -336,7 +336,7 @@ describe('Controller', function(){
 
     describe('use', function () {
       it('should accept plugin factories directly', function () {
-        var controller = fakeController()
+        let controller = fakeController()
         controller.use(function (options) {
           assert.equal(options.x, 2)
           return {}
@@ -361,7 +361,7 @@ describe('Controller', function(){
         }
       }));
 
-      var controller = fakeController()
+      let controller = fakeController()
       controller.use('testPlugin')
       controller.on('frame', function(frame){
         assert.equal(frame.hands[0].idWithExclamation, '0!')
@@ -390,7 +390,7 @@ describe('Controller', function(){
         }
       }));
 
-      var controller = fakeController();
+      let controller = fakeController();
       controller.use('testPlugin')
       controller.on('frame', function(frame){
         assert.equal(frame.hands[0].idWithExclamation, undefined)
@@ -427,7 +427,7 @@ describe('Controller', function(){
           }
         }
       }));
-      var controller = fakeController()
+      let controller = fakeController()
       controller.use('testPlugin')
       // our test doubles are not actual instances of the class, so we test the prototype
       assert.equal(Leap.Frame.prototype.testFn(), 'frame');
@@ -453,7 +453,7 @@ describe('Controller', function(){
         }
       }));
 
-      var controller = fakeController({useAllPlugins: true})
+      let controller = fakeController({useAllPlugins: true})
       controller.on('frame', function(frame){
         assert.equal(frame.foo, 'bar')
       });
@@ -486,7 +486,7 @@ describe('Controller', function(){
           }
         }
       }));
-      var controller = fakeController();
+      let controller = fakeController();
       controller.use('testPlugin');
       controller.stopUsing('testPlugin');
       // our test doubles are not actual instances of the class, so we test the prototype
@@ -512,7 +512,7 @@ describe('Controller', function(){
         }
       }));
 
-      var controller = fakeController({useAllPlugins: true})
+      let controller = fakeController({useAllPlugins: true})
       controller.on('frame', function(frame){
         assert.equal(frame.foo, 'bar')
       });
@@ -524,12 +524,12 @@ describe('Controller', function(){
 
   describe('method chaining', function(){
     it('should return a controller from .connect()', function(){
-      var controller = fakeController();
+      let controller = fakeController();
       assert.equal(controller.connect(), controller);
     });
 
     it('should return a controller from .on()', function(){
-      var controller = fakeController();
+      let controller = fakeController();
       assert.equal(controller.on('frame', function(){}), controller);
     });
 
@@ -540,7 +540,7 @@ describe('Controller', function(){
           frame.foo = 'bar'
         }
       }));
-      var controller = new Leap.Controller
+      let controller = new Leap.Controller
 
       assert.equal(controller.use('testPlugin'), controller);
       Leap.Controller._pluginFactories = {}
@@ -553,24 +553,24 @@ describe('Controller', function(){
           frame.foo = 'bar'
         }
       }));
-      var controller = new Leap.Controller
+      let controller = new Leap.Controller
       controller.use('testPlugin');
       assert.equal(controller.stopUsing('testPlugin'), controller);
       Leap.Controller._pluginFactories = {}
     });
 
     it('should return a controller from .disconnect()', function(){
-      var controller = new Leap.Controller;
+      let controller = new Leap.Controller;
       assert.equal(controller.disconnect(), controller);
     });
 
     it('should return a controller from .setBackground()', function(){
-      var controller = new Leap.Controller;
+      let controller = new Leap.Controller;
       assert.equal(controller.setBackground(true), controller);
     });
 
     it('should return a controller from .optimizeHMD()', function(){
-      var controller = new Leap.Controller;
+      let controller = new Leap.Controller;
       assert.equal(controller.setOptimizeHMD(true), controller);
     });
 
