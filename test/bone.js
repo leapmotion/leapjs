@@ -1,7 +1,7 @@
 describe('Bone', function(){
   describe("properties", function() {
-    var frame = fakeActualFrame();
-    var bone = frame.hands[0].fingers[0].bones[0];
+    let frame = fakeActualFrame();
+    let bone = frame.hands[0].fingers[0].bones[0];
 
     it('should have nextJoint', function() { assert.property(bone, 'nextJoint')  });
     it('should have prevJoint', function() { assert.property(bone, 'prevJoint')  });
