@@ -1,15 +1,15 @@
 describe('Connection', function(){
   describe("class methods", function(){
     it('should return defaultProtocolVersion', function(){
-      var controller = fakeController();
+      let controller = fakeController();
       assert(controller.connectionType.defaultProtocolVersion, 'should have default protocol version');
     });
   });
 
   describe('#new', function(){
     it('should return a connection that pumps events', function(done) {
-      var controller = fakeController()
-      var connection = controller.connection
+      let controller = fakeController()
+      let connection = controller.connection
       controller.on('ready', function() {
         connection.handleData(JSON.stringify(fakeFrame({id:123})))
       })
@@ -24,8 +24,8 @@ describe('Connection', function(){
 
   describe('#connect', function(){
     it('should fire a "connect" event', function(done){
-      var controller = fakeController()
-      var connection = controller.connection
+      let controller = fakeController()
+      let connection = controller.connection
       connection.on('ready', function() {
         connection.disconnect()
         done()
@@ -36,8 +36,8 @@ describe('Connection', function(){
 
   describe('#disconnect', function(){
     it('should fire a "disconnect" event', function(done){
-      var controller = fakeController()
-      var connection = controller.connection
+      let controller = fakeController()
+      let connection = controller.connection
       connection.on('disconnect', function() {
         assert.isUndefined(connection.socket);
         assert.isUndefined(connection.protocol);
@@ -54,8 +54,8 @@ describe('Connection', function(){
 
   describe('background in protocol 4', function(){
     it('should send background true', function(done){
-      var controller = fakeController({version: 4});
-      var connection = controller.connection;
+      let controller = fakeController({version: 4});
+      let connection = controller.connection;
       connection.setBackground(true);
       controller.on('ready', function() {
         setTimeout(function() {
@@ -68,8 +68,8 @@ describe('Connection', function(){
     })
 
     it('should send background false', function(done){
-      var controller = fakeController({version: 4});
-      var connection = controller.connection;
+      let controller = fakeController({version: 4});
+      let connection = controller.connection;
       controller.on('ready', function() {
         controller.setBackground(false);
         setTimeout(function() {
@@ -82,8 +82,8 @@ describe('Connection', function(){
     })
 
     it('should send focused true', function(done){
-      var controller = fakeController({version: 4});
-      var connection = controller.connection;
+      let controller = fakeController({version: 4});
+      let connection = controller.connection;
       controller.on('ready', function() {
         controller.setBackground(false);
         setTimeout(function() {
@@ -100,8 +100,8 @@ describe('Connection', function(){
   describe('HMD in protocol 6', function(){
 
     it('should send optimizeHMD true', function(done){
-      var controller = fakeController({version: 6});
-      var connection = controller.connection;
+      let controller = fakeController({version: 6});
+      vlet connection = controller.connection;
       connection.setOptimizeHMD(true);
       controller.on('ready', function() {
         setTimeout(function() {
@@ -114,8 +114,8 @@ describe('Connection', function(){
     });
 
     it('should send optimizeHMD false', function(done){
-      var controller = fakeController({version: 4});
-      var connection = controller.connection;
+      let controller = fakeController({version: 4});
+      let connection = controller.connection;
       controller.on('ready', function() {
         controller.setOptimizeHMD(false);
         setTimeout(function() {
