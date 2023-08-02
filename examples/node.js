@@ -1,17 +1,17 @@
 require('../template/entry');
 
-var controller = new Leap.Controller()
+let controller = new Leap.Controller()
 controller.on("frame", function(frame) {
   console.log("Frame: " + frame.id + " @ " + frame.timestamp);
 });
 
-var frameCount = 0;
+let frameCount = 0;
 controller.on("frame", function(frame) {
   frameCount++;
 });
 
 setInterval(function() {
-  var time = frameCount/2;
+  let time = frameCount/2;
   console.log("received " + frameCount + " frames @ " + time + "fps");
   frameCount = 0;
 }, 2000);
