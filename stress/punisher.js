@@ -1,10 +1,10 @@
-var Leap = require('../lib');
+let Leap = require('../lib');
 
 setTimeout(function() {
   process.exit(0);
 }, Math.floor(Math.random() * 5000));
 
-var controller = new Leap.Controller();
+let controller = new Leap.Controller();
 
 controller.on('connect', function() {
   console.log("connected")
