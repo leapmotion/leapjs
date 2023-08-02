@@ -1,10 +1,10 @@
 (function (window) {
 
     if (typeof module != 'undefined') {
-        var assert = require('assert');
-        var util = require('util');
+        let assert = require('assert');
+        let util = require('util');
     } else {
-        var assert = window.assert;
+        let assert = window.assert;
     }
 
     function ok(test, message) {
@@ -19,12 +19,12 @@
         return typeof o == 'object';
     }
 
-    var _DEFAULT_RANGE = 1e-6;
+    let _DEFAULT_RANGE = 1e-6;
 
-    var _DEBUG = 0;
+    let _DEBUG = 0;
 
     function f(v1, v2, v3) {
-        var args = arguments || [v1, v2, v3];
+        let args = arguments || [v1, v2, v3];
         if (typeof util !== 'undefined') {
             return util.format.apply(util, args);
         } else {
@@ -36,7 +36,7 @@
         }
     }
 
-    var lib = {
+    let lib = {
 
         /**
          * A "Constant function" -- returns the default threshold, so you can see but not alter it.
@@ -129,7 +129,7 @@
             // Inline Definition of Number.IsNaN()
             ok(!(typeof a === 'number' && a !== a), 'bad number a: ' + comment);
             ok(!(typeof b === 'number' && b !== b), 'bad number b: ' + comment);
-            var dd = Math.abs(a - b);
+            let dd = Math.abs(a - b);
             if (_DEBUG) console.log('dim: %s, dd: %s, threshold: %s ', dim, dd, threshold);
             ok(dd <= threshold, comment);
         }
