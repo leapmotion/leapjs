@@ -6,18 +6,18 @@ if (typeof(window) !== 'undefined') {
   window.requestAnimationFrame = function(callback) { setTimeout(callback, 1000 / 60); };
 }
 
-var fingerId = 0
+let fingerId = 0
   , handId = 0
   , frameId =0;
 
-var fakeController = exports.fakeController = function(opts) {
+let fakeController = exports.fakeController = function(opts) {
   opts = Object.assign({frameEventName: "deviceFrame", version: 6}, opts || {});
-  var controller = new Leap.Controller(opts);
-  var connection = controller.connection;
+  let controller = new Leap.Controller(opts);
+  let connection = controller.connection;
 
   connection.setupSocket = function() {
     setTimeout(function() { connection.handleOpen() }, 1)
-    var socket = {
+    let socket = {
       messages: [],
       send: function(message) {
         socket.messages.push(message);
@@ -32,7 +32,7 @@ var fakeController = exports.fakeController = function(opts) {
   return controller;
 }
 
-var fakePluginFactory = exports.fakePluginFactory = function (returning) {
+let fakePluginFactory = exports.fakePluginFactory = function (returning) {
   returning || (returning = {
       frame: function (frame) {}
   })
@@ -41,27 +41,27 @@ var fakePluginFactory = exports.fakePluginFactory = function (returning) {
   }
 }
 
-var createFrame = exports.createFrame = function(data) {
+let createFrame = exports.createFrame = function(data) {
   return Leap.JSONProtocol(5)(data);
 }
 
 function times(n, callback) {
-  var returnArray = [];
-  for (var i = 0; i < n; i++) {
+  let returnArray = [];
+  for (let i = 0; i < n; i++) {
     returnArray.push(callback(i));
   }
   return returnArray;
 }
 
-var fakeFrame = exports.fakeFrame = function(opts) {
+let fakeFrame = exports.fakeFrame = function(opts) {
   if (opts === undefined) opts = {};
 
   handId = 0
   fingerId = 0
 
-  var fingers = opts.pointableData || times((opts.fingers || 0), function(n) { return fakeFinger(n) });
+  let fingers = opts.pointableData || times((opts.fingers || 0), function(n) { return fakeFinger(n) });
 
-  var frame = {
+  let frame = {
     id: opts.id || ++frameId,
     valid: true,
     timestamp: frameId,
@@ -73,14 +73,14 @@ var fakeFrame = exports.fakeFrame = function(opts) {
     interactionBox: {center: [1,2,3], size: [1,2,3]},
     currentFrameRate: 10
   };
-  for (var i = 0; i != frame.pointables.length; i++) {
+  for (let i = 0; i != frame.pointables.length; i++) {
     (frame.fingers).push(frame.pointables[i]);
   }
 
   return frame;
 };
 
-var fakeHand = exports.fakeHand = function(opts) {
+let fakeHand = exports.fakeHand = function(opts) {
   if (opts === undefined) opts = {};
   handId++
   return {
@@ -103,9 +103,9 @@ var fakeHand = exports.fakeHand = function(opts) {
   }
 }
 
-var fakeFinger = exports.fakeFinger = function (type) {
+let fakeFinger = exports.fakeFinger = function (type) {
   fingerId++
-  var finger = {
+  let finger = {
     id: fingerId - 1,
     handId: 0,
     length: 5,
