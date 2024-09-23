@@ -200,6 +200,7 @@ var BaseConnection = module.exports = function(opts) {
     port: this.getPort(),
     background: false,
     optimizeHMD: false,
+    optimizeScreentop: false,
     requestProtocolVersion: BaseConnection.defaultProtocolVersion
   }, opts || {});
   this.host = this.opts.host;
@@ -208,12 +209,16 @@ var BaseConnection = module.exports = function(opts) {
   this.protocolVersionVerified = false;
   this.background = null;
   this.optimizeHMD = null;
+  this.optimizeScreentop = null;
   this.on('ready', function() {
     this.setBackground(this.opts.background);
     this.setOptimizeHMD(this.opts.optimizeHMD);
+    this.setOptimizeScreentop(this.opts.optimizeScreentop);
 
     if (this.opts.optimizeHMD){
       console.log("Optimized for head mounted display usage.");
+    }else if (this.opts.optimizeScreentop){
+      console.log("Optimized for screentop usage.");
     }else {
       console.log("Optimized for desktop usage.");
     }
@@ -251,6 +256,14 @@ BaseConnection.prototype.setOptimizeHMD = function(state) {
   if (this.protocol && this.protocol.sendOptimizeHMD && this.optimizeHMD !== this.opts.optimizeHMD) {
     this.optimizeHMD = this.opts.optimizeHMD;
     this.protocol.sendOptimizeHMD(this, this.opts.optimizeHMD);
+  }
+}
+
+BaseConnection.prototype.setOptimizeScreentop = function(state) {
+  this.opts.optimizeScreentop = state;
+  if (this.protocol && this.protocol.sendOptimizeScreentop && this.optimizeScreentop !== this.opts.optimizeScreentop) {
+    this.optimizeScreentop = this.opts.optimizeScreentop;
+    this.protocol.sendOptimizeScreentop(this, this.opts.optimizeScreentop);
   }
 }
 
@@ -298,6 +311,7 @@ BaseConnection.prototype.disconnect = function(allowReconnect) {
   delete this.protocol;
   delete this.background; // This is not persisted when reconnecting to the web socket server
   delete this.optimizeHMD;
+  delete this.optimizeScreentop;
   delete this.focusedState;
   if (this.connected) {
     this.connected = false;
@@ -587,6 +601,11 @@ Controller.prototype.setBackground = function(state) {
 
 Controller.prototype.setOptimizeHMD = function(state) {
   this.connection.setOptimizeHMD(state);
+  return this;
+}
+
+Controller.prototype.setOptimizeScreentop = function(state) {
+  this.connection.setOptimizeScreentop(state);
   return this;
 }
 
@@ -2953,6 +2972,9 @@ exports.chooseProtocol = function(header) {
       }
       protocol.sendOptimizeHMD = function(connection, state) {
         connection.send(protocol.encode({optimizeHMD: state}));
+      }
+      protocol.sendOptimizeScreentop = function(connection, state) {
+        connection.send(protocol.encode({optimizeScreentop: state}));
       }
       break;
     default:
