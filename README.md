@@ -1,9 +1,9 @@
-__What do you think about the future of VR? [Take our survey.](https://www.surveymonkey.com/s/7LZQDKL)__
-
 
 [![LeapJS Logo](https://cloud.githubusercontent.com/assets/407497/2652512/eedfb992-bfae-11e3-8323-f202845e3fd8.png)](https://developer.leapmotion.com/leapjs/)
 
 Welcome to the [Leap Motion](https://www.leapmotion.com) JavaScript framework.
+
+You can now use LeapJS with **Ultraleap Gemini V5** and **Hyperion V6**! Visit the [Ultraleap Tracking WebSocket](https://github.com/ultraleap/UltraleapTrackingWebSocket) repository to grab the code and build it from source.
 
 [![Build Status](https://travis-ci.org/leapmotion/leapjs.svg)](https://travis-ci.org/leapmotion/leapjs)
 
