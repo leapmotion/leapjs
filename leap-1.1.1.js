@@ -254,6 +254,7 @@ BaseConnection.prototype.setBackground = function(state) {
 BaseConnection.prototype.setOptimizeHMD = function(state) {
   this.opts.optimizeHMD = state;
   if (this.protocol && this.protocol.sendOptimizeHMD && this.optimizeHMD !== this.opts.optimizeHMD) {
+	if (state === true) this.optimizeScreentop = false;
     this.optimizeHMD = this.opts.optimizeHMD;
     this.protocol.sendOptimizeHMD(this, this.opts.optimizeHMD);
   }
@@ -262,6 +263,7 @@ BaseConnection.prototype.setOptimizeHMD = function(state) {
 BaseConnection.prototype.setOptimizeScreentop = function(state) {
   this.opts.optimizeScreentop = state;
   if (this.protocol && this.protocol.sendOptimizeScreentop && this.optimizeScreentop !== this.opts.optimizeScreentop) {
+	if (state === true) this.optimizeHMD = false;
     this.optimizeScreentop = this.opts.optimizeScreentop;
     this.protocol.sendOptimizeScreentop(this, this.opts.optimizeScreentop);
   }

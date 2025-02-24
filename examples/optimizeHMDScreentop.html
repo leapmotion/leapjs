@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>HMD/Screentop Optimization - Leap</title>
+    <script src="../leap-1.1.1.js"></script>
+    <script>
+      var controller = new Leap.Controller({optimizeScreentop: true}).connect();
+    </script>
+  </head>
+  <body>
+  <button onclick="controller.setOptimizeHMD(true);">controller.setOptimizeHMD(true);</button>
+  <button onclick="controller.setOptimizeHMD(false);">controller.setOptimizeHMD(false);</button>
+  <br/>
+  <br/>
+  <button onclick="controller.setOptimizeScreentop(true);">controller.setOptimizeScreentop(true);</button>
+  <button onclick="controller.setOptimizeScreentop(false);">controller.setOptimizeScreentop(false);</button>
+  <pre>
+    <div id="out"></div>
+  </pre>
+  </body>
+</html>
